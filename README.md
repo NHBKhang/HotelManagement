@@ -1,1 +1,1 @@
-# HotelManagement
+# Hotel Management
