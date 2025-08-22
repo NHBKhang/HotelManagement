@@ -15,7 +15,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @ComponentScan(basePackages = {
     "com.team.hotelmanagementapp.controllers",
     "com.team.hotelmanagementapp.repositories",
-    "com.team.hotelmanagementapp.services"
+    "com.team.hotelmanagementapp.services",
+    "com.team.hotelmanagementapp.components"
 })
 @EnableTransactionManagement
 public class WebAppContextConfigs implements WebMvcConfigurer {

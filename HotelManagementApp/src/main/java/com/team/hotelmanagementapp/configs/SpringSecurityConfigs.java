@@ -20,7 +20,8 @@ import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 @ComponentScan(basePackages = {
     "com.team.hotelmanagementapp.controllers",
     "com.team.hotelmanagementapp.repositories",
-    "com.team.hotelmanagementapp.services"
+    "com.team.hotelmanagementapp.services",
+    "com.team.hotelmanagementapp.components"
 })
 public class SpringSecurityConfigs {
 
@@ -41,25 +42,34 @@ public class SpringSecurityConfigs {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws
             Exception {
         http.csrf(c -> c.disable()).authorizeHttpRequests(requests -> requests
-                .requestMatchers("/", "/home", "/stats").authenticated()
-                .requestMatchers("/resources/**", "/css/**", "/js/**", "/img/**").permitAll())
-                .formLogin(form -> form.loginPage("/login")
+                .requestMatchers("/", "/stats").authenticated()
+                .requestMatchers("/users", "/users/**").hasRole("ADMIN")
+                .requestMatchers("/resources/**", "/css/**", "/js/**", "/img/**").permitAll()
+                .requestMatchers("/api/**").permitAll())
+                
+                .formLogin(form -> form
+                .loginPage("/login")
                 .loginProcessingUrl("/login")
                 .defaultSuccessUrl("/", true)
-                .failureUrl("/login?error=true").permitAll())
-                .logout(logout
-                        -> logout.logoutSuccessUrl("/login").permitAll());
+                .failureUrl("/login?error=true")
+                .permitAll())
+                
+                .logout(logout -> logout
+                .logoutSuccessUrl("/login")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
+                .permitAll());
         return http.build();
     }
 
-//    @Bean
-//    public Cloudinary cloudinary() {
-//        Cloudinary cloudinary
-//                = new Cloudinary(ObjectUtils.asMap(
-//                        "cloud_name", "dxxwcby8l",
-//                        "api_key", "448651448423589",
-//                        "api_secret", "ftGud0r1TTqp0CGp5tjwNmkAm-A",
-//                        "secure", true));
-//        return cloudinary;
-//    }
+    @Bean
+    public Cloudinary cloudinary() {
+        Cloudinary cloudinary
+                = new Cloudinary(ObjectUtils.asMap(
+                        "cloud_name", "dd0qzygo7",
+                        "api_key", "544345494632949",
+                        "api_secret", "rsMExum_c-Ga0DTQOfB92R0aONw",
+                        "secure", true));
+        return cloudinary;
+    }
 }
