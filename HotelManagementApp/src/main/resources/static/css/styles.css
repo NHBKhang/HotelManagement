@@ -1,1 +1,39 @@
+#sidebar {
+    width: 250px;
+    transition: all 0.3s;
+    white-space: nowrap;
+    background-color: #1F2937;
+}
 
+#sidebar.collapsed {
+    width: 60px !important;
+}
+
+#sidebar .nav-link span,
+#sidebar .fw-bold {
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+#sidebar.collapsed .nav-link span,
+#sidebar.collapsed .app-label {
+    opacity: 0;
+    visibility: hidden;
+    display: none !important;
+}
+
+#sidebar.collapsed #toggleBtn {
+    margin: 0 !important;
+}
+
+#sidebar .nav-link {
+    padding-left: 0.25rem;
+    background-color: inherit !important;
+}
+
+#sidebar .nav-link:hover {
+    background-color: gray !important;
+}
+
+#sidebar img {
+    background-color: whitesmoke;
+}

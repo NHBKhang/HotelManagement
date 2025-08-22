@@ -1,8 +1,17 @@
 package com.team.hotelmanagementapp.services;
 
 import com.team.hotelmanagementapp.pojo.User;
+import java.util.List;
+import java.util.Map;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface UserService extends UserDetailsService {
-    User getUserByUsername(String username);
+    
+    List<User> filterUsers(Map<String, String> params);
+    
+    long countUsers(Map<String, String> params);
+
+    User getByUsername(String username);
+
+    User createOrUpdate(User user);
 }

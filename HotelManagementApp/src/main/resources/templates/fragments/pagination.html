@@ -1,0 +1,40 @@
+<nav aria-label="Page navigation" th:if="${totalPages > 1}" th:fragment="pagination">
+    <ul class="pagination justify-content-center">
+        <!-- Trang đầu -->
+        <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+            <a class="page-link" th:href="@{/users(page=1, keyword=${keyword})}" tabindex="-1">
+                <i class="fas fa-angle-double-left"></i> Đầu
+            </a>
+        </li>
+
+        <!-- Trang trước -->
+        <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+            <a class="page-link" th:href="@{/users(page=${currentPage - 1}, keyword=${keyword})}" tabindex="-1">
+                <i class="fas fa-angle-left"></i> Trước
+            </a>
+        </li>
+
+        <!-- Hiển thị tối đa 5 số trang -->
+        <th:block th:with="start=${currentPage - 2 > 1 ? currentPage - 2 : 1}, 
+                  end=${currentPage + 2 < totalPages ? currentPage + 2 : totalPages}">
+            <li class="page-item" th:each="i : ${#numbers.sequence(start, end)}"
+                th:classappend="${i == currentPage} ? 'active'">
+                <a class="page-link" th:href="@{/users(page=${i}, keyword=${keyword})}" th:text="${i}"></a>
+            </li>
+        </th:block>
+
+        <!-- Trang sau -->
+        <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+            <a class="page-link" th:href="@{/users(page=${currentPage + 1}, keyword=${keyword})}">
+                Tiếp <i class="fas fa-angle-right"></i>
+            </a>
+        </li>
+
+        <!-- Trang cuối -->
+        <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+            <a class="page-link" th:href="@{/users(page=${totalPages}, keyword=${keyword})}">
+                Cuối <i class="fas fa-angle-double-right"></i>
+            </a>
+        </li>
+    </ul>
+</nav>

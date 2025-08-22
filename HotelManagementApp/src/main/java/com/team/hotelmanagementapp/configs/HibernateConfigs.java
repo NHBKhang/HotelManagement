@@ -1,9 +1,12 @@
 package com.team.hotelmanagementapp.configs;
 
+import com.mysql.cj.jdbc.AbandonedConnectionCleanupThread;
+import jakarta.annotation.PreDestroy;
 import java.util.Properties;
 import javax.sql.DataSource;
 import static org.hibernate.cfg.JdbcSettings.DIALECT;
 import static org.hibernate.cfg.JdbcSettings.SHOW_SQL;
+import static org.hibernate.cfg.SchemaToolingSettings.HBM2DDL_AUTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -49,6 +52,7 @@ public class HibernateConfigs {
         Properties props = new Properties();
         props.put(DIALECT, env.getProperty("hibernate.dialect"));
         props.put(SHOW_SQL, env.getProperty("hibernate.showSql"));
+        props.put(HBM2DDL_AUTO, env.getProperty("hibernate.hbm2ddl.auto"));
         return props;
     }
 
@@ -59,5 +63,11 @@ public class HibernateConfigs {
         transactionManager.setSessionFactory(
                 getSessionFactory().getObject());
         return transactionManager;
+    }
+
+    @PreDestroy
+    public void closeSessionFactory() {
+        AbandonedConnectionCleanupThread.checkedShutdown();
+        System.out.println("AbandonedConnectionCleanupThread has been shutdown.");
     }
 }
