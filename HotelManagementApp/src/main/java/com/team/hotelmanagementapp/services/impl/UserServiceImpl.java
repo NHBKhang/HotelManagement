@@ -1,13 +1,17 @@
 package com.team.hotelmanagementapp.services.impl;
 
 import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.team.hotelmanagementapp.pojo.User;
 import com.team.hotelmanagementapp.repositories.UserRepository;
 import com.team.hotelmanagementapp.services.UserService;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,8 +27,8 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepo;
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
-//    @Autowired
-//    private Cloudinary cloudinary;
+    @Autowired
+    private Cloudinary cloudinary;
 
     @Override
     public List<User> filterUsers(Map<String, String> params) {
@@ -39,6 +43,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getByUsername(String username) {
         return this.userRepo.getByUsername(username);
+    }
+
+    @Override
+    public User getById(int id) {
+        return this.userRepo.getById(id);
     }
 
     @Override
@@ -63,16 +72,16 @@ public class UserServiceImpl implements UserService {
     public User createOrUpdate(User user) {
         user.setPassword(this.passwordEncoder.encode(user.getPassword()));
 
-//        if (user.getFile() != null && !user.getFile().isEmpty()) {
-//            try {
-//                Map res = cloudinary.uploader().upload(user.getFile().getBytes(),
-//                        ObjectUtils.asMap("resource_type", "auto"));
-//                user.setAvatar(res.get("secure_url").toString());
-//            } catch (IOException ex) {
-//                Logger.getLogger(UserServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
-//                throw new RuntimeException("Error uploading file to Cloudinary", ex);
-//            }
-//        }
+        if (user.getFile() != null && !user.getFile().isEmpty()) {
+            try {
+                Map res = cloudinary.uploader().upload(user.getFile().getBytes(),
+                        ObjectUtils.asMap("resource_type", "auto"));
+                user.setAvatar(res.get("secure_url").toString());
+            } catch (IOException ex) {
+                Logger.getLogger(UserServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+                throw new RuntimeException("Error uploading file to Cloudinary", ex);
+            }
+        }
         if (user.getRole() == null || user.getRole().toString().isEmpty()) {
             user.setRole(User.Role.USER);
         }
@@ -82,5 +91,15 @@ public class UserServiceImpl implements UserService {
         }
 
         return this.userRepo.createOrUpdate(user);
+    }
+
+    @Override
+    public void delete(int id) {
+        this.userRepo.delete(id);
+    }
+
+    @Override
+    public void delete(List<Integer> ids) {
+        this.userRepo.delete(ids);
     }
 }

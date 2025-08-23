@@ -2,15 +2,15 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
     <head>
-        <title>Khách hàng - Hotel Management</title>
+        <title>Khách hàng - Quản lý khách sạn</title>
     <th:block th:replace="base :: head"></th:block>
 </head>
 
 <body>
     <div th:replace="base :: layout(~{::content})">
         <div th:fragment="content">
-            <main class="container mt-4">
-                <h2 class="text-center w-100 mb-3"><i class="fas fa-list"></i> Danh sách Thành viên</h2>
+            <div class="container">
+                <h2 class="text-center w-100 mb-3"><i class="fas fa-list"></i> Danh sách Khách hàng</h2>
 
                 <div class="d-flex justify-content-between align-items-center mb-1">
                     <div>
@@ -18,7 +18,8 @@
                             <i class="fas fa-plus"></i> Thêm
                         </a>
 
-                        <button onclick="deleteUsers()" id="deleteButton" class="btn btn-danger" disabled>
+                        <button th:onclick="|deleteAll('@{/users/delete}', 'thành viên')|" 
+                                id="deleteButton" class="btn btn-danger" disabled>
                             <i class="fas fa-trash-alt"></i> Xóa
                         </button>
                     </div>
@@ -27,14 +28,14 @@
                         <input type="text" name="kw" th:value="${kw}" class="form-control me-2 w-auto"
                                placeholder="Tìm kiếm...">
                         <button type="submit" class="btn btn-primary w-auto">
-                            <i class="fas fa-search"></i> Tìm kiếm
+                            <i class="fas fa-search"></i>
                         </button>
                     </form>
                 </div>
 
                 <div class="table-responsive">
                     <table class="table table-hover table-bordered text-center">
-                        <thead class="table-dark">
+                        <thead>
                             <tr>
                                 <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th>
                                 <th>Tên tài khoản</th>
@@ -65,7 +66,7 @@
                 </div>
 
                 <div th:replace="fragments/pagination :: pagination"></div>
-            </main>
+            </div>
         </div>
     </div>
 </body>

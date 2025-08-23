@@ -9,10 +9,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.web.multipart.MultipartFile;
 
 @Entity
 @Table(name = "user")
@@ -108,6 +110,9 @@ public class User implements Serializable {
     @Column(name = "updated_at")
     @UpdateTimestamp
     private Date updatedAt;
+
+    @Transient
+    private MultipartFile file;
 
     public User() {
     }
@@ -240,9 +245,6 @@ public class User implements Serializable {
         return "com.hotelmanagementapp.pojo.User[ id=" + id + " ]";
     }
 
-    /**
-     * @return the createdAt
-     */
     public Date getCreatedAt() {
         return createdAt;
     }
@@ -257,6 +259,14 @@ public class User implements Serializable {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public MultipartFile getFile() {
+        return file;
+    }
+
+    public void setFile(MultipartFile file) {
+        this.file = file;
     }
 
 }

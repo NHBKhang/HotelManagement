@@ -11,8 +11,15 @@ public interface UserRepository {
     long countUsers(Map<String, String> params);
 
     User getByUsername(String username);
+
+    User getById(int id);
     
     User createOrUpdate(User user);
     
+    void delete(int id);
+
+    void delete(List<Integer> ids);
+    
     boolean authUser(String username, String password);
+
 }

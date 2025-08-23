@@ -87,6 +87,12 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public User getById(int id) {
+        Session s = this.factory.getObject().getCurrentSession();
+        return s.find(User.class, id);
+    }
+
+    @Override
     public User createOrUpdate(User u) {
         Session s = factory.getObject().getCurrentSession();
 
@@ -135,5 +141,32 @@ public class UserRepositoryImpl implements UserRepository {
         User u = this.getByUsername(username);
 
         return this.passwordEncoder.matches(password, u.getPassword());
+    }
+
+    @Override
+    public void delete(int id) {
+        Session s = this.factory.getObject().getCurrentSession();
+        User user = this.getById(id);
+        if (user != null) {
+            s.remove(user);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void delete(List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return;
+        }
+
+        Session s = this.factory.getObject().getCurrentSession();
+        String hql = "DELETE FROM User u WHERE u.id IN (:ids)";
+        int affected = s.createMutationQuery(hql)
+                .setParameterList("ids", ids)
+                .executeUpdate();
+
+        if (affected != ids.size()) {
+            throw new RuntimeException("Không thể xóa hết tất cả khách hàng!");
+        }
     }
 }

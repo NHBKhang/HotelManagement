@@ -27,7 +27,7 @@
             <!-- Nội dung động -->
             <div id="content" class="flex-grow-1 p-4">
                 <div th:replace="fragments/message :: message"></div>
-                <div th:insert="${content}"></div>
+                <div th:insert="${content}" class="content"></div>
                 <div th:replace="fragments/footer :: footer"></div>
             </div>
         </div>
