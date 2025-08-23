@@ -10,11 +10,9 @@
 <body>
     <div th:replace="base :: layout(~{::content})">
         <div th:fragment="content">
-            <main class="container mt-4">
-                <h5 class="text-center">Chào mừng <strong bsec:authentication="name"></strong> đến với hệ thống của chúng tôi!</h5>
-
-            </main>
-
+            <div class="container mt-4">
+                <h3 class="text-center">Chào mừng <strong bsec:authentication="name"></strong> đến với hệ thống của chúng tôi!</h3>
+            </div>
         </div>
     </div>
 </body>

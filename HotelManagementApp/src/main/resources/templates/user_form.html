@@ -2,7 +2,9 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
     <head>
-        <title>Khách hàng - Hotel Management</title>
+        <title
+            th:text="${user.id != null} ? 'Chi tiết Khách hàng - Quản lý khách sạn' : ('Thêm Khách hàng - Quản lý khách sạn')">
+        </title>
 
     <th:block th:replace="base :: head"></th:block>
 </head>
@@ -10,11 +12,103 @@
 <body>
     <div th:replace="base :: layout(~{::content})">
         <div th:fragment="content">
-            <main class="container mt-4">
-                <h5 class="text-center">Chào mừng <strong bsec:authentication="name"></strong> đến với hệ thống của chúng tôi!</h5>
+            <div class="container">
+                <h2 class="text-center mb-3">
+                    <span th:if="${user.id != null}">
+                        <i class="fa-solid fa-pen-to-square me-2"></i> Chi tiết Khách hàng
+                    </span>
+                    <span th:unless="${user.id != null}">
+                        <i class="fa-solid fa-user-plus me-2"></i> Thêm Khách hàng
+                    </span>
+                </h2>
 
-            </main>
+                <form th:action="@{/users/save}" method="post" th:object="${user}" 
+                      class="styled-form" enctype="multipart/form-data"> 
+                    <div class="my-2">
+                        <button type="submit" class="btn btn-success me-1">
+                            <i class="fa-solid fa-save me-1"></i>
+                            <span th:text="${user.id != null} ? 'Cập Nhật' : 'Lưu'"></span>
+                        </button>
+                        <button type="button" class="btn btn-danger"
+                               th:onclick="|confirmAndRequest('@{/users/delete/{id}(id=${user.id})}', '@{/users}')|">
+                            <i class="fa-solid fa-trash me-1"></i> Xóa
+                        </button>
+                        <a th:href="@{/users}" class="btn btn-secondary">
+                            <i class="fa-solid fa-circle-left me-1"></i> Trở về
+                        </a>
+                    </div>
 
+                    <div class="p-4 border rounded shadow-sm bg-light">
+                        <input type="hidden" th:if="${user.id != null}" th:field="*{id}"> 
+                        <div class="row"> 
+                            <div class="col-md-9"> 
+                                <div class="mb-3"> 
+                                    <label for="username" class="form-label">Tên tài khoản</label> 
+                                    <input type="text" id="username" th:field="*{username}" class="form-control" required> 
+                                    <p class="text-danger" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></p> 
+                                </div> <div class="mb-3"> 
+                                    <label for="password" class="form-label">Mật khẩu <span class="text-danger" th:if="${user.id == null}">*</span></label> 
+                                    <input type="password" id="password" th:field="*{password}" class="form-control" placeholder="*****" th:attr="required=${user.id == null ? 'required' : null}"> 
+                                    <p class="text-danger" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p> 
+                                </div> 
+                                <div class="mb-3"> <label for="firstName" class="form-label">Họ</label> 
+                                    <input type="text" id="firstName" th:field="*{firstName}" class="form-control"> 
+                                </div> 
+                                <div class="mb-3"> <label for="lastName" class="form-label">Tên</label> 
+                                    <input type="text" id="lastName" th:field="*{lastName}" class="form-control"> 
+                                </div> 
+                                <div class="mb-3"> 
+                                    <label for="phone" class="form-label">Số điện thoại</label> 
+                                    <input type="text" id="phone" th:field="*{phone}" class="form-control"> 
+                                    <p class="text-danger" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></p> 
+                                </div> 
+                                <div class="mb-3"> 
+                                    <label for="email" class="form-label">Email</label> 
+                                    <input type="email" id="email" th:field="*{email}" class="form-control" required> 
+                                    <p class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p> 
+                                </div> 
+                            </div>
+                            <div class="col-md-3"> 
+                                <div class="mb-3 vertical text-center"> 
+                                    <img th:src="${user.avatar != null ? user.avatar : '/HotelManagementApp/img/default_avatar.svg'}" class="border shadow-sm mb-2" width="249" height="249" alt="avatar" id="avatarPreview"> 
+                                    <input id="avatarInput" type="file" class="form-control" th:field="*{file}" accept="image/*" onchange="previewImage(event)" style="display: none;"/> 
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <!-- Upload -->
+                                        <button type="button" class="btn btn-outline-primary btn-sm"
+                                                onclick="document.getElementById('avatarInput').click()">
+                                            <i class="fa fa-upload"></i> Tải lên
+                                        </button>
+
+                                        <!-- Xóa -->
+                                        <button type="button" class="btn btn-outline-danger btn-sm"
+                                                onclick="removeAvatar()">
+                                            <i class="fa fa-trash"></i> Xóa
+                                        </button>
+                                    </div>
+                                </div> 
+                            </div> 
+                        </div> 
+                        <div class="row"> 
+                            <div class="col-md-6 mb-3"> 
+                                <label for="role" class="form-label">Vai trò</label> 
+                                <select id="role" th:field="*{role}" class="form-select"> 
+                                    <option th:each="role : ${T(com.team.hotelmanagementapp.pojo.User.Role).values()}" 
+                                            th:value="${role}" 
+                                            th:text="${role}"></option>
+                                </select>
+                            </div> 
+                            <div class="col-md-6 mb-3"> 
+                                <label for="status" class="form-label">Trạng thái</label> 
+                                <select id="status" th:field="*{status}" class="form-select"> 
+                                    <option th:each="status : ${T(com.team.hotelmanagementapp.pojo.User.Status).values()}" 
+                                            th:value="${status}" 
+                                            th:text="${status}"></option>
+                                </select>
+                            </div> 
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </body>

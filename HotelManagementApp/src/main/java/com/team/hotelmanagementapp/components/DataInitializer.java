@@ -19,8 +19,8 @@ public class DataInitializer {
     @PostConstruct
     public void init() {
         if (userService.getByUsername("admin") == null) {
-            User admin = new User("admin", "admin", "admin@example.com", User.Role.ADMIN, "Nguyễn", "Admin", "0123456789");
-            User user = new User("user", "user", "trainer@example.com", User.Role.USER, "Trần Thị", "Na", "0967456615");
+            User admin = new User("admin", "admin", "admin@gmail.com", User.Role.ADMIN, "Nguyễn", "Admin", "0123456789");
+            User user = new User("user", "user", "user@gmail.com", User.Role.USER, "Trần Thị", "Na", "0967456615");
 
             userService.createOrUpdate(admin);
             userService.createOrUpdate(user);
