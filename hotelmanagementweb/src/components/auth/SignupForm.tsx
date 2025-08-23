@@ -3,8 +3,10 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useMutation } from "@tanstack/react-query"
 import { useNavigate, Link } from "react-router-dom"
-import { useAuthBetter } from "../../hooks/useAuthBetter"
+import { useAuth } from "../../contexts/AuthContext"
+import { authApi } from "../../services/api"
 
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
@@ -14,12 +16,15 @@ import { Loader2 } from "lucide-react"
 
 import { signupSchema, type SignupInput } from "../../lib/validations/auth"
 
+async function createUser(userData: SignupInput) {
+  return await authApi.signup(userData)
+}
+
 export function SignupForm() {
-  const { signup, isAuthenticated } = useAuthBetter()
+  const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
   const [error, setError] = useState<string>("")
   const [success, setSuccess] = useState<string>("")
-  const [isLoading, setIsLoading] = useState(false)
 
   const {
     register,
@@ -30,28 +35,31 @@ export function SignupForm() {
     resolver: zodResolver(signupSchema),
   })
 
+  const mutation = useMutation({
+    mutationFn: createUser,
+    onSuccess: (data) => {
+      setSuccess("Account created successfully! Redirecting to login...")
+      setError("")
+      reset()
+      setTimeout(() => {
+        navigate("/dashboard")
+      }, 2000)
+    },
+    onError: (error: any) => {
+      setError(error.response?.data?.message || error.message || "Failed to create account")
+      setSuccess("")
+    },
+  })
+
   if (isAuthenticated) {
     navigate("/dashboard")
     return null
   }
 
-  const onSubmit = async (data: SignupInput) => {
-    setIsLoading(true)
+  const onSubmit = (data: SignupInput) => {
     setError("")
     setSuccess("")
-    
-    try {
-      await signup(data)
-      setSuccess("Account created successfully! Redirecting to dashboard...")
-      reset()
-      setTimeout(() => {
-        navigate("/dashboard")
-      }, 2000)
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "Failed to create account")
-    } finally {
-      setIsLoading(false)
-    }
+    mutation.mutate(data)
   }
 
   return (
@@ -76,14 +84,14 @@ export function SignupForm() {
             type="text"
             placeholder="John"
             {...register("firstName")}
-            disabled={isLoading}
+            disabled={mutation.isPending}
           />
           {errors.firstName && <p className="text-sm text-destructive">{errors.firstName.message}</p>}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="lastName">Last Name</Label>
-          <Input id="lastName" type="text" placeholder="Doe" {...register("lastName")} disabled={isLoading} />
+          <Input id="lastName" type="text" placeholder="Doe" {...register("lastName")} disabled={mutation.isPending} />
           {errors.lastName && <p className="text-sm text-destructive">{errors.lastName.message}</p>}
         </div>
       </div>
@@ -95,14 +103,14 @@ export function SignupForm() {
           type="email"
           placeholder="john.doe@example.com"
           {...register("email")}
-          disabled={isLoading}
+          disabled={mutation.isPending}
         />
         {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="phone">Phone Number</Label>
-        <Input id="phone" type="tel" placeholder="1234567890" {...register("phone")} disabled={isLoading} />
+        <Input id="phone" type="tel" placeholder="1234567890" {...register("phone")} disabled={mutation.isPending} />
         {errors.phone && <p className="text-sm text-destructive">{errors.phone.message}</p>}
       </div>
 
@@ -113,7 +121,7 @@ export function SignupForm() {
           type="text"
           placeholder="johndoe"
           {...register("username")}
-          disabled={isLoading}
+          disabled={mutation.isPending}
         />
         {errors.username && <p className="text-sm text-destructive">{errors.username.message}</p>}
       </div>
@@ -125,13 +133,13 @@ export function SignupForm() {
           type="password"
           placeholder="Enter your password"
           {...register("password")}
-          disabled={isLoading}
+          disabled={mutation.isPending}
         />
         {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
       </div>
 
-      <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+      <Button type="submit" className="w-full" disabled={mutation.isPending}>
+        {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         Create Account
       </Button>
 

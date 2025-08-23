@@ -1,11 +1,11 @@
 "use client"
 
-import { useAuthBetter } from "../hooks/useAuthBetter"
+import { useAuth } from "../contexts/AuthContext"
 import { Button } from "../components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
 
 export default function DashboardPage() {
-  const { user, logout } = useAuthBetter()
+  const { user, logout } = useAuth()
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -19,7 +19,7 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Welcome, {user?.firstName}!</CardTitle>
+            <CardTitle>Welcome, {user?.name}!</CardTitle>
             <CardDescription>You are successfully authenticated</CardDescription>
           </CardHeader>
           <CardContent>
@@ -31,7 +31,7 @@ export default function DashboardPage() {
                 <strong>Email:</strong> {user?.email}
               </p>
               <p>
-                <strong>Full Name:</strong> {user?.firstName} {user?.lastName}
+                <strong>Full Name:</strong> {user?.name}
               </p>
             </div>
           </CardContent>

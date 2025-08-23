@@ -1,9 +1,9 @@
 "use client"
 
-import React from "react"
+import type React from "react"
 import { createContext, useContext, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { auth } from "../lib/better-auth"
+import { authApi } from "../services/api"
 import type { User } from "../types/api"
 
 interface AuthContextType {
@@ -23,60 +23,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const navigate = useNavigate()
 
-  // Use better-auth session hook
-  const { data: session, isPending: sessionLoading } = auth.useSession()
-
-  // Sync with better-auth session
+  // Check for existing token on mount
   useEffect(() => {
-    if (!sessionLoading) {
-      if (session?.user) {
-        // Convert better-auth user to our User type
-        const userData: User = {
-          id: session.user.id,
-          username: session.user.email, // Using email as username for now
-          email: session.user.email,
-          firstName: session.user.name?.split(' ')[0] || '',
-          lastName: session.user.name?.split(' ')[1] || '',
-        }
-        setUser(userData)
-        setToken(localStorage.getItem("auth_token"))
-      } else {
-        setUser(null)
-        setToken(null)
-      }
+    const storedToken = localStorage.getItem("auth_token")
+    const storedUser = localStorage.getItem("auth_user")
+
+    if (storedToken && storedUser) {
+      setToken(storedToken)
+      setUser(JSON.parse(storedUser))
+      verifyToken()
+    } else {
       setIsLoading(false)
     }
-  }, [session, sessionLoading])
+  }, [])
+
+  const verifyToken = async () => {
+    try {
+      const userData = await authApi.verifyToken()
+      setUser(userData)
+    } catch (error) {
+      // Token is invalid, clear storage
+      localStorage.removeItem("auth_token")
+      localStorage.removeItem("auth_user")
+      setUser(null)
+      setToken(null)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const login = async (username: string, password: string) => {
-    const result = await auth.signIn.email({
-      email: username,
-      password,
-    })
+    const data = await authApi.login({ username, password })
 
-    if (result.error) {
-      throw new Error(result.error.message || "Login failed")
-    }
-
-    if (!result.data?.user) {
-      throw new Error("Invalid response from server")
-    }
-
-    // Convert better-auth user to our User type
     const userData: User = {
-      id: result.data.user.id,
-      username: result.data.user.email,
-      email: result.data.user.email,
-      firstName: result.data.user.name?.split(' ')[0] || '',
-      lastName: result.data.user.name?.split(' ')[1] || '',
+      id: data.id,
+      username: data.username,
+      email: data.email,
+      firstName: data.firstName,
+      lastName: data.lastName,
     }
 
     setUser(userData)
-    setToken(localStorage.getItem("auth_token"))
+    setToken(data.accessToken)
+
+    // Store in localStorage
+    localStorage.setItem("auth_token", data.accessToken)
+    localStorage.setItem("auth_user", JSON.stringify(userData))
+
+    // Store refresh token if provided
+    if (data.refreshToken) {
+      localStorage.setItem("refresh_token", data.refreshToken)
+    }
   }
 
   const logout = async () => {
-    await auth.signOut()
+    await authApi.logout()
     setUser(null)
     setToken(null)
     navigate("/login")
@@ -91,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAuthenticated: !!user && !!token,
   }
 
-  return React.createElement(AuthContext.Provider, { value }, children)
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {

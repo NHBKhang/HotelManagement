@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useAuthBetter } from "../hooks/useAuthBetter"
+import { useAuth } from "../contexts/AuthContext"
 import { Navigate } from "react-router-dom"
 
 interface ProtectedRouteProps {
@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading } = useAuthBetter()
+  const { isAuthenticated, isLoading } = useAuth()
 
   if (isLoading) {
     return (

@@ -20,7 +20,7 @@ pnpm install
 Create `.env` file and set env variables:
 
 ```env
-SPRING_BOOT_API_URL=http://localhost:8080
+VITE_API_URL=http://localhost:8080
 BETTER_AUTH_SECRET=your-secret-key
 BETTER_AUTH_URL=http://localhost:3000
 ```

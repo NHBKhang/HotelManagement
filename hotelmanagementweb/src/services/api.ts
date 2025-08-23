@@ -11,7 +11,7 @@ import type {
 
 // Create axios instance
 const api = axios.create({
-  baseURL: import.meta.env.VITE_SPRING_BOOT_API_URL || "http://localhost:8080",
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -27,7 +27,7 @@ api.interceptors.request.use(
     }
 
     // Log requests in development
-    if (process.env.NODE_ENV === "development") {
+    if (import.meta.env.DEV) {
       console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`, {
         data: config.data,
         params: config.params,
@@ -46,7 +46,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response: AxiosResponse) => {
     // Log responses in development
-    if (process.env.NODE_ENV === "development") {
+    if (import.meta.env.DEV) {
       console.log(`[API Response] ${response.config.method?.toUpperCase()} ${response.config.url}`, {
         status: response.status,
         data: response.data,
@@ -70,8 +70,8 @@ api.interceptors.response.use(
 
     // Handle other HTTP errors
     const apiError: ApiError = {
-      message: (error.response.data as any)?.message || error.message || "An unexpected error occurred",
-      code: (error.response.data as any)?.code || error.code,
+      message: error.response.data?.message || error.message || "An unexpected error occurred",
+      code: error.response.data?.code || error.code,
       details: error.response.data,
     }
 

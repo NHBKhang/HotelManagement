@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useNavigate, Link } from "react-router-dom"
-import { useAuthBetter } from "../../hooks/useAuthBetter"
+import { useAuth } from "../../contexts/AuthContext"
 
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
@@ -15,7 +15,7 @@ import { Loader2 } from "lucide-react"
 import { loginSchema, type LoginInput } from "../../lib/validations/auth"
 
 export function LoginForm() {
-  const { login, isAuthenticated } = useAuthBetter()
+  const { login, isAuthenticated } = useAuth()
   const navigate = useNavigate()
   const [error, setError] = useState<string>("")
   const [isLoading, setIsLoading] = useState(false)
