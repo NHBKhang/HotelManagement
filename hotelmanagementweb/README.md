@@ -1,15 +1,13 @@
 ## 🎉 Features
-- 🚀 Next.js 15 (App router)
-- ⚛️ React 19
-- 📘 Typescript
-- 🎨 Tailwind CSS 4 - Class sorting, merging and linting
+- ⚛️ React 19 with Vite
+- 📘 TypeScript
+- 🎨 Tailwind CSS - Class sorting, merging and linting
 - 🛠️ Shadcn/ui - Customizable UI components
-- 🔒 Next-auth - Easy authentication library for Next.js (GitHub provider)
+- 🔒 Better-auth - Modern authentication library for React
+- 🚀 React Router - Client-side routing
 
 ## 🚀 Deployment
-Easily deploy your Next.js app with <a href="https://vercel.com/">Vercel</a> by clicking the button below:
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Skolaczk/next-starter)
+Easily deploy your React app with <a href="https://vercel.com/">Vercel</a>, <a href="https://netlify.com/">Netlify</a>, or any static hosting service.
 
 ## 🎯 Getting started
 ### 1. Install dependencies
@@ -19,7 +17,13 @@ pnpm install
 ```
 
 ### 2. Set up environment variables
-Create `.env` file and set env variables from `.env.example` file.
+Create `.env` file and set env variables:
+
+```env
+SPRING_BOOT_API_URL=http://localhost:8080
+BETTER_AUTH_SECRET=your-secret-key
+BETTER_AUTH_URL=http://localhost:3000
+```
 
 ### 3. Run the dev server
 

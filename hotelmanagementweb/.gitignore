@@ -3,13 +3,8 @@
 # dependencies
 /node_modules
 
-# next.js
-/.next/
-/out/
-
-/.idea
-
 # production
+/dist
 /build
 
 # debug
@@ -20,10 +15,18 @@ yarn-error.log*
 
 # env files
 .env*
+!.env.example
 
-# vercel
-.vercel
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
+
+# vite
+.vite/
