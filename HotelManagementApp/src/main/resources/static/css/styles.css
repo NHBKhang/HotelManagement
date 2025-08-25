@@ -133,3 +133,41 @@ form.styled-form img {
 .styled-form .mb-3 textarea {
     flex: 1;
 }
+
+.styled-tabs.nav-tabs {
+    margin-top: 1.25rem;
+    margin-bottom: 0.75rem;
+}
+.styled-tabs .nav-link {
+    color: #4a5568;
+    border: 1px solid transparent;
+    border-radius: 0;
+    padding: 0.75rem 1.25rem;
+    font-weight: 500;
+}
+.styled-tabs .nav-link.active {
+    background-color: #f8fafc;
+    border-color: #dee2e6 #dee2e6 #fff;
+    color: #111827;
+    font-weight: bold;
+}
+.styled-tabs .nav-link:hover {
+    background-color: #e2e8f0;
+    color: #111827;
+}
+.styled-tabs .tab-content {
+    border: 1px solid #dee2e6;
+    border-top: none;
+    padding: 1rem;
+    background: #ffffff;
+}
+.styled-tabs table thead {
+    background: #d8f4fe;
+}
+.styled-tabs table thead,
+.styled-tabs table tbody {
+    color: #373c41;
+}
+.styled-tabs table thead th {
+    font-weight: 500 !important;
+}

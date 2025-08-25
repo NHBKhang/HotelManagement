@@ -1,7 +1,10 @@
 package com.team.hotelmanagementapp.controllers;
 
+import com.team.hotelmanagementapp.pojo.Payment;
 import com.team.hotelmanagementapp.pojo.User;
+import com.team.hotelmanagementapp.services.PaymentService;
 import com.team.hotelmanagementapp.services.UserService;
+import com.team.hotelmanagementapp.utils.Pagination;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +32,8 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private PaymentService paymentService;
 
     @GetMapping
     public String users(Model model, @RequestParam Map<String, String> params,
@@ -39,12 +44,11 @@ public class UserController {
             long totalUsers = userService.countUsers(params);
             int totalPages = (int) Math.ceil((double) totalUsers
                     / Integer.parseInt(params.getOrDefault("pageSize", "10")));
-            List<User> users = userService.filterUsers(params);
+            List<User> users = userService.find(params);
 
             model.addAttribute("rows", users);
             model.addAttribute("totalUsers", totalUsers);
-            model.addAttribute("totalPages", totalPages);
-            model.addAttribute("currentPage", page);
+            model.addAttribute("pagination", new Pagination(page, totalPages));
         } catch (NumberFormatException e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra, vui lòng thử lại!");
         } catch (Exception e) {
@@ -116,12 +120,29 @@ public class UserController {
         if (ids == null || ids.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Không có ID nào được chọn để xóa."));
         }
-        
+
         try {
             userService.delete(ids);
             return ResponseEntity.ok().body(Map.of("message", "Xóa thành viên thành công!"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", "Đã xảy ra lỗi khi xóa khách hàng!"));
         }
+    }
+
+    @GetMapping("/{id}/payments")
+    public String getPaymentsPage(@PathVariable("id") int id,
+        @RequestParam(value = "page", defaultValue = "1") int page,
+        @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
+            Model model) {
+        Map<String, String> params = Map.of("page", String.valueOf(page),
+                "pageSize", String.valueOf(pageSize));
+        List<Payment> payments = paymentService.findByUserId(id, params);
+        long totalPayments = paymentService.countByUserId(id, params);
+        int totalPages = (int) Math.ceil((double) totalPayments / pageSize);
+
+        model.addAttribute("payments", payments);
+        model.addAttribute("pagination", new Pagination(page, totalPages));
+
+        return "fragments/tables/payments :: table";
     }
 }
