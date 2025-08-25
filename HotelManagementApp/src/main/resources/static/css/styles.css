@@ -37,3 +37,133 @@
 #sidebar img {
     background-color: whitesmoke;
 }
+
+form.styled-form .form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+form.styled-form .form-control,
+form.styled-form .form-select {
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+form.styled-form .form-control:focus,
+form.styled-form .form-select:focus {
+    border-color: #4a90e2;
+    outline: none;
+    box-shadow: 0 0 0 1px rgba(74,144,226,0.25);
+}
+
+form.styled-form input[required],
+form.styled-form select[required] {
+    border-bottom: 2px solid #e74c3c;
+}
+
+form.styled-form input:not([type="file"]),
+form.styled-form select {
+    border-top: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    background-color: transparent;
+}
+
+form.styled-form .text-danger {
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+form.styled-form .btn {
+    border-radius: 4px;
+    padding: 6px 14px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+form.styled-form .btn-primary {
+    background: #4a90e2;
+    border-color: #4a90e2;
+}
+
+form.styled-form .btn-primary:hover {
+    background: #357abd;
+    border-color: #357abd;
+}
+
+form.styled-form .btn-success {
+    background: #28a745;
+    border-color: #28a745;
+}
+
+form.styled-form .btn-success:hover {
+    background: #218838;
+}
+
+form.styled-form img {
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+.styled-form .mb-3 {
+    display: flex;
+    align-items: center;
+}
+
+.styled-form .mb-3.vertical {
+    display: block;
+}
+
+.styled-form .mb-3 label {
+    width: 100px;
+    margin-bottom: 0;
+}
+
+.styled-form .mb-3 input:not([type="file"]),
+.styled-form .mb-3 select,
+.styled-form .mb-3 textarea {
+    flex: 1;
+}
+
+.styled-tabs.nav-tabs {
+    margin-top: 1.25rem;
+    margin-bottom: 0.75rem;
+}
+.styled-tabs .nav-link {
+    color: #4a5568;
+    border: 1px solid transparent;
+    border-radius: 0;
+    padding: 0.75rem 1.25rem;
+    font-weight: 500;
+}
+.styled-tabs .nav-link.active {
+    background-color: #f8fafc;
+    border-color: #dee2e6 #dee2e6 #fff;
+    color: #111827;
+    font-weight: bold;
+}
+.styled-tabs .nav-link:hover {
+    background-color: #e2e8f0;
+    color: #111827;
+}
+.styled-tabs .tab-content {
+    border: 1px solid #dee2e6;
+    border-top: none;
+    padding: 1rem;
+    background: #ffffff;
+}
+.styled-tabs table thead {
+    background: #d8f4fe;
+}
+.styled-tabs table thead,
+.styled-tabs table tbody {
+    color: #373c41;
+}
+.styled-tabs table thead th {
+    font-weight: 500 !important;
+}

@@ -28,9 +28,13 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-function toggleSelectAll() {
+function toggleSelectAll(tableId = null) {
     const selectAllCheckbox = document.getElementById("selectAll");
-    const checkboxes = document.querySelectorAll("table input[type='checkbox']");
+    if (tableId) {
+        const checkboxes = document.querySelectorAll(`#${tableId} input[type='checkbox']`);
+    } else {
+        const checkboxes = document.querySelectorAll("table input[type='checkbox']");
+    }
 
     checkboxes.forEach((checkbox) => {
         checkbox.checked = selectAllCheckbox.checked;
@@ -141,7 +145,7 @@ function deleteAll(url, entityName = "mục", redirectUrl = null) {
         showMessage('warning', `Vui lòng chọn ít nhất một ${entityName} để xóa.`);
         return;
     }
-    
+
     if (confirm(`Bạn có chắc chắn muốn xóa các ${entityName} đã chọn?`)) {
         fetch(url, {
             method: 'DELETE',

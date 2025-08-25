@@ -31,8 +31,8 @@ public class UserServiceImpl implements UserService {
     private Cloudinary cloudinary;
 
     @Override
-    public List<User> filterUsers(Map<String, String> params) {
-        return this.userRepo.filterUsers(params);
+    public List<User> find(Map<String, String> params) {
+        return this.userRepo.find(params);
     }
 
     @Override
@@ -83,7 +83,7 @@ public class UserServiceImpl implements UserService {
             }
         }
         if (user.getRole() == null || user.getRole().toString().isEmpty()) {
-            user.setRole(User.Role.USER);
+            user.setRole(User.Role.CUSTOMER);
         }
 
         if (user.getStatus() == null || user.getStatus().toString().isEmpty()) {
@@ -101,5 +101,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public void delete(List<Integer> ids) {
         this.userRepo.delete(ids);
+    }
+
+    @Override
+    public boolean authUser(String username, String password) {
+        return this.userRepo.authUser(username, password);
     }
 }
