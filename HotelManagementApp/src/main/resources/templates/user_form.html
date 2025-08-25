@@ -30,7 +30,7 @@
                             <span th:text="${user.id != null} ? 'Cập Nhật' : 'Lưu'"></span>
                         </button>
                         <button type="button" class="btn btn-danger"
-                               th:onclick="|confirmAndRequest('@{/users/delete/{id}(id=${user.id})}', '@{/users}')|">
+                                th:onclick="|confirmAndRequest('@{/users/delete/{id}(id=${user.id})}', '@{/users}')|">
                             <i class="fa-solid fa-trash me-1"></i> Xóa
                         </button>
                         <a th:href="@{/users}" class="btn btn-secondary">
@@ -106,11 +106,50 @@
                                 </select>
                             </div> 
                         </div>
+
+                        <ul class="nav nav-tabs styled-tabs" id="styledTab" role="tablist" th:if="${user.id != null}">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="payment-tab" data-bs-toggle="tab" data-bs-target="#payment"
+                                        type="button" role="tab">Lịch sử thanh toán</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content styled-tabs" id="paymentHistory" th:if="${user.id != null}">
+                            <div class="tab-pane fade show active" id="payment" role="tabpanel" aria-labelledby="payment-tab">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-bordered text-center" 
+                                           id="paymentTable" th:attr="data-user-id=${user.id}">
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+    <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", function () {
+            const table = document.getElementById("paymentTable");
+            if (table) {
+                const userId = table.dataset.userId;
+                fetch("/HotelManagementApp/users/" + userId + "/payments?page=1")
+                        .then(res => res.text())
+                        .then(html => {
+                            table.innerHTML = html;
+                        });
+            }
+        });
+
+        function loadPayments(el) {
+            const page = el.getAttribute("data-page");
+            const userId = document.getElementById("paymentTable").dataset.userId;
+            fetch("/HotelManagementApp/users/" + userId + "/payments?page=" + page)
+                    .then(res => res.text())
+                    .then(html => {
+                        document.getElementById("paymentTable").innerHTML = html;
+                    });
+        }
+    </script>
 </body>
 
 </html>

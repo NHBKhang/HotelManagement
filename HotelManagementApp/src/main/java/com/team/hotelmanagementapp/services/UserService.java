@@ -7,7 +7,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface UserService extends UserDetailsService {
     
-    List<User> filterUsers(Map<String, String> params);
+    List<User> find(Map<String, String> params);
     
     long countUsers(Map<String, String> params);
 
@@ -20,5 +20,7 @@ public interface UserService extends UserDetailsService {
     void delete(int id);
 
     void delete(List<Integer> ids);
+
+    boolean authUser(String username, String password);
 
 }

@@ -14,41 +14,78 @@
 
     <!-- Menu -->
     <ul class="nav nav-pills flex-column mb-auto">
+
+        <!-- Trang chủ -->
         <li>
             <a th:href="@{/}" class="nav-link text-white">
                 <i class="fas fa-home me-2"></i> <span>Trang chủ</span>
             </a>
         </li>
 
+        <!-- Quản lý khách hàng -->
         <li>
-            <a class="nav-link text-white dropdown-toggle" data-bs-toggle="collapse" href="#userMenu">
+            <a th:href="@{/users}" class="nav-link text-white">
                 <i class="fas fa-user-friends me-2"></i> <span>Khách hàng</span>
             </a>
-            <div class="collapse ps-3" id="userMenu">
-                <a th:href="@{/users}" class="nav-link text-white">Danh sách</a>
-            </div>
         </li>
 
+        <!-- Quản lý phòng -->
         <li>
             <a class="nav-link text-white dropdown-toggle" data-bs-toggle="collapse" href="#roomMenu">
                 <i class="fas fa-bed me-2"></i> <span>Phòng</span>
             </a>
             <div class="collapse ps-3" id="roomMenu">
-                <a th:href="@{/rooms}" class="nav-link text-white">Danh sách</a>
+                <a th:href="@{/rooms}" class="nav-link text-white">Danh sách phòng</a>
+                <a th:href="@{/room-types}" class="nav-link text-white">Loại phòng</a>
             </div>
         </li>
 
+        <!-- Đặt phòng -->
+        <li>
+            <a class="nav-link text-white dropdown-toggle" data-bs-toggle="collapse" href="#bookingMenu">
+                <i class="fas fa-calendar-check me-2"></i> <span>Đặt phòng</span>
+            </a>
+            <div class="collapse ps-3" id="bookingMenu">
+                <a th:href="@{/bookings}" class="nav-link text-white">Danh sách đặt phòng</a>
+                <a th:href="@{/bookings/add}" class="nav-link text-white">Tạo đặt phòng</a>
+            </div>
+        </li>
+
+        <!-- Dịch vụ -->
+        <li>
+            <a class="nav-link text-white dropdown-toggle" data-bs-toggle="collapse" href="#serviceMenu">
+                <i class="fas fa-concierge-bell me-2"></i> <span>Dịch vụ</span>
+            </a>
+            <div class="collapse ps-3" id="serviceMenu">
+                <a th:href="@{/services}" class="nav-link text-white">Danh sách dịch vụ</a>
+                <a th:href="@{/service-bookings}" class="nav-link text-white">Dịch vụ đã đặt</a>
+            </div>
+        </li>
+
+        <!-- Hóa đơn & Thanh toán -->
+        <li>
+            <a class="nav-link text-white dropdown-toggle" data-bs-toggle="collapse" href="#billingMenu">
+                <i class="fas fa-file-invoice-dollar me-2"></i> <span>Hóa đơn & Thanh toán</span>
+            </a>
+            <div class="collapse ps-3" id="billingMenu">
+                <a th:href="@{/invoices}" class="nav-link text-white">Hóa đơn</a>
+                <a th:href="@{/payments}" class="nav-link text-white">Thanh toán</a>
+            </div>
+        </li>
+
+        <!-- Báo cáo -->
         <li>
             <a class="nav-link text-white dropdown-toggle" data-bs-toggle="collapse" href="#reportMenu">
                 <i class="fas fa-chart-line me-2"></i> <span>Báo cáo</span>
             </a>
             <div class="collapse ps-3" id="reportMenu">
-                <a th:href="@{/stats}" class="nav-link text-white">Xem Báo cáo</a>
-                <a th:href="@{/feedback}" class="nav-link text-white">Phản hồi</a>
+                <a th:href="@{/stats}" class="nav-link text-white">Thống kê</a>
+                <a th:href="@{/feedback}" class="nav-link text-white">Phản hồi KH</a>
                 <a th:href="@{/notifications}" class="nav-link text-white">Thông báo</a>
             </div>
         </li>
 
+        <!-- Cài đặt -->
         <li>
             <a th:href="@{/settings}" class="nav-link text-white">
                 <i class="fas fa-cog me-2"></i> <span>Cài đặt</span>
