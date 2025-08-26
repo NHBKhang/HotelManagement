@@ -8,10 +8,14 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.util.List;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,13 +31,18 @@ import org.springframework.web.multipart.MultipartFile;
     @NamedQuery(name = "User.findByPhone", query = "SELECT u FROM User u WHERE u.phone = :phone"),
     @NamedQuery(name = "User.findByUsername", query = "SELECT u FROM User u WHERE u.username = :username"),
     @NamedQuery(name = "User.findByPassword", query = "SELECT u FROM User u WHERE u.password = :password"),
-    @NamedQuery(name = "User.findByActive", query = "SELECT u FROM User u WHERE u.active = :active"),
+    @NamedQuery(name = "User.findByStatus", query = "SELECT u FROM User u WHERE u.status = :status"),
     @NamedQuery(name = "User.findByRole", query = "SELECT u FROM User u WHERE u.role = :role"),
     @NamedQuery(name = "User.findByAvatar", query = "SELECT u FROM User u WHERE u.avatar = :avatar")})
 public class User implements Serializable {
 
+    @Override
+    public String toString() {
+        return "User{" + "username=" + username + '}';
+    }
+
     public enum Role {
-        ADMIN, USER
+        CUSTOMER, RECEPTIONIST, HOUSEKEEPING, ACCOUNTANT, MANAGER, ADMIN
     }
 
     public enum Status {
@@ -63,7 +72,6 @@ public class User implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
-    @Column(name = "id")
     private Integer id;
 
     @Basic(optional = false)
@@ -75,41 +83,40 @@ public class User implements Serializable {
     private String lastName;
 
     @Basic(optional = false)
-    @Column(name = "email")
+    @NotBlank(message = "Email không được để trống")
+    @Email(message = "Email không hợp lệ")
     private String email;
 
     @Basic(optional = false)
-    @Column(name = "phone")
     private String phone;
 
     @Basic(optional = false)
-    @Column(name = "username")
     private String username;
 
     @Basic(optional = false)
-    @Column(name = "password")
     private String password;
-    @Column(name = "active")
-    private Boolean active;
 
     @Basic(optional = false)
-    @Column(name = "role")
     private Role role;
 
     @Basic(optional = false)
-    @Column(name = "status")
     private Status status;
 
-    @Column(name = "avatar")
     private String avatar;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
-    private Date createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     @UpdateTimestamp
-    private Date updatedAt;
+    private LocalDateTime updatedAt;
+    
+    @OneToMany(mappedBy = "user")
+    private List<Payment> payments;
+    
+    @OneToMany(mappedBy = "user")
+    private List<Booking> bookings;
 
     @Transient
     private MultipartFile file;
@@ -188,15 +195,7 @@ public class User implements Serializable {
     public void setPassword(String password) {
         this.password = password;
     }
-
-    public Boolean getActive() {
-        return active;
-    }
-
-    public void setActive(Boolean active) {
-        this.active = active;
-    }
-
+    
     public Role getRole() {
         return role;
     }
@@ -239,25 +238,20 @@ public class User implements Serializable {
         }
         return true;
     }
-
-    @Override
-    public String toString() {
-        return "com.hotelmanagementapp.pojo.User[ id=" + id + " ]";
-    }
-
-    public Date getCreatedAt() {
+    
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Date getUpdatedAt() {
+    public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(Date updatedAt) {
+    public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
 
@@ -267,6 +261,22 @@ public class User implements Serializable {
 
     public void setFile(MultipartFile file) {
         this.file = file;
+    }
+
+    public List<Payment> getPayments() {
+        return payments;
+    }
+
+    public void setPayments(List<Payment> payments) {
+        this.payments = payments;
+    }
+
+    public List<Booking> getBookings() {
+        return bookings;
+    }
+
+    public void setBookings(List<Booking> bookings) {
+        this.bookings = bookings;
     }
 
 }

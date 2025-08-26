@@ -25,9 +25,11 @@
             <div th:replace="fragments/sidebar :: sidebar"></div>
 
             <!-- Nội dung động -->
-            <div id="content" class="flex-grow-1 p-4">
-                <div th:replace="fragments/message :: message"></div>
-                <div th:insert="${content}" class="content"></div>
+            <div id="content" class="flex-grow-1">
+                <div class="p-4">
+                    <div th:replace="fragments/message :: message"></div>
+                    <div th:insert="${content}" class="content"></div>
+                </div>
                 <div th:replace="fragments/footer :: footer"></div>
             </div>
         </div>

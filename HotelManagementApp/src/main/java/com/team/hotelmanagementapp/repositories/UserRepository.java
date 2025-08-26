@@ -6,7 +6,7 @@ import java.util.Map;
 
 public interface UserRepository {
     
-    List<User> filterUsers(Map<String, String> params);
+    List<User> find(Map<String, String> params);
     
     long countUsers(Map<String, String> params);
 

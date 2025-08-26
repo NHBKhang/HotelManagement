@@ -28,7 +28,7 @@ public class UserRepositoryImpl implements UserRepository {
     private BCryptPasswordEncoder passwordEncoder;
 
     @Override
-    public List<User> filterUsers(Map<String, String> params) {
+    public List<User> find(Map<String, String> params) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<User> q = b.createQuery(User.class);
