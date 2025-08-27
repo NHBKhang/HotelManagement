@@ -1,5 +1,6 @@
 package com.team.hotelmanagementapp.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -94,6 +95,7 @@ public class User implements Serializable {
     private String username;
 
     @Basic(optional = false)
+    @JsonIgnore
     private String password;
 
     @Basic(optional = false)
@@ -113,9 +115,11 @@ public class User implements Serializable {
     private LocalDateTime updatedAt;
     
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<Payment> payments;
     
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<Booking> bookings;
 
     @Transient
