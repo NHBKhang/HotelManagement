@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
     <head>
-        <title>Khách hàng - Quản lý khách sạn</title>
+        <title>Dịch vụ - Quản lý khách sạn</title>
     <th:block th:replace="base :: head"></th:block>
 </head>
 
@@ -10,21 +10,21 @@
     <div th:replace="base :: layout(~{::content})">
         <div th:fragment="content">
             <div class="container">
-                <h2 class="text-center w-100 mb-3"><i class="fas fa-list"></i> Danh sách Khách hàng</h2>
+                <h2 class="text-center w-100 mb-3"><i class="fas fa-list"></i> Danh sách Dịch vụ</h2>
 
                 <div class="d-flex justify-content-between align-items-center mb-1">
                     <div>
-                        <a th:href="@{/users/add}" class="btn btn-success me-1">
+                        <a th:href="@{/services/add}" class="btn btn-success me-1">
                             <i class="fas fa-plus"></i> Thêm
                         </a>
 
-                        <button th:onclick="|deleteAll('@{/users/delete}', 'thành viên')|" 
+                        <button th:onclick="|deleteAll('@{/services/delete}', 'thành viên')|" 
                                 id="deleteButton" class="btn btn-danger" disabled>
                             <i class="fas fa-trash-alt"></i> Xóa
                         </button>
                     </div>
 
-                    <form th:action="@{/users}" method="get" class="mb-1 d-flex">
+                    <form th:action="@{/services}" method="get" class="mb-1 d-flex">
                         <input type="text" name="kw" th:value="${kw}" class="form-control me-2 w-auto"
                                placeholder="Tìm kiếm...">
                         <button type="submit" class="btn btn-primary w-auto">
@@ -38,31 +38,27 @@
                         <thead>
                             <tr>
                                 <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th>
-                                <th>Tên tài khoản</th>
-                                <th>Họ</th>
-                                <th>Tên</th>
-                                <th>Email</th>
-                                <th>SĐT</th>
+                                <th>Mã DV</th>
+                                <th>Tên DV</th>
+                                <th>Giá DV</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr th:each="r : ${rows}">
                                 <td><input type="checkbox" th:value="${r.id}"></td>
-                                <td><a th:href="@{/users/edit/{id}(id=${r.id})}" th:text="${r.username}"></a></td>
-                                <td th:text="${r.firstName}"></td>
-                                <td th:text="${r.lastName}"></td>
-                                <td th:text="${r.email}"></td>
-                                <td th:text="${r.phone}"></td>
+                                <td><a th:href="@{/services/edit/{id}(id=${r.id})}" th:text="${r.code}"></a></td>
+                                <td th:text="${r.name}"></td>
+                                <td th:text="${#numbers.formatDecimal(r.price, 0, 'COMMA', 0, 'POINT')} + ' VND'"></td>
                             </tr>
                             <tr th:if="${#lists.isEmpty(rows)}">
-                                <td colspan="6">Không có khách hàng nào.</td>
+                                <td colspan="4">Không có dịch vụ nào.</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
                 <div class="text-end fw-bold mb-1">
-                    Tổng số khách hàng: <span th:text="${totalUsers ?: 0}"></span>
+                    Tổng số dịch vụ: <span th:text="${totalSerivces ?: 0}"></span>
                 </div>
 
                 <div th:replace="fragments/pagination :: pagination"></div>
@@ -71,3 +67,4 @@
     </div>
 </body>
 </html>
+

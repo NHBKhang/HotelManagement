@@ -46,7 +46,8 @@
                                     <label for="username" class="form-label">Tên tài khoản</label> 
                                     <input type="text" id="username" th:field="*{username}" class="form-control" required> 
                                     <p class="text-danger" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></p> 
-                                </div> <div class="mb-3"> 
+                                </div> 
+                                <div class="mb-3"> 
                                     <label for="password" class="form-label">Mật khẩu <span class="text-danger" th:if="${user.id == null}">*</span></label> 
                                     <input type="password" id="password" th:field="*{password}" class="form-control" placeholder="*****" th:attr="required=${user.id == null ? 'required' : null}"> 
                                     <p class="text-danger" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p> 

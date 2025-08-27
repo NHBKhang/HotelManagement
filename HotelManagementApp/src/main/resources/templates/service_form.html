@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+    <head>
+        <title
+            th:text="${service.id != null} ? 'Chi tiết Dịch vụ - Quản lý khách sạn' : ('Thêm Dịch vụ - Quản lý khách sạn')">
+        </title>
+
+    <th:block th:replace="base :: head"></th:block>
+</head>
+
+<body>
+    <div th:replace="base :: layout(~{::content})">
+        <div th:fragment="content">
+            <div class="container">
+                <h2 class="text-center mb-3">
+                    <span th:if="${service.id != null}">
+                        <i class="fa-solid fa-pen-to-square me-2"></i> Chi tiết Dịch vụ
+                    </span>
+                    <span th:unless="${service.id != null}">
+                        <i class="fa-solid fa-service-plus me-2"></i> Thêm Dịch vụ
+                    </span>
+                </h2>
+
+                <form th:action="@{/services/save}" method="post" th:object="${service}" 
+                      class="styled-form" enctype="multipart/form-data"> 
+                    <div class="my-2">
+                        <button type="submit" class="btn btn-success me-1">
+                            <i class="fa-solid fa-save me-1"></i>
+                            <span th:text="${service.id != null} ? 'Cập Nhật' : 'Lưu'"></span>
+                        </button>
+                        <button type="button" class="btn btn-danger"
+                                th:onclick="|confirmAndRequest('@{/services/delete/{id}(id=${service.id})}', '@{/services}')|">
+                            <i class="fa-solid fa-trash me-1"></i> Xóa
+                        </button>
+                        <a th:href="@{/services}" class="btn btn-secondary">
+                            <i class="fa-solid fa-circle-left me-1"></i> Trở về
+                        </a>
+                    </div>
+
+                    <div class="p-4 border rounded shadow-sm bg-light">
+                        <input type="hidden" th:if="${service.id != null}" th:field="*{id}"> 
+                        <div class="mb-3" th:if="${service.id != null}">
+                            <label class="form-label fw-bold">Mã dịch vụ</label>
+                            <span id="code"
+                                  th:text="*{code}" 
+                                  class="badge bg-primary fs-5 fw-bold">
+                            </span>
+                        </div>
+                        <div class="mb-3"> 
+                            <label for="name" class="form-label">Tên dịch vụ</label> 
+                            <input type="text" id="name" th:field="*{name}" class="form-control" required> 
+                            <p class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p> 
+                        </div> 
+                        <div class="row"> 
+                            <div class="col-md-6 mb-3"> 
+                                <label for="price" class="form-label">Giá dịch vụ</label> 
+                                <input type="number" id="price" th:field="*{price}" class="form-control" min="1000" max="10000000" step="1000" required> 
+                                <p class="text-danger" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></p>
+                            </div> 
+                            <div class="col-md-6 mb-3"> 
+                                <label for="active" class="form-label">Trạng thái</label> 
+                                <select id="active" th:field="*{active}" class="form-select"> 
+                                    <option value="1">ACTIVE</option>
+                                    <option value="0">INACTIVE</option>
+                                </select>
+                            </div> 
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Mô tả</label>
+                            <textarea id="description" th:field="*{description}" class="form-control"
+                                      rows="3"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        ClassicEditor
+                .create(document.querySelector('#description'))
+                .catch(error => {
+                    console.error(error);
+                });
+    </script>
+</body>
+
+</html>
