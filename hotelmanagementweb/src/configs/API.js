@@ -1,5 +1,4 @@
 import axios from "axios";
-import { useCallback } from "react";
 import { useCookies } from 'react-cookie';
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -9,19 +8,18 @@ export const endpoints = {
     'users': 'users',
     'user': (userId) => `users/${userId}`,
     'current-user': 'current-user',
+    'rooms': 'rooms',
 }
 
 export const useAuthAPI = () => {
     const [cookies] = useCookies(['access-token']);
 
-    const authAPI = useCallback(() => axios.create({
+    return axios.create({
         baseURL: API_URL,
         headers: {
-            "Authorization": `Bearer ${cookies['access-token']}`
-        }
-    }), [cookies]);
-
-    return authAPI;
+            Authorization: `Bearer ${cookies['access-token'] || ""}`,
+        },
+    });
 };
 
 export default axios.create({

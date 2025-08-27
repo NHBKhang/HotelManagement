@@ -5,8 +5,8 @@ import { useUserContext } from "../configs/UserContext";
 
 const LoginPage = () => {
     const navigate = useNavigate();
+    const authAPI = useAuthAPI();
     const { dispatch, saveToken } = useUserContext();
-    const { get } = useAuthAPI();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -41,7 +41,7 @@ const LoginPage = () => {
             await saveToken(res.data);
 
             if (res.status === 200) {
-                let res = await get(endpoints['current-user']);
+                let res = await authAPI.get(endpoints['current-user']);
                 dispatch({ type: 'SET_USER', payload: res.data.user });
 
                 navigate('/');
@@ -59,6 +59,7 @@ const LoginPage = () => {
             } else {
                 setErrors(prev => ({ ...prev, server: "Đã xảy ra lỗi không xác định!" }));
             }
+            console.error(error);
         } finally {
             setLoading(false);
         }

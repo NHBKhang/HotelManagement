@@ -1,5 +1,7 @@
 package com.team.hotelmanagementapp.configs;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.team.hotelmanagementapp.components.JwtService;
 import com.team.hotelmanagementapp.filters.CustomAccessDeniedHandler;
 import com.team.hotelmanagementapp.filters.JwtAuthenticationTokenFilter;
@@ -78,5 +80,12 @@ class JwtSecurityConfigs {
                         UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        return mapper;
     }
 }
