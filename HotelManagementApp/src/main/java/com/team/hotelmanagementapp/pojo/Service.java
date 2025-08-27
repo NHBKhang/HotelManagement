@@ -40,7 +40,7 @@ public class Service implements Serializable {
     private String description;
 
     @Basic(optional = false)
-    private String price;
+    private Double price;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -49,7 +49,7 @@ public class Service implements Serializable {
     public Service() {
     }
 
-    public Service(Integer id, String name, String description, String price) {
+    public Service(Integer id, String name, String description, Double price) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -80,11 +80,11 @@ public class Service implements Serializable {
         this.description = description;
     }
 
-    public String getPrice() {
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(String price) {
+    public void setPrice(Double price) {
         this.price = price;
     }
 
