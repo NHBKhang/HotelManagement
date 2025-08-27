@@ -1,6 +1,7 @@
 package com.team.hotelmanagementapp.pojo;
 
 import jakarta.persistence.Basic;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -9,7 +10,9 @@ import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Objects;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "service")
@@ -24,13 +27,24 @@ public class Service implements Serializable {
     private Integer id;
 
     @Basic(optional = false)
+    @Column(name = "code", nullable = false, unique = true)
+    private String code;
+
+    @Basic(optional = false)
     private String name;
+
+    @Basic(optional = false)
+    private Boolean active;
 
     @Basic(optional = true)
     private String description;
 
     @Basic(optional = false)
     private String price;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
     public Service() {
     }
@@ -103,6 +117,30 @@ public class Service implements Serializable {
             return false;
         }
         return Objects.equals(this.price, other.price);
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
 }
