@@ -31,15 +31,6 @@ public class ApiRoomController {
         return new ResponseEntity<>(rooms, HttpStatus.OK);
     }
     
-    @GetMapping("/{id}")
-    public ResponseEntity<Room> getRoomById(@PathVariable int id) {
-        Room room = roomService.findById(id);
-        if (room != null) {
-            return new ResponseEntity<>(room, HttpStatus.OK);
-        }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
-    
     @GetMapping("/search")
     public ResponseEntity<Map<String, Object>> searchAvailableRooms(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkIn,
@@ -54,9 +45,11 @@ public class ApiRoomController {
         if (roomTypeId != null) params.put("roomTypeId", roomTypeId.toString());
         if (minPrice != null) params.put("minPrice", minPrice.toString());
         if (maxPrice != null) params.put("maxPrice", maxPrice.toString());
+        if (minPrice != null) params.put("checkInDate", checkIn.toString());
+        if (maxPrice != null) params.put("checkOutDate", checkOut.toString());
         
-        List<Room> rooms = roomService.findAvailableRooms(checkIn, checkOut, params);
-        long totalCount = roomService.countAvailableRooms(checkIn, checkOut, params);
+        List<Room> rooms = roomService.find(params, true);
+        long totalCount = roomService.countRooms(params, true);
         
         Map<String, Object> response = new HashMap<>();
         response.put("rooms", rooms);
@@ -65,5 +58,14 @@ public class ApiRoomController {
         response.put("size", size);
         
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    
+    @GetMapping("/{id}")
+    public ResponseEntity<Room> getRoomById(@PathVariable int id) {
+        Room room = roomService.getById(id);
+        if (room != null) {
+            return new ResponseEntity<>(room, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }

@@ -9,7 +9,7 @@ public interface RoomTypeRepository {
     
     RoomType findById(int id);
     
-    RoomType save(RoomType roomType);
+    RoomType createOrUpdate(RoomType roomType);
     
     void delete(int id);
 }

@@ -1,7 +1,6 @@
 package com.team.hotelmanagementapp.services;
 
 import com.team.hotelmanagementapp.pojo.Room;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -9,13 +8,15 @@ public interface RoomService {
     
     List<Room> findAll();
     
-    Room findById(int id);
+    Room getById(int id);
     
-    List<Room> findAvailableRooms(LocalDate checkIn, LocalDate checkOut, Map<String, String> params);
+    List<Room> find(Map<String, String> params, Boolean available);
     
-    Room save(Room room);
+    Room createOrUpdate(Room room);
     
     void delete(int id);
     
-    long countAvailableRooms(LocalDate checkIn, LocalDate checkOut, Map<String, String> params);
+    void delete(List<Integer> ids);
+    
+    long countRooms(Map<String, String> params, Boolean available);
 }

@@ -1,7 +1,7 @@
 package com.team.hotelmanagementapp.controllers;
 
-import com.team.hotelmanagementapp.pojo.Service;
-import com.team.hotelmanagementapp.services.ServiceService;
+import com.team.hotelmanagementapp.pojo.Room;
+import com.team.hotelmanagementapp.services.RoomService;
 import com.team.hotelmanagementapp.utils.Pagination;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -25,84 +25,84 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @ControllerAdvice
-@RequestMapping("/services")
-public class ServiceController {
+@RequestMapping("/rooms")
+public class RoomController {
 
     @Autowired
-    private ServiceService serviceService;
+    private RoomService roomService;
 
     @GetMapping
-    public String services(Model model, @RequestParam Map<String, String> params,
+    public String rooms(Model model, @RequestParam Map<String, String> params,
             RedirectAttributes redirectAttributes) {
         try {
             int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) : 1;
 
-            long totalServices = serviceService.countServices(params);
-            int totalPages = (int) Math.ceil((double) totalServices
+            long totalRooms = roomService.countRooms(params, false);
+            int totalPages = (int) Math.ceil((double) totalRooms
                     / Integer.parseInt(params.getOrDefault("pageSize", "10")));
-            List<Service> services = serviceService.find(params);
+            List<Room> rooms = roomService.find(params, false);
 
-            model.addAttribute("rows", services);
-            model.addAttribute("totalServices", totalServices);
+            model.addAttribute("rows", rooms);
+            model.addAttribute("totalRooms", totalRooms);
             model.addAttribute("pagination", new Pagination(page, totalPages));
         } catch (NumberFormatException e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra, vui lòng thử lại!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải danh sách thành viên!");
         }
-        return "services";
+        return "rooms";
     }
 
     @GetMapping("/add")
-    public String showAddServiceForm(Model model) {
-        model.addAttribute("service", new Service());
-        return "service_form";
+    public String showAddRoomForm(Model model) {
+        model.addAttribute("room", new Room());
+        return "room_form";
     }
 
     @PostMapping("/save")
-    public String saveService(@Valid @ModelAttribute("service") Service service, BindingResult result,
+    public String saveRoom(@Valid @ModelAttribute("room") Room room, BindingResult result,
             Model model, RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
-            model.addAttribute("service", service);
+            model.addAttribute("room", room);
             redirectAttributes.addFlashAttribute("error", "Lỗi hệ thống!");
-            if (service.getId() == null) {
-                return "redirect:/services/add";
+            if (room.getId() == null) {
+                return "redirect:/rooms/add";
             } else {
-                return "redirect:/services/edit/" + service.getId();
+                return "redirect:/rooms/edit/" + room.getId();
             }
         }
 
         try {
-            Service s;
-            if (service.getId() == null) {
-                s = serviceService.createOrUpdate(service);
+            Room r;
+            if (room.getId() == null) {
+                r = roomService.createOrUpdate(room);
                 redirectAttributes.addFlashAttribute("success", "Thêm mới thành công!");
             } else {
-                s = serviceService.createOrUpdate(service);
+                r = roomService.createOrUpdate(room);
                 redirectAttributes.addFlashAttribute("success", "Cập nhật thành công!");
             }
-            return "redirect:/services/edit/" + s.getId();
+            return "redirect:/rooms/edit/" + r.getId();
         } catch (org.hibernate.exception.ConstraintViolationException e) {
             redirectAttributes.addFlashAttribute("error", "Tên người dùng đã tồn tại!");
-            return "redirect:/services/add";
+            return "redirect:/rooms/add";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra, vui lòng thử lại!");
-            return "redirect:/services/add";
+            return "redirect:/rooms/add";
         }
     }
 
     @GetMapping("/edit/{id}")
-    public String showEditServiceForm(@PathVariable(value = "id") int id, Model model) {
-        Service service = serviceService.getById(id);
-        model.addAttribute("service", service);
-        return "service_form";
+    public String showEditRoomForm(@PathVariable(value = "id") int id, Model model) {
+        Room room = roomService.getById(id);
+        model.addAttribute("room", room);
+        return "room_form";
     }
 
     @DeleteMapping(value = "/delete/{id}", produces = "application/json")
     @ResponseBody
-    public ResponseEntity<?> deleteService(@PathVariable(value = "id") int id) {
+    public ResponseEntity<?> deleteRoom(@PathVariable(value = "id") int id) {
         try {
-            serviceService.delete(id);
+            roomService.delete(id);
             return ResponseEntity.ok().body(Map.of("message", "Xóa khách hàng thành công!"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", "Đã xảy ra lỗi khi xóa khách hàng!"));
@@ -118,7 +118,7 @@ public class ServiceController {
         }
 
         try {
-            serviceService.delete(ids);
+            roomService.delete(ids);
             return ResponseEntity.ok().body(Map.of("message", "Xóa thành viên thành công!"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", "Đã xảy ra lỗi khi xóa khách hàng!"));

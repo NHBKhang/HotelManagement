@@ -49,14 +49,14 @@ public class DataInitializer {
         
         // Create room types
         if (roomTypeRepository.findAll().isEmpty()) {
-            RoomType standard = roomTypeRepository.save(new RoomType(null, "Standard", "Comfortable room with basic amenities", 500000.0, 2));
-            RoomType deluxe = roomTypeRepository.save(new RoomType(null, "Deluxe", "Spacious room with premium amenities", 800000.0, 3));
-            RoomType suite = roomTypeRepository.save(new RoomType(null, "Suite", "Luxury suite with separate living area", 1200000.0, 4));
+            RoomType standard = roomTypeRepository.createOrUpdate(new RoomType(null, "Tiêu chuẩn", "Phòng thoải mái với các tiện nghi cơ bản", 500000.0, 2));
+            RoomType deluxe = roomTypeRepository.createOrUpdate(new RoomType(null, "Sang trọng", "Phòng rộng rãi với tiện nghi cao cấp", 800000.0, 3));
+            RoomType suite = roomTypeRepository.createOrUpdate(new RoomType(null, "Suite", "Phòng suite sang trọng có phòng khách riêng biệt", 1200000.0, 4));
             
             // Create rooms
             for (int i = 1; i <= 10; i++) {
                 RoomType type = i <= 6 ? standard : (i <= 8 ? deluxe : suite);
-                roomRepository.save(new Room(null, "10" + String.format("%02d", i), type, Room.Status.AVAILABLE));
+                roomRepository.createOrUpdate(new Room(null, "1" + String.format("%02d", i), type, Room.Status.AVAILABLE));
             }
             
             // Create sample bookings
