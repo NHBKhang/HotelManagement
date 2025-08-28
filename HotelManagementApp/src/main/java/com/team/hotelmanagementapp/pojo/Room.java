@@ -44,12 +44,16 @@ public class Room implements Serializable {
     private Integer id;
 
     @Basic(optional = false)
+    @Column(name = "code", nullable = false, unique = true)
+    private String code;
+
+    @Basic(optional = false)
     @Column(name = "room_number")
     private String roomNumber;
 
     @Basic(optional = false)
     @JoinColumn(name = "room_type_id")
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     private RoomType roomType;
 
     @Basic(optional = false)
@@ -138,6 +142,14 @@ public class Room implements Serializable {
 
     public void setBookings(List<Booking> bookings) {
         this.bookings = bookings;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 
 }

@@ -42,7 +42,7 @@ public class BookingServiceImpl implements BookingService {
         Room room = booking.getRoom();
         if (room != null && room.getStatus() == Room.Status.AVAILABLE) {
             room.setStatus(Room.Status.BOOKED);
-            roomService.save(room);
+            roomService.createOrUpdate(room);
         }
         
         return bookingRepository.save(booking);
@@ -74,7 +74,7 @@ public class BookingServiceImpl implements BookingService {
                         }
                         break;
                 }
-                roomService.save(room);
+                roomService.createOrUpdate(room);
             }
             
             return bookingRepository.save(booking);

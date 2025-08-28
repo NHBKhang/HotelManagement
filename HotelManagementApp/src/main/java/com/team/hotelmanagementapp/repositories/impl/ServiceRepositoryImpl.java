@@ -146,6 +146,6 @@ public class ServiceRepositoryImpl implements ServiceRepository {
         Integer maxId = (Integer) q.getSingleResult();
 
         int nextId = (maxId != null) ? maxId + 1 : 1;
-        return "DV" + String.format("%04d", nextId);
+        return "DV" + String.format("%03d", nextId);
     }
 }

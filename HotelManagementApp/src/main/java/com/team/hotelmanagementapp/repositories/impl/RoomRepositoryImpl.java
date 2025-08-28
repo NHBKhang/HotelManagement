@@ -3,13 +3,19 @@ package com.team.hotelmanagementapp.repositories.impl;
 import com.team.hotelmanagementapp.pojo.Booking;
 import com.team.hotelmanagementapp.pojo.Room;
 import com.team.hotelmanagementapp.repositories.RoomRepository;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,68 +24,111 @@ import org.springframework.transaction.annotation.Transactional;
 public class RoomRepositoryImpl implements RoomRepository {
 
     @Autowired
-    private SessionFactory sessionFactory;
+    private LocalSessionFactoryBean factory;
 
     @Override
     public List<Room> findAll() {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = this.factory.getObject().getCurrentSession();
         return session.createNamedQuery("Room.findAll", Room.class).getResultList();
     }
 
     @Override
-    public Room findById(int id) {
-        Session session = sessionFactory.getCurrentSession();
+    public Room getById(int id) {
+        Session session = this.factory.getObject().getCurrentSession();
         return session.find(Room.class, id);
     }
 
     @Override
-    public List<Room> findAvailableRooms(LocalDate checkIn, LocalDate checkOut, Map<String, String> params) {
-        Session session = sessionFactory.getCurrentSession();
-        
-        StringBuilder hql = new StringBuilder("SELECT r FROM Room r WHERE r.status = :status AND r.id NOT IN " +
-                "(SELECT b.room.id FROM Booking b WHERE b.status IN (:confirmedStatus, :checkedInStatus) " +
-                "AND ((b.checkInDate <= :checkOut AND b.checkOutDate >= :checkIn)))");
-        
-        if (params.get("roomTypeId") != null) {
-            hql.append(" AND r.roomType.id = :roomTypeId");
+    public List<Room> find(Map<String, String> params, Boolean available) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Room> q = b.createQuery(Room.class);
+        Root<Room> root = q.from(Room.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+        if (available) {
+            predicates.add(b.equal(root.get("status"), Room.Status.AVAILABLE));
         }
-        if (params.get("maxPrice") != null) {
-            hql.append(" AND r.roomType.pricePerNight <= :maxPrice");
+
+        if (params != null) {
+            String roomTypeId = params.get("roomTypeId");
+            if (roomTypeId != null && !roomTypeId.isEmpty()) {
+                predicates.add(b.equal(root.get("roomType").get("id"), Integer.valueOf(roomTypeId)));
+            }
+
+            String minPrice = params.get("minPrice");
+            if (minPrice != null && !minPrice.isEmpty()) {
+                predicates.add(b.ge(root.get("roomType").get("pricePerNight"), Double.valueOf(minPrice)));
+            }
+
+            String maxPrice = params.get("maxPrice");
+            if (maxPrice != null && !maxPrice.isEmpty()) {
+                predicates.add(b.le(root.get("roomType").get("pricePerNight"), Double.valueOf(maxPrice)));
+            }
+
+            String checkInStr = params.get("checkIn");
+            String checkOutStr = params.get("checkOut");
+            if (checkInStr != null && checkOutStr != null && !checkInStr.isEmpty() && !checkOutStr.isEmpty()) {
+                LocalDate checkIn = LocalDate.parse(checkInStr);
+                LocalDate checkOut = LocalDate.parse(checkOutStr);
+
+                // Subquery loại bỏ phòng có booking trùng ngày
+                Subquery<Integer> sub = q.subquery(Integer.class);
+                Root<Booking> bookingRoot = sub.from(Booking.class);
+                sub.select(bookingRoot.get("room").get("id"));
+
+                Predicate bookingStatus = bookingRoot.get("status").in(
+                        Booking.Status.CONFIRMED, Booking.Status.CHECKED_IN
+                );
+                Predicate overlap = b.and(
+                        b.lessThanOrEqualTo(bookingRoot.get("checkInDate"), checkOut),
+                        b.greaterThanOrEqualTo(bookingRoot.get("checkOutDate"), checkIn)
+                );
+
+                sub.where(b.and(bookingStatus, overlap));
+
+                predicates.add(b.not(root.get("id").in(sub)));
+            }
         }
-        if (params.get("minPrice") != null) {
-            hql.append(" AND r.roomType.pricePerNight >= :minPrice");
+
+        q.select(root).where(predicates.toArray(Predicate[]::new));
+
+        Query<Room> query = s.createQuery(q);
+
+        if (params != null) {
+            int page;
+            int pageSize = Integer.parseInt(params.getOrDefault("pageSize", "10"));
+            try {
+                page = Integer.parseInt(params.getOrDefault("page", "1"));
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+            int start = (page - 1) * pageSize;
+            query.setFirstResult(start);
+            query.setMaxResults(pageSize);
         }
-        
-        Query<Room> query = session.createQuery(hql.toString(), Room.class);
-        query.setParameter("status", Room.Status.AVAILABLE);
-        query.setParameter("confirmedStatus", Booking.Status.CONFIRMED);
-        query.setParameter("checkedInStatus", Booking.Status.CHECKED_IN);
-        query.setParameter("checkIn", checkIn);
-        query.setParameter("checkOut", checkOut);
-        
-        if (params.get("roomTypeId") != null) {
-            query.setParameter("roomTypeId", Integer.parseInt(params.get("roomTypeId")));
-        }
-        if (params.get("maxPrice") != null) {
-            query.setParameter("maxPrice", Double.parseDouble(params.get("maxPrice")));
-        }
-        if (params.get("minPrice") != null) {
-            query.setParameter("minPrice", Double.parseDouble(params.get("minPrice")));
-        }
-        
+
         return query.getResultList();
     }
 
     @Override
-    public Room save(Room room) {
-        Session session = sessionFactory.getCurrentSession();
-        session.merge(room);
+    public Room createOrUpdate(Room room) {
+        Session s = this.factory.getObject().getCurrentSession();
+
+        room.setCode("ROOM-" + room.getRoomNumber());
+
+        if (room.getId() == null) {
+            s.persist(room);
+        } else {
+            room = s.merge(room);
+        }
+
         return room;
     }
 
     @Override
     public void delete(int id) {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = this.factory.getObject().getCurrentSession();
         Room room = session.find(Room.class, id);
         if (room != null) {
             session.remove(room);
@@ -87,40 +136,76 @@ public class RoomRepositoryImpl implements RoomRepository {
     }
 
     @Override
-    public long countAvailableRooms(LocalDate checkIn, LocalDate checkOut, Map<String, String> params) {
-        Session session = sessionFactory.getCurrentSession();
-        
-        StringBuilder hql = new StringBuilder("SELECT COUNT(r) FROM Room r WHERE r.status = :status AND r.id NOT IN " +
-                "(SELECT b.room.id FROM Booking b WHERE b.status IN (:confirmedStatus, :checkedInStatus) " +
-                "AND ((b.checkInDate <= :checkOut AND b.checkOutDate >= :checkIn)))");
-        
-        if (params.get("roomTypeId") != null) {
-            hql.append(" AND r.roomType.id = :roomTypeId");
+    public void delete(List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return;
         }
-        if (params.get("maxPrice") != null) {
-            hql.append(" AND r.roomType.pricePerNight <= :maxPrice");
+
+        Session s = this.factory.getObject().getCurrentSession();
+        String hql = "DELETE FROM Room r WHERE r.id IN (:ids)";
+        int affected = s.createMutationQuery(hql)
+                .setParameterList("ids", ids)
+                .executeUpdate();
+
+        if (affected != ids.size()) {
+            throw new RuntimeException("Không thể xóa hết tất cả phòng!");
         }
-        if (params.get("minPrice") != null) {
-            hql.append(" AND r.roomType.pricePerNight >= :minPrice");
+    }
+
+    @Override
+    public long countRooms(Map<String, String> params, Boolean available) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Long> q = b.createQuery(Long.class);
+        Root<Room> root = q.from(Room.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+        if (available) {
+            predicates.add(b.equal(root.get("status"), Room.Status.AVAILABLE));
         }
-        
-        Query<Long> query = session.createQuery(hql.toString(), Long.class);
-        query.setParameter("status", Room.Status.AVAILABLE);
-        query.setParameter("confirmedStatus", Booking.Status.CONFIRMED);
-        query.setParameter("checkedInStatus", Booking.Status.CHECKED_IN);
-        query.setParameter("checkIn", checkIn);
-        query.setParameter("checkOut", checkOut);
-        
-        if (params.get("roomTypeId") != null) {
-            query.setParameter("roomTypeId", Integer.parseInt(params.get("roomTypeId")));
+
+        if (params != null) {
+            String roomTypeId = params.get("roomTypeId");
+            if (roomTypeId != null && !roomTypeId.isEmpty()) {
+                predicates.add(b.equal(root.get("roomType").get("id"), Integer.valueOf(roomTypeId)));
+            }
+
+            String minPrice = params.get("minPrice");
+            if (minPrice != null && !minPrice.isEmpty()) {
+                predicates.add(b.ge(root.get("roomType").get("pricePerNight"), Double.valueOf(minPrice)));
+            }
+
+            String maxPrice = params.get("maxPrice");
+            if (maxPrice != null && !maxPrice.isEmpty()) {
+                predicates.add(b.le(root.get("roomType").get("pricePerNight"), Double.valueOf(maxPrice)));
+            }
+
+            String checkInStr = params.get("checkIn");
+            String checkOutStr = params.get("checkOut");
+            if (checkInStr != null && checkOutStr != null && !checkInStr.isEmpty() && !checkOutStr.isEmpty()) {
+                LocalDate checkIn = LocalDate.parse(checkInStr);
+                LocalDate checkOut = LocalDate.parse(checkOutStr);
+
+                Subquery<Integer> sub = q.subquery(Integer.class);
+                Root<Booking> bookingRoot = sub.from(Booking.class);
+                sub.select(bookingRoot.get("room").get("id"));
+
+                Predicate bookingStatus = bookingRoot.get("status").in(
+                        Booking.Status.CONFIRMED, Booking.Status.CHECKED_IN
+                );
+                Predicate overlap = b.and(
+                        b.lessThanOrEqualTo(bookingRoot.get("checkInDate"), checkOut),
+                        b.greaterThanOrEqualTo(bookingRoot.get("checkOutDate"), checkIn)
+                );
+
+                sub.where(b.and(bookingStatus, overlap));
+
+                predicates.add(b.not(root.get("id").in(sub)));
+            }
         }
-        if (params.get("maxPrice") != null) {
-            query.setParameter("maxPrice", Double.parseDouble(params.get("maxPrice")));
-        }
-        if (params.get("minPrice") != null) {
-            query.setParameter("minPrice", Double.parseDouble(params.get("minPrice")));
-        }
-        
-        return query.getSingleResult();
+
+        q.select(b.count(root)).where(predicates.toArray(Predicate[]::new));
+
+        return s.createQuery(q).getSingleResult();
     }
 }

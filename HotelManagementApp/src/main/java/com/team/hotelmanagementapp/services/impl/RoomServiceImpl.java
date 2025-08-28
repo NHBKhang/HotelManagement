@@ -3,7 +3,6 @@ package com.team.hotelmanagementapp.services.impl;
 import com.team.hotelmanagementapp.pojo.Room;
 import com.team.hotelmanagementapp.repositories.RoomRepository;
 import com.team.hotelmanagementapp.services.RoomService;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,18 +20,18 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public Room findById(int id) {
-        return roomRepository.findById(id);
+    public Room getById(int id) {
+        return roomRepository.getById(id);
     }
 
     @Override
-    public List<Room> findAvailableRooms(LocalDate checkIn, LocalDate checkOut, Map<String, String> params) {
-        return roomRepository.findAvailableRooms(checkIn, checkOut, params);
+    public List<Room> find(Map<String, String> params, Boolean available) {
+        return roomRepository.find(params, available);
     }
 
     @Override
-    public Room save(Room room) {
-        return roomRepository.save(room);
+    public Room createOrUpdate(Room room) {
+        return roomRepository.createOrUpdate(room);
     }
 
     @Override
@@ -41,7 +40,12 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public long countAvailableRooms(LocalDate checkIn, LocalDate checkOut, Map<String, String> params) {
-        return roomRepository.countAvailableRooms(checkIn, checkOut, params);
+    public void delete(List<Integer> ids) {
+        roomRepository.delete(ids);
+    }
+
+    @Override
+    public long countRooms(Map<String, String> params, Boolean available) {
+        return roomRepository.countRooms(params, available);
     }
 }

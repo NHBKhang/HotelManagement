@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+    <head>
+        <title
+            th:text="${room.id != null} ? 'Chi tiết Dịch vụ - Quản lý khách sạn' : ('Thêm Dịch vụ - Quản lý khách sạn')">
+        </title>
+
+    <th:block th:replace="base :: head"></th:block>
+</head>
+
+<body>
+    <div th:replace="base :: layout(~{::content})">
+        <div th:fragment="content">
+            <div class="container">
+                <h2 class="text-center mb-3">
+                    <span th:if="${room.id != null}">
+                        <i class="fa-solid fa-pen-to-square me-2"></i> Chi tiết Dịch vụ
+                    </span>
+                    <span th:unless="${room.id != null}">
+                        <i class="fa-solid fa-room-plus me-2"></i> Thêm Dịch vụ
+                    </span>
+                </h2>
+
+                <form th:action="@{/rooms/save}" method="post" th:object="${room}" 
+                      class="styled-form" enctype="multipart/form-data"> 
+                    <div class="my-2">
+                        <button type="submit" class="btn btn-success me-1">
+                            <i class="fa-solid fa-save me-1"></i>
+                            <span th:text="${room.id != null} ? 'Cập Nhật' : 'Lưu'"></span>
+                        </button>
+                        <button type="button" class="btn btn-danger"
+                                th:onclick="|confirmAndRequest('@{/rooms/delete/{id}(id=${room.id})}', '@{/rooms}')|">
+                            <i class="fa-solid fa-trash me-1"></i> Xóa
+                        </button>
+                        <a th:href="@{/rooms}" class="btn btn-secondary">
+                            <i class="fa-solid fa-circle-left me-1"></i> Trở về
+                        </a>
+                    </div>
+
+                    <div class="p-4 border rounded shadow-sm bg-light">
+                        <input type="hidden" th:if="${room.id != null}" th:field="*{id}"> 
+                        <div class="mb-3" th:if="${room.id != null}">
+                            <label class="form-label fw-bold">Mã phòng</label>
+                            <span id="code"
+                                  th:text="*{code}" 
+                                  class="badge bg-primary fs-5 fw-bold">
+                            </span>
+                        </div>
+                        <div class="mb-3"> 
+                            <label for="roomNumber" class="form-label">Số phòng</label> 
+                            <input type="text" id="roomNumber" th:field="*{roomNumber}" class="form-control" required> 
+                            <p class="text-danger" th:if="${#fields.hasErrors('roomNumber')}" th:errors="*{roomNumber}"></p> 
+                        </div> 
+                        <div class="row"> 
+<!--                            <div class="col-md-6 mb-3"> 
+                                <label for="roomType" class="form-label">Loại phòng</label> 
+                                <input type="text" id="roomType" th:field="*{roomType}" class="form-control" min="1000" max="10000000" step="1000" required> 
+                                <p class="text-danger" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></p>
+                            </div> -->
+                            <div class="col-md-6 mb-3"> 
+                                <label for="status" class="form-label">Trạng thái</label> 
+                                <select id="status" th:field="*{status}" class="form-select">  
+                                    <option th:each="status : ${T(com.team.hotelmanagementapp.pojo.Room.Status).values()}" 
+                                            th:value="${status}" 
+                                            th:text="${status.name}"></option>
+                                </select>
+                            </div> 
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
+

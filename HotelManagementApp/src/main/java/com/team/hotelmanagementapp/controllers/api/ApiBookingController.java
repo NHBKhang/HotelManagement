@@ -88,7 +88,7 @@ public class ApiBookingController {
     public ResponseEntity<Map<String, Object>> createBooking(@RequestBody Booking booking) {
         try {
             // Validate room availability
-            Room room = roomService.findById(booking.getRoom().getId());
+            Room room = roomService.getById(booking.getRoom().getId());
             if (room == null || room.getStatus() != Room.Status.AVAILABLE) {
                 Map<String, Object> error = new HashMap<>();
                 error.put("error", "Room is not available");
