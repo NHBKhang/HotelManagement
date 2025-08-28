@@ -3,7 +3,6 @@ package com.team.hotelmanagementapp.repositories.impl;
 import com.team.hotelmanagementapp.pojo.Booking;
 import com.team.hotelmanagementapp.pojo.Room;
 import com.team.hotelmanagementapp.repositories.RoomRepository;
-import jakarta.data.page.Page;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
