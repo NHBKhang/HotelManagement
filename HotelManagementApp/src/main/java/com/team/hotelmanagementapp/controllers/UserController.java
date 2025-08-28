@@ -39,16 +39,12 @@ public class UserController {
     public String users(Model model, @RequestParam Map<String, String> params,
             RedirectAttributes redirectAttributes) {
         try {
-            int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) : 1;
-
             long totalUsers = userService.countUsers(params);
-            int totalPages = (int) Math.ceil((double) totalUsers
-                    / Integer.parseInt(params.getOrDefault("pageSize", "10")));
             List<User> users = userService.find(params);
 
             model.addAttribute("rows", users);
             model.addAttribute("totalUsers", totalUsers);
-            model.addAttribute("pagination", new Pagination(page, totalPages));
+            model.addAttribute("pagination", new Pagination(totalUsers, params));
         } catch (NumberFormatException e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra, vui lòng thử lại!");
         } catch (Exception e) {
@@ -131,17 +127,16 @@ public class UserController {
 
     @GetMapping("/{id}/payments")
     public String getPaymentsPage(@PathVariable("id") int id,
-        @RequestParam(value = "page", defaultValue = "1") int page,
-        @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
             Model model) {
         Map<String, String> params = Map.of("page", String.valueOf(page),
                 "pageSize", String.valueOf(pageSize));
         List<Payment> payments = paymentService.findByUserId(id, params);
         long totalPayments = paymentService.countByUserId(id, params);
-        int totalPages = (int) Math.ceil((double) totalPayments / pageSize);
 
         model.addAttribute("payments", payments);
-        model.addAttribute("pagination", new Pagination(page, totalPages));
+        model.addAttribute("pagination", new Pagination(totalPayments, params));
 
         return "fragments/tables/payments :: table";
     }

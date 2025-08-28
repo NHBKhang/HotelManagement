@@ -35,16 +35,12 @@ public class RoomController {
     public String rooms(Model model, @RequestParam Map<String, String> params,
             RedirectAttributes redirectAttributes) {
         try {
-            int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) : 1;
-
             long totalRooms = roomService.countRooms(params, false);
-            int totalPages = (int) Math.ceil((double) totalRooms
-                    / Integer.parseInt(params.getOrDefault("pageSize", "10")));
             List<Room> rooms = roomService.find(params, false);
 
             model.addAttribute("rows", rooms);
             model.addAttribute("totalRooms", totalRooms);
-            model.addAttribute("pagination", new Pagination(page, totalPages));
+            model.addAttribute("pagination", new Pagination(totalRooms, params));
         } catch (NumberFormatException e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra, vui lòng thử lại!");
         } catch (Exception e) {

@@ -14,6 +14,7 @@ import java.util.Map;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -139,6 +140,9 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public boolean authUser(String username, String password) {
         User u = this.getByUsername(username);
+        if (u == null) {
+            throw new UsernameNotFoundException("Không tìm thấy người dùng!");
+        }
 
         return this.passwordEncoder.matches(password, u.getPassword());
     }

@@ -49,7 +49,7 @@
                                 <td><input type="checkbox" th:value="${r.id}"></td>
                                 <td><a th:href="@{/rooms/edit/{id}(id=${r.id})}" th:text="${r.code}"></a></td>
                                 <td th:text="${r.roomNumber}"></td>
-                                <td th:text="${r.roomType.name}"></td>
+                                <td th:text="${r.roomType != null ? r.roomType.name : '-'}"></td>
                                 <td>
                                     <span th:text="${r.status.description}" 
                                           th:class="${r.status.badgeClass}"></span>
@@ -66,7 +66,48 @@
                     Tổng số phòng: <span th:text="${totalRooms ?: 0}"></span>
                 </div>
 
-                <div th:replace="fragments/pagination :: pagination"></div>
+                <nav aria-label="Page navigation" 
+                     th:if="${pagination != null and pagination.total > 1}" 
+                     th:fragment="pagination">
+                    <ul class="pagination justify-content-center">
+                        <!-- Trang đầu -->
+                        <li class="page-item" th:classappend="${pagination.current == 1} ? 'disabled'">
+                            <a class="page-link" th:href="@{/rooms(page=1, kw=${kw})}">
+                                <i class="fas fa-angle-double-left"></i> Đầu
+                            </a>
+                        </li>
+
+                        <!-- Trang trước -->
+                        <li class="page-item" th:classappend="${pagination.current == 1} ? 'disabled'">
+                            <a class="page-link" th:href="@{/rooms(page=${pagination.current - 1}, kw=${kw})}">
+                                <i class="fas fa-angle-left"></i> Trước
+                            </a>
+                        </li>
+
+                        <!-- Hiển thị tối đa 5 số trang -->
+                        <th:block th:with="start=${pagination.current - 2 > 1 ? pagination.current - 2 : 1}, 
+                                  end=${pagination.current + 2 < pagination.total ? pagination.current + 2 : pagination.total}">
+                            <li class="page-item" th:each="i : ${#numbers.sequence(start, end)}"
+                                th:classappend="${i == pagination.current} ? 'active'">
+                                <a class="page-link" th:href="@{/rooms(page=${i}, kw=${kw})}" th:text="${i}"></a>
+                            </li>
+                        </th:block>
+
+                        <!-- Trang sau -->
+                        <li class="page-item" th:classappend="${pagination.current == pagination.total} ? 'disabled'">
+                            <a class="page-link" th:href="@{/rooms(page=${pagination.current + 1}, kw=${kw})}">
+                                Tiếp <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+
+                        <!-- Trang cuối -->
+                        <li class="page-item" th:classappend="${pagination.current == pagination.total} ? 'disabled'">
+                            <a class="page-link" th:href="@{/rooms(page=${pagination.total}, kw=${kw})}">
+                                Cuối <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
         </div>
     </div>

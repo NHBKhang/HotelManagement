@@ -4,7 +4,7 @@ const RoomCard = ({ room }) => {
     const navigate = useNavigate();
     return (
         <div className="border rounded-xl p-4 bg-white shadow">
-            <img src={room.image || "/img/room-placeholder.jpg"} alt={room.name} className="w-full h-40 object-cover rounded-md mb-3" />
+            <img src={room.image || "./img/room-placeholder.jpg"} alt={room.name} className="w-full h-40 object-cover rounded-md mb-3" />
             <h3 className="font-semibold">{room.name}</h3>
             <p className="text-sm text-slate-500">{room.description}</p>
             <div className="flex items-center justify-between mt-3">
