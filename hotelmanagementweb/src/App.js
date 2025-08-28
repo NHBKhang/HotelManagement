@@ -7,6 +7,7 @@ import HomePage from "./pages/HomePage";
 import { GuestRoute } from "./components/base/GuestRoute";
 import Layout from "./components/base/Layout";
 import SearchPage from "./pages/SearchPage";
+import RoomPage from "./pages/RoomPage";
 
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
             <Route path="/" element={<Layout />}>
               <Route index element={<HomePage />} />
               <Route path="search" element={<SearchPage />} />
+              <Route path="rooms/:id" element={<RoomPage />} />
             </Route>
             <Route path='login' element={
               <GuestRoute>

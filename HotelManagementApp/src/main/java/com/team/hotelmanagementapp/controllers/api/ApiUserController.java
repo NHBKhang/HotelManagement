@@ -1,12 +1,16 @@
 package com.team.hotelmanagementapp.controllers.api;
 
+import com.team.hotelmanagementapp.components.JwtService;
+import com.team.hotelmanagementapp.pojo.User;
+import com.team.hotelmanagementapp.services.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -16,12 +20,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.team.hotelmanagementapp.components.JwtService;
-import com.team.hotelmanagementapp.pojo.User;
-import com.team.hotelmanagementapp.services.UserService;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api")
@@ -34,16 +32,21 @@ public class ApiUserController {
     private UserService userService;
 
     @PostMapping(path = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> login(@RequestBody User user) {
+    public ResponseEntity<?> login(@RequestBody User user) {
         try {
-            User existingUser = this.userService.getByUsername(user.getUsername());
-            if (existingUser != null && this.userService.authUser(user.getUsername(), user.getPassword())) {
+            if (this.userService.authUser(user.getUsername(), user.getPassword())) {
                 String token = this.jwtService.generateTokenLogin(user.getUsername());
-                return new ResponseEntity<>(token, HttpStatus.OK);
+                return ResponseEntity.ok(token);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Sai mật khẩu!");
             }
-            return new ResponseEntity<>("Invalid username or password", HttpStatus.UNAUTHORIZED);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Login error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (UsernameNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Không tìm thấy người dùng!");
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Lỗi máy chủ: " + ex.getMessage());
         }
     }
 
@@ -79,13 +82,11 @@ public class ApiUserController {
     }
 
     @GetMapping(path = "/users")
-    public ResponseEntity<Map<String, Object>> list(@RequestParam Map<String, String> params) {
+    public ResponseEntity<?> list(@RequestParam Map<String, String> params) {
         try {
             return null;
         } catch (Exception e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Có lỗi xảy ra khi tải danh sách người dùng!");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Có lỗi xảy ra khi tải danh sách người dùng!");
         }
     }
 

@@ -1,6 +1,7 @@
 package com.team.hotelmanagementapp.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -23,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Entity
 @Table(name = "user")
+@JsonIgnoreProperties(value = {"password"}, allowSetters = true)
 @NamedQueries({
     @NamedQuery(name = "User.findAll", query = "SELECT u FROM User u"),
     @NamedQuery(name = "User.findById", query = "SELECT u FROM User u WHERE u.id = :id"),
@@ -95,7 +97,6 @@ public class User implements Serializable {
     private String username;
 
     @Basic(optional = false)
-    @JsonIgnore
     private String password;
 
     @Basic(optional = false)

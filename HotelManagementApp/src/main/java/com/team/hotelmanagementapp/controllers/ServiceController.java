@@ -35,16 +35,12 @@ public class ServiceController {
     public String services(Model model, @RequestParam Map<String, String> params,
             RedirectAttributes redirectAttributes) {
         try {
-            int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) : 1;
-
             long totalServices = serviceService.countServices(params);
-            int totalPages = (int) Math.ceil((double) totalServices
-                    / Integer.parseInt(params.getOrDefault("pageSize", "10")));
             List<Service> services = serviceService.find(params);
 
             model.addAttribute("rows", services);
             model.addAttribute("totalServices", totalServices);
-            model.addAttribute("pagination", new Pagination(page, totalPages));
+            model.addAttribute("pagination", new Pagination(totalServices, params));
         } catch (NumberFormatException e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra, vui lòng thử lại!");
         } catch (Exception e) {

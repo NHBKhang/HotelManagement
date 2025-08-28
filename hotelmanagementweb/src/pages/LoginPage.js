@@ -38,21 +38,26 @@ const LoginPage = () => {
                     "Content-Type": "application/json"
                 }
             });
-            await saveToken(res.data);
 
             if (res.status === 200) {
-                let res = await authAPI.get(endpoints['current-user']);
-                dispatch({ type: 'SET_USER', payload: res.data.user });
+                let token = res.data;
+                await saveToken(token);
 
+                let resUser = await authAPI.get(endpoints['current-user'], {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+
+                dispatch({ type: 'SET_USER', payload: resUser.data.user });
                 navigate('/');
             }
         } catch (error) {
             if (error.response) {
                 const { status, data } = error.response;
                 if (status === 400 || status === 401) {
-                    setErrors(prev => ({ ...prev, server: data.message || "Tên đăng nhập hoặc mật khẩu không đúng!" }));
+                    setErrors(prev => ({ ...prev, server: data || "Tên đăng nhập hoặc mật khẩu không đúng!" }));
                 } else {
-                    setErrors(prev => ({ ...prev, server: data.message || "Lỗi máy chủ, vui lòng thử lại!" }));
+                    setErrors(prev => ({ ...prev, server: data || "Lỗi máy chủ, vui lòng thử lại!" }));
                 }
             } else if (error.request) {
                 setErrors(prev => ({ ...prev, server: "Không thể kết nối đến server, vui lòng kiểm tra mạng!" }));

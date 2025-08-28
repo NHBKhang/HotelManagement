@@ -32,8 +32,8 @@ export const UserProvider = ({ children }) => {
         dispatch({ type: 'LOGOUT' });
     };
 
-    const saveToken = (token) => {
-        setCookie('access-token', token, {
+    const saveToken = async (token) => {
+        await setCookie('access-token', token, {
             path: '/',
             maxAge: 86400,
             sameSite: 'strict',
