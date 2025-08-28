@@ -32,11 +32,11 @@ public class RoomType implements Serializable {
 
     @Basic(optional = false)
     @Column(name = "price_per_night")
-    private String pricePerNight;
+    private Double pricePerNight;
 
     @Basic(optional = false)
     @Column(name = "max_guests")
-    private String maxGuests;
+    private Integer maxGuests;
 
     public RoomType() {
     }
@@ -76,7 +76,7 @@ public class RoomType implements Serializable {
         return "RoomType{" + "name=" + name + '}';
     }
 
-    public RoomType(Integer id, String name, String description, String pricePerNight, String maxGuests) {
+    public RoomType(Integer id, String name, String description, Double pricePerNight, Integer maxGuests) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -108,19 +108,19 @@ public class RoomType implements Serializable {
         this.description = description;
     }
 
-    public String getPricePerNight() {
+    public Double getPricePerNight() {
         return pricePerNight;
     }
 
-    public void setPricePerNight(String pricePerNight) {
+    public void setPricePerNight(Double pricePerNight) {
         this.pricePerNight = pricePerNight;
     }
 
-    public String getMaxGuests() {
+    public Integer getMaxGuests() {
         return maxGuests;
     }
 
-    public void setMaxGuests(String maxGuests) {
+    public void setMaxGuests(Integer maxGuests) {
         this.maxGuests = maxGuests;
     }
     
