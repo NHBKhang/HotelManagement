@@ -44,7 +44,7 @@ public class ServiceController {
         } catch (NumberFormatException e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra, vui lòng thử lại!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải danh sách thành viên!");
+            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải danh sách dịch vụ!");
         }
         return "services";
     }
@@ -99,9 +99,9 @@ public class ServiceController {
     public ResponseEntity<?> deleteService(@PathVariable(value = "id") int id) {
         try {
             serviceService.delete(id);
-            return ResponseEntity.ok().body(Map.of("message", "Xóa khách hàng thành công!"));
+            return ResponseEntity.ok().body(Map.of("message", "Xóa dịch vụ thành công!"));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Đã xảy ra lỗi khi xóa khách hàng!"));
+            return ResponseEntity.badRequest().body(Map.of("message", "Đã xảy ra lỗi khi xóa dịch vụ!"));
         }
     }
 
@@ -115,9 +115,9 @@ public class ServiceController {
 
         try {
             serviceService.delete(ids);
-            return ResponseEntity.ok().body(Map.of("message", "Xóa thành viên thành công!"));
+            return ResponseEntity.ok().body(Map.of("message", "Xóa dịch vụ thành công!"));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Đã xảy ra lỗi khi xóa khách hàng!"));
+            return ResponseEntity.badRequest().body(Map.of("message", "Đã xảy ra lỗi khi xóa dịch vụ!"));
         }
     }
     

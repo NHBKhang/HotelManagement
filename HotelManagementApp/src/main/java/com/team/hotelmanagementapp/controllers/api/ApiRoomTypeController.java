@@ -1,7 +1,7 @@
 package com.team.hotelmanagementapp.controllers.api;
 
 import com.team.hotelmanagementapp.pojo.RoomType;
-import com.team.hotelmanagementapp.repositories.RoomTypeRepository;
+import com.team.hotelmanagementapp.services.RoomTypeService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,17 +18,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class ApiRoomTypeController {
     
     @Autowired
-    private RoomTypeRepository roomTypeRepository;
+    private RoomTypeService typeService;
     
     @GetMapping
     public ResponseEntity<List<RoomType>> getAllRoomTypes() {
-        List<RoomType> roomTypes = roomTypeRepository.findAll();
+        List<RoomType> roomTypes = typeService.findAll();
         return new ResponseEntity<>(roomTypes, HttpStatus.OK);
     }
     
     @GetMapping("/{id}")
     public ResponseEntity<RoomType> getRoomTypeById(@PathVariable int id) {
-        RoomType roomType = roomTypeRepository.findById(id);
+        RoomType roomType = typeService.getById(id);
         if (roomType != null) {
             return new ResponseEntity<>(roomType, HttpStatus.OK);
         }

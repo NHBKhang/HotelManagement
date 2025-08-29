@@ -1,15 +1,20 @@
 package com.team.hotelmanagementapp.pojo;
 
 import jakarta.persistence.Basic;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -37,6 +42,13 @@ public class RoomType implements Serializable {
     @Basic(optional = false)
     @Column(name = "max_guests")
     private Integer maxGuests;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "room_amenities", joinColumns = @JoinColumn(name = "room_id"))
+    @Column(name = "amenity")
+    private List<String> amenities;
+
+    private String policy;
 
     public RoomType() {
     }
@@ -122,6 +134,22 @@ public class RoomType implements Serializable {
 
     public void setMaxGuests(Integer maxGuests) {
         this.maxGuests = maxGuests;
+    }
+
+    public List<String> getAmenities() {
+        return amenities;
+    }
+
+    public void setAmenities(List<String> amenities) {
+        this.amenities = amenities;
+    }
+
+    public String getPolicy() {
+        return policy;
+    }
+
+    public void setPolicy(String policy) {
+        this.policy = policy;
     }
     
 }

@@ -1,14 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import API, { endpoints } from "../../configs/API";
 
 const SearchRooms = () => {
     const navigate = useNavigate();
-    const [payload, setPayload] = useState({
-        checkin: "",
-        checkout: "",
-        type: "any",
-        maxPrice: ""
-    });
+    const [payload, setPayload] = useState({});
+    const [types, setTypes] = useState([]);
 
     const updatePayload = (e) =>
         setPayload((p) => ({ ...p, [e.target.name]: e.target.value }));
@@ -16,11 +13,24 @@ const SearchRooms = () => {
     const onSearch = (e) => {
         e.preventDefault();
         const q = new URLSearchParams(payload).toString();
-        navigate(`/search?${q}`);
+        navigate(`/search?${q}#results`);
     };
 
     const today = new Date().toISOString().split("T")[0];
     const minCheckout = payload.checkin || today;
+
+    useEffect(() => {
+        const loadTypes = async () => {
+            try {
+                const res = await API.get(endpoints["room-types"]);
+                setTypes(res.data);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        loadTypes();
+    }, [])
 
     return (
         <form
@@ -32,9 +42,9 @@ const SearchRooms = () => {
                     Nhận phòng
                 </label>
                 <input
-                    name="checkin"
+                    name="checkIn"
                     onChange={updatePayload}
-                    value={payload.checkin}
+                    value={payload.checkIn}
                     type="date"
                     min={today}
                     className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 outline-none"
@@ -46,9 +56,9 @@ const SearchRooms = () => {
                     Trả phòng
                 </label>
                 <input
-                    name="checkout"
+                    name="checkOut"
                     onChange={updatePayload}
-                    value={payload.checkout}
+                    value={payload.checkOut}
                     type="date"
                     min={minCheckout}
                     className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 outline-none"
@@ -60,15 +70,13 @@ const SearchRooms = () => {
                     Loại phòng
                 </label>
                 <select
-                    name="type"
+                    name="roomTypeId"
                     onChange={updatePayload}
-                    value={payload.type}
+                    value={payload.roomTypeId}
                     className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 outline-none"
                 >
-                    <option value="any">Tất cả</option>
-                    <option value="single">Phòng đơn</option>
-                    <option value="double">Phòng đôi</option>
-                    <option value="suite">Suite</option>
+                    <option value="">Tất cả</option>
+                    {types.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                 </select>
             </div>
 

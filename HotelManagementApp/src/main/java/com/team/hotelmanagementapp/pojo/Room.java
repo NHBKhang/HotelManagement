@@ -15,18 +15,20 @@ import java.util.Objects;
 public class Room implements Serializable {
 
     public enum Status {
-        AVAILABLE("Phòng trống", "badge bg-success"),
-        BOOKED("Đã đặt", "badge bg-warning"),
-        OCCUPIED("Đang ở", "badge bg-primary"),
-        CLEANING("Đang dọn", "badge bg-info"),
-        MAINTENANCE("Bảo trì", "badge bg-danger");
+        AVAILABLE("Phòng trống", "badge bg-success", "bg-green-100 text-green-800"),
+        BOOKED("Đã đặt", "badge bg-warning", "bg-yellow-100 text-yellow-800"),
+        OCCUPIED("Đang ở", "badge bg-primary", "bg-blue-100 text-blue-800"),
+        CLEANING("Đang dọn", "badge bg-info", "bg-sky-100 text-sky-800"),
+        MAINTENANCE("Bảo trì", "badge bg-danger", "bg-red-100 text-red-800");
 
         private final String description;
         private final String badgeClass;
+        private final String tailwindClass;
 
-        Status(String description, String badgeClass) {
+        Status(String description, String badgeClass, String tailwindClass) {
             this.description = description;
             this.badgeClass = badgeClass;
+            this.tailwindClass = tailwindClass;
         }
 
         public String getDescription() {
@@ -35,6 +37,10 @@ public class Room implements Serializable {
 
         public String getBadgeClass() {
             return badgeClass;
+        }
+
+        public String getTailwindClass() {
+            return tailwindClass;
         }
     }
 
@@ -58,6 +64,10 @@ public class Room implements Serializable {
 
     @Basic(optional = false)
     private Status status;
+    
+    private String image;
+    
+    private Double size;
 
     @OneToMany(mappedBy = "room")
     @JsonIgnore
@@ -150,6 +160,32 @@ public class Room implements Serializable {
 
     public void setCode(String code) {
         this.code = code;
+    }
+    
+    @Transient
+    public String getStatusDescription() {
+        return status != null ? status.getDescription() : "Không xác định";
+    }
+    
+    @Transient
+    public String getTailwindClass() {
+        return status != null ? status.getTailwindClass(): "";
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public Double getSize() {
+        return size;
+    }
+
+    public void setSize(Double size) {
+        this.size = size;
     }
 
 }

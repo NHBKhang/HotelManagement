@@ -47,7 +47,10 @@ public class RoomRepositoryImpl implements RoomRepository {
 
         List<Predicate> predicates = new ArrayList<>();
         if (available) {
-            predicates.add(b.equal(root.get("status"), Room.Status.AVAILABLE));
+            Predicate statusAvailable = b.equal(root.get("status"), Room.Status.AVAILABLE);
+            Predicate statusCleaning = b.equal(root.get("status"), Room.Status.CLEANING);
+
+            predicates.add(b.or(statusAvailable, statusCleaning));
         }
 
         if (params != null) {

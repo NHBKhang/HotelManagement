@@ -10,6 +10,7 @@ export const endpoints = {
     'current-user': 'current-user',
     'rooms': 'rooms',
     'room': (roomId) => `rooms/${roomId}`,
+    'room-types': 'room-types',
 }
 
 export const useAuthAPI = () => {
