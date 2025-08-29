@@ -48,7 +48,7 @@ public class UserController {
         } catch (NumberFormatException e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra, vui lòng thử lại!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải danh sách thành viên!");
+            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải danh sách khách hàng!");
         }
         return "users";
     }
@@ -119,7 +119,7 @@ public class UserController {
 
         try {
             userService.delete(ids);
-            return ResponseEntity.ok().body(Map.of("message", "Xóa thành viên thành công!"));
+            return ResponseEntity.ok().body(Map.of("message", "Xóa khách hàng thành công!"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", "Đã xảy ra lỗi khi xóa khách hàng!"));
         }

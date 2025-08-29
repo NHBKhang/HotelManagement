@@ -1,7 +1,7 @@
 package com.team.hotelmanagementapp.controllers;
 
-import com.team.hotelmanagementapp.pojo.Room;
-import com.team.hotelmanagementapp.services.RoomService;
+import com.team.hotelmanagementapp.pojo.RoomType;
+import com.team.hotelmanagementapp.services.RoomTypeService;
 import com.team.hotelmanagementapp.utils.Pagination;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -25,100 +25,101 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @ControllerAdvice
-@RequestMapping("/rooms")
-public class RoomController {
+@RequestMapping("/room-types")
+public class RoomTypeController {
 
     @Autowired
-    private RoomService roomService;
+    private RoomTypeService typeService;
 
     @GetMapping
-    public String rooms(Model model, @RequestParam Map<String, String> params,
+    public String types(Model model, @RequestParam Map<String, String> params,
             RedirectAttributes redirectAttributes) {
         try {
-            long totalRooms = roomService.countRooms(params, false);
-            List<Room> rooms = roomService.find(params, false);
+            long totalTypes = typeService.countTypes(params);
+            List<RoomType> types = typeService.find(params);
 
-            model.addAttribute("rows", rooms);
-            model.addAttribute("totalRooms", totalRooms);
-            model.addAttribute("pagination", new Pagination(totalRooms, params));
+            model.addAttribute("rows", types);
+            model.addAttribute("totalTypes", totalTypes);
+            model.addAttribute("pagination", new Pagination(totalTypes, params));
         } catch (NumberFormatException e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra, vui lòng thử lại!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải danh sách phòng!");
+            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải danh sách loại phòng!");
         }
-        return "rooms";
+        return "room_types";
     }
 
     @GetMapping("/add")
-    public String showAddRoomForm(Model model) {
-        model.addAttribute("room", new Room());
-        return "room_form";
+    public String showAddRoomTypeForm(Model model) {
+        model.addAttribute("type", new RoomType());
+        return "room_types_form";
     }
 
     @PostMapping("/save")
-    public String saveRoom(@Valid @ModelAttribute("room") Room room, BindingResult result,
+    public String saveRoomType(@Valid @ModelAttribute("type") RoomType type, BindingResult result,
             Model model, RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
-            model.addAttribute("room", room);
+            model.addAttribute("type", type);
             redirectAttributes.addFlashAttribute("error", "Lỗi hệ thống!");
-            if (room.getId() == null) {
-                return "redirect:/rooms/add";
+            if (type.getId() == null) {
+                return "redirect:/room_types/add";
             } else {
-                return "redirect:/rooms/edit/" + room.getId();
+                return "redirect:/room_types/edit/" + type.getId();
             }
         }
 
         try {
-            Room r;
-            if (room.getId() == null) {
-                r = roomService.createOrUpdate(room);
+            RoomType t;
+            if (type.getId() == null) {
+                t = typeService.createOrUpdate(type);
                 redirectAttributes.addFlashAttribute("success", "Thêm mới thành công!");
             } else {
-                r = roomService.createOrUpdate(room);
+                t = typeService.createOrUpdate(type);
                 redirectAttributes.addFlashAttribute("success", "Cập nhật thành công!");
             }
-            return "redirect:/rooms/edit/" + r.getId();
+            return "redirect:/room_types/edit/" + t.getId();
         } catch (org.hibernate.exception.ConstraintViolationException e) {
             redirectAttributes.addFlashAttribute("error", "Tên người dùng đã tồn tại!");
-            return "redirect:/rooms/add";
+            return "redirect:/room_types/add";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra, vui lòng thử lại!");
-            return "redirect:/rooms/add";
+            return "redirect:/room_types/add";
         }
     }
 
     @GetMapping("/edit/{id}")
-    public String showEditRoomForm(@PathVariable(value = "id") int id, Model model) {
-        Room room = roomService.getById(id);
-        model.addAttribute("room", room);
-        return "room_form";
+    public String showEditRoomTypeForm(@PathVariable(value = "id") int id, Model model) {
+        RoomType type = typeService.getById(id);
+        model.addAttribute("type", type);
+        return "room_type_form";
     }
 
     @DeleteMapping(value = "/delete/{id}", produces = "application/json")
     @ResponseBody
-    public ResponseEntity<?> deleteRoom(@PathVariable(value = "id") int id) {
+    public ResponseEntity<?> deleteRoomType(@PathVariable(value = "id") int id) {
         try {
-            roomService.delete(id);
-            return ResponseEntity.ok().body(Map.of("message", "Xóa phòng thành công!"));
+            typeService.delete(id);
+            return ResponseEntity.ok().body(Map.of("message", "Xóa loại phòng thành công!"));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Đã xảy ra lỗi khi xóa phòng!"));
+            return ResponseEntity.badRequest().body(Map.of("message", "Đã xảy ra lỗi khi xóa loại phòng!"));
         }
     }
 
     @DeleteMapping(value = "/delete", produces = "application/json")
     @ResponseBody
-    public ResponseEntity<?> deleteRooms(@RequestBody Map<String, List<Integer>> request) {
+    public ResponseEntity<?> deleteRoomTypes(@RequestBody Map<String, List<Integer>> request) {
         List<Integer> ids = request.get("ids");
         if (ids == null || ids.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Không có ID nào được chọn để xóa."));
         }
 
         try {
-            roomService.delete(ids);
-            return ResponseEntity.ok().body(Map.of("message", "Xóa phòng thành công!"));
+            typeService.delete(ids);
+            return ResponseEntity.ok().body(Map.of("message", "Xóa loại phòng thành công!"));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Đã xảy ra lỗi khi xóa phòng!"));
+            return ResponseEntity.badRequest().body(Map.of("message", "Đã xảy ra lỗi khi xóa loại phòng!"));
         }
     }
+    
     
 }

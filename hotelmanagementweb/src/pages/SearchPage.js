@@ -34,6 +34,15 @@ const SearchPage = () => {
         loadRooms();
     }, [location.search, page, pageSize]);
 
+    useEffect(() => {
+        if (location.hash === "#results") {
+            const el = document.getElementById("results");
+            if (el) {
+                el.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        }
+    }, [location]);
+
     return (
         <div className="max-w-7xl mx-auto px-6 py-12">
             <SearchHero />
@@ -45,7 +54,7 @@ const SearchPage = () => {
                 </p>
             ) : (
                 <>
-                    <div className="grid md:grid-cols-3 gap-6 mb-5 mt-7">
+                    <div id="results" className="grid md:grid-cols-3 gap-6 mb-5 mt-7">
                         {data.results.map((r) => (
                             <RoomCard key={r.id} room={r} />
                         ))}
