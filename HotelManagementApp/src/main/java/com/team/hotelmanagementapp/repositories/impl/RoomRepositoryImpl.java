@@ -118,9 +118,8 @@ public class RoomRepositoryImpl implements RoomRepository {
     public Room createOrUpdate(Room room) {
         Session s = this.factory.getObject().getCurrentSession();
 
-        room.setCode("ROOM-" + room.getRoomNumber());
-
         if (room.getId() == null) {
+            room.setCode("ROOM-" + room.getRoomNumber());
             s.persist(room);
         } else {
             room = s.merge(room);

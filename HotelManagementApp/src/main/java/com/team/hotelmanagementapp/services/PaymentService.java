@@ -14,7 +14,7 @@ public interface PaymentService {
 
     String createRandomCode(int len);
 
-    Payment createPayment(Map<String, Object> bodyData, String username, Payment.Method method);
+    Payment createByRequest(Map<String, Object> bodyData, String username, Payment.Method method);
     
     long countByUserId(int id, Map<String, String> params);
 

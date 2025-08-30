@@ -8,7 +8,11 @@ import { GuestRoute } from "./components/base/GuestRoute";
 import Layout from "./components/base/Layout";
 import SearchPage from "./pages/SearchPage";
 import RoomPage from "./pages/RoomPage";
-
+import { ProtectedRoute } from "./components/base/ProtectedRoute";
+import PaymentPage from "./pages/PaymentPage";
+import MyBookingPage from "./pages/MyBookingPage";
+import { ToastContainer } from "react-toastify";
+import BookingDetailPage from "./pages/BookingDetailPage";
 
 function App() {
   return (
@@ -20,6 +24,21 @@ function App() {
               <Route index element={<HomePage />} />
               <Route path="search" element={<SearchPage />} />
               <Route path="rooms/:id" element={<RoomPage />} />
+              <Route path="payment" element={
+                <ProtectedRoute>
+                  <PaymentPage />
+                </ProtectedRoute>}
+              />
+              <Route path="my-bookings" element={
+                <ProtectedRoute>
+                  <MyBookingPage />
+                </ProtectedRoute>}
+              />
+              <Route path="my-bookings/:id" element={
+                <ProtectedRoute>
+                  <BookingDetailPage />
+                </ProtectedRoute>}
+              />
             </Route>
             <Route path='login' element={
               <GuestRoute>
@@ -33,6 +52,7 @@ function App() {
             } />
           </Routes>
         </Router>
+        <ToastContainer />
       </UserProvider>
     </CookiesProvider >
   );

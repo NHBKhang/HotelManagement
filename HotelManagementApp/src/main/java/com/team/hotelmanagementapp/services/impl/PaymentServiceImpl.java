@@ -1,8 +1,12 @@
 package com.team.hotelmanagementapp.services.impl;
 
+import com.team.hotelmanagementapp.pojo.Booking;
 import com.team.hotelmanagementapp.pojo.Payment;
 import com.team.hotelmanagementapp.repositories.PaymentRepository;
+import com.team.hotelmanagementapp.services.BookingService;
 import com.team.hotelmanagementapp.services.PaymentService;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -14,6 +18,8 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Autowired
     private PaymentRepository paymentRepository;
+    @Autowired
+    private BookingService bookingService;
 
     @Override
     public List<Payment> findByUserId(int id, Map<String, String> params) {
@@ -46,11 +52,30 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public Payment createPayment(Map<String, Object> bodyData, String username, 
+    public Payment createByRequest(Map<String, Object> bodyData, String username,
             Payment.Method method) {
         try {
-            Payment p = new Payment();
-            return this.createOrUpdate(p);
+            Payment payment = new Payment();
+            if (method == Payment.Method.VNPAY) {
+                if ("room".equals(bodyData.get("itemType").toString())) {
+                    Booking b = this.bookingService.createByIdAndUsername(
+                            Integer.parseInt(bodyData.get("bookingId").toString()), username, method);
+                    payment.setBooking(b);
+                }
+
+                payment.setAmount(Double.parseDouble(bodyData.get("amount").toString()) / 100);
+                payment.setStatus(Payment.Status.SUCCESS);
+                payment.setCode(this.paymentRepository.generateCode());
+                payment.setMethod(method);
+                payment.setBankCode(bodyData.get("bankCode").toString());
+                payment.setTransactionNo(bodyData.get("transactionNo").toString());
+                payment.setDescription("Đã chuyển khoản vào ngày "
+                        + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+
+                return this.createOrUpdate(payment);
+            } else {
+                return null;
+            }
         } catch (Exception e) {
             System.out.print(e);
             return null;

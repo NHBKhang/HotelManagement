@@ -34,7 +34,7 @@ const Layout = () => {
                         {user ? (
                             <>
                                 <span className="hidden md:inline">Xin chào, <strong>{user.firstName || user.username}</strong></span>
-                                <Link to="/bookings" className="px-3 py-2 rounded-md hover:bg-slate-100 hover:text-black">Đơn của tôi</Link>
+                                <Link to="/my-bookings" className="px-3 py-2 rounded-md hover:bg-slate-100 hover:text-black">Đơn của tôi</Link>
                                 <button onClick={onLogout} className="px-4 py-2 rounded-md bg-indigo-600 text-white">Đăng xuất</button>
                             </>
                         ) : (

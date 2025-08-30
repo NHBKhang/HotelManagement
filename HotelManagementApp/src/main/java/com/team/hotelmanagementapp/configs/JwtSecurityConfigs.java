@@ -71,6 +71,7 @@ class JwtSecurityConfigs {
                 .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/login/**").permitAll()
                 .requestMatchers("/api/users/**").permitAll()
+                .requestMatchers("/api/bookings", "/api/bookings/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/**").permitAll()
                 .requestMatchers(HttpMethod.DELETE, "/api/**").permitAll()

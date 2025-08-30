@@ -22,12 +22,4 @@ public interface RoomService {
 
     long countRooms(Map<String, String> params, Boolean available);
 
-    // Room availability methods
-    List<Room> findAvailableRooms(LocalDate checkIn, LocalDate checkOut);
-
-    List<Room> findAvailableRoomsByType(int roomTypeId, LocalDate checkIn, LocalDate checkOut);
-
-    boolean isRoomAvailable(int roomId, LocalDate checkIn, LocalDate checkOut);
-
-    List<Room> findAvailableRoomsWithFilters(Map<String, Object> filters);
 }

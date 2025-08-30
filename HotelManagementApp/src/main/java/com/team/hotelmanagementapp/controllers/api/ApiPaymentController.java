@@ -34,7 +34,7 @@ public class ApiPaymentController {
 
     @PostMapping("/vnpay")
     public Map<String, String> doVNPayPayment(@RequestBody Map<String, Object> bodyData) {
-        String vnpayUrl = vnpayService.createPayment(bodyData);
+        String vnpayUrl = vnpayService.createPaymentByRequest(bodyData);
 
         Map<String, String> response = new HashMap<>();
         response.put("payUrl", vnpayUrl);
@@ -63,16 +63,18 @@ public class ApiPaymentController {
         String vnp_OrderInfo = request.getParameter("vnp_OrderInfo");
         String vnp_TransactionNo = request.getParameter("vnp_TransactionNo");
         String vnp_BankCode = request.getParameter("vnp_BankCode");
-        String[] parts = vnp_OrderInfo.split("#");
-        if (parts.length == 2) {
-            bodyData.put("package", parts[1]);
+        String[] parts = vnp_OrderInfo.split("#")[1].split("-");
+        if (parts.length == 3) {
+            bodyData.put("itemType", parts[0]);
+            bodyData.put("itemId", parts[1]);
+            bodyData.put("bookingId", parts[2]);
         }
 
         bodyData.put("amount", vnp_Amount);
         bodyData.put("transactionNo", vnp_TransactionNo);
         bodyData.put("bankCode", vnp_BankCode);
 
-        if (this.paymentService.createPayment(bodyData, username, Payment.Method.VNPAY) == null) {
+        if (this.paymentService.createByRequest(bodyData, username, Payment.Method.VNPAY) == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tạo đơn hàng thất bại");
         }
 
@@ -125,7 +127,7 @@ public class ApiPaymentController {
             bodyData.put("amount", amount);
             bodyData.put("file", file);
 
-            Payment payment = this.paymentService.createPayment(bodyData, username, Payment.Method.TRANSFER);
+            Payment payment = this.paymentService.createByRequest(bodyData, username, Payment.Method.TRANSFER);
 
             if (payment != null) {
                 res.put("code", 1);

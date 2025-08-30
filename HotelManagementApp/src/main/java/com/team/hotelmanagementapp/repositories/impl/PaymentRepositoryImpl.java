@@ -1,9 +1,12 @@
 package com.team.hotelmanagementapp.repositories.impl;
 
+import com.team.hotelmanagementapp.pojo.Booking;
 import com.team.hotelmanagementapp.pojo.Payment;
+import com.team.hotelmanagementapp.pojo.User;
 import com.team.hotelmanagementapp.repositories.PaymentRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
@@ -29,25 +32,27 @@ public class PaymentRepositoryImpl implements PaymentRepository {
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<Payment> q = b.createQuery(Payment.class);
         Root<Payment> root = q.from(Payment.class);
-        q.orderBy(b.desc(root.get("createdAt")));
-        q.select(root);
 
         List<Predicate> predicates = new ArrayList<>();
-        predicates.add(b.equal(root.get("user").get("id"), id));
+
+        Join<Payment, Booking> bookingJoin = root.join("booking");
+        Join<Booking, User> userJoin = bookingJoin.join("user");
+        predicates.add(b.equal(userJoin.get("id"), id));
 
         if (params != null) {
             String kw = params.get("kw");
-
             if (kw != null && !kw.isEmpty()) {
-                Predicate codePredicate = b.like(root.get("code"), "%" + kw + "%");
-                predicates.add(b.or(codePredicate));
-            }
-            if (!predicates.isEmpty()) {
-                q.where(predicates.toArray(Predicate[]::new));
+                predicates.add(b.like(root.get("code"), "%" + kw + "%"));
             }
         }
 
-        Query query = s.createQuery(q);
+        if (!predicates.isEmpty()) {
+            q.where(predicates.toArray(Predicate[]::new));
+        }
+
+        q.select(root).orderBy(b.desc(root.get("createdAt")));
+
+        Query<Payment> query = s.createQuery(q);
 
         if (params != null) {
             int page;
@@ -89,14 +94,17 @@ public class PaymentRepositoryImpl implements PaymentRepository {
     public long countByUserId(int id, Map<String, String> params) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
-        CriteriaQuery<Long> q = b.createQuery(Long.class
-        );
-        Root<Payment> root = q.from(Payment.class
-        );
+        CriteriaQuery<Long> q = b.createQuery(Long.class);
+        Root<Payment> root = q.from(Payment.class);
         q.select(b.count(root));
 
+        List<Predicate> predicates = new ArrayList<>();
+
+        Join<Payment, Booking> bookingJoin = root.join("booking");
+        Join<Booking, User> userJoin = bookingJoin.join("user");
+        predicates.add(b.equal(userJoin.get("id"), id));
+
         if (params != null) {
-            List<Predicate> predicates = new ArrayList<>();
             String kw = params.get("kw");
 
             if (kw != null && !kw.isEmpty()) {
@@ -110,5 +118,15 @@ public class PaymentRepositoryImpl implements PaymentRepository {
         }
 
         return s.createQuery(q).getSingleResult();
+    }
+
+    @Override
+    public String generateCode() {
+        Session s = this.factory.getObject().getCurrentSession();
+        Query q = s.createQuery("SELECT MAX(p.id) FROM Payment p", Integer.class);
+        Integer maxId = (Integer) q.getSingleResult();
+
+        int nextId = (maxId != null) ? maxId + 1 : 1;
+        return "GD" + String.format("%07d", nextId);
     }
 }

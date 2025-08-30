@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 public class JwtService {
 
     private static final String SECRET_KEY = Base64.getEncoder()
-            .encodeToString("JANCAKE9*@Z!BN!1naan1LU12UJP~R".getBytes(StandardCharsets.UTF_8));
+            .encodeToString("HOMSAN_!#JAH4025@js~R-2PPH4Q!0M".getBytes(StandardCharsets.UTF_8));
     private static final byte[] SHARED_SECRET_KEY = SECRET_KEY.getBytes(StandardCharsets.UTF_8);
     public static final int EXPIRE_TIME = 86400000;
 

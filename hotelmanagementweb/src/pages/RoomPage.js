@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import API, { endpoints } from "../configs/API";
 
 const RoomPage = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [room, setRoom] = useState(null);
     const [payload, setPayload] = useState({});
     const [loading, setLoading] = useState(true);
@@ -12,7 +13,7 @@ const RoomPage = () => {
         setPayload((p) => ({ ...p, [e.target.name]: e.target.value }));
 
     useEffect(() => {
-        const fetchRoom = async () => {
+        const loadRoom = async () => {
             try {
                 const res = await API.get(endpoints.room(id));
                 setRoom(res.data);
@@ -22,7 +23,7 @@ const RoomPage = () => {
                 setLoading(false);
             }
         };
-        fetchRoom();
+        loadRoom();
     }, [id]);
 
     if (loading) return <p className="p-6 text-center text-gray-500">Đang tải...</p>;
@@ -31,6 +32,18 @@ const RoomPage = () => {
     const roomType = room.roomType || {};
     const today = new Date().toISOString().split("T")[0];
     const minCheckout = payload.checkin || today;
+
+    const onBook = (e) => {
+        e.preventDefault();
+        const bookingData = {
+            room,
+            checkin: payload.checkin,
+            checkout: payload.checkout,
+            guests: payload.guests || 1,
+            total: roomType.pricePerNight,
+        };
+        navigate("/payment", { state: { bookingData } });
+    };
 
     return (
         <div className="max-w-7xl mx-auto px-6 py-12 space-y-10">
@@ -81,7 +94,7 @@ const RoomPage = () => {
                         </span>
                         <p className="text-sm text-gray-500">/ đêm</p>
                     </div>
-                    <form className="space-y-4">
+                    <form onSubmit={onBook} className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium mb-1">Nhận phòng</label>
                             <input
@@ -90,6 +103,7 @@ const RoomPage = () => {
                                 value={payload.checkin}
                                 type="date"
                                 min={today}
+                                required
                                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none dark:text-black" />
                         </div>
                         <div>
@@ -100,16 +114,21 @@ const RoomPage = () => {
                                 value={payload.checkout}
                                 type="date"
                                 min={minCheckout}
+                                required
                                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none dark:text-black" />
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-1">Số khách</label>
                             <input
+                                name="guests"
                                 type="number"
+                                value={payload.guests}
+                                onChange={updatePayload}
                                 min="1"
                                 max={roomType.maxGuests || 10}
                                 step="1"
                                 defaultValue="1"
+                                required
                                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none dark:text-black" />
                         </div>
                         <div className="my-4 h-px bg-slate-200 dark:bg-slate-800" />

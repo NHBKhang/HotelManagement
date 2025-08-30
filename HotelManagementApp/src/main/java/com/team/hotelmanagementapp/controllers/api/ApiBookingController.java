@@ -1,11 +1,15 @@
 package com.team.hotelmanagementapp.controllers.api;
 
+import com.team.hotelmanagementapp.components.JwtService;
 import com.team.hotelmanagementapp.pojo.Booking;
 import com.team.hotelmanagementapp.pojo.Room;
 import com.team.hotelmanagementapp.pojo.User;
 import com.team.hotelmanagementapp.services.BookingService;
 import com.team.hotelmanagementapp.services.RoomService;
 import com.team.hotelmanagementapp.services.UserService;
+import com.team.hotelmanagementapp.utils.Pagination;
+import jakarta.servlet.http.HttpServletRequest;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,120 +32,135 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/bookings")
 @CrossOrigin
 public class ApiBookingController {
-    
+
     @Autowired
     private BookingService bookingService;
-    
+
     @Autowired
     private UserService userService;
-    
+
     @Autowired
     private RoomService roomService;
-    
-    @GetMapping
-    public ResponseEntity<List<Booking>> getAllBookings() {
-        List<Booking> bookings = bookingService.findAll();
-        return new ResponseEntity<>(bookings, HttpStatus.OK);
-    }
-    
-    @GetMapping("/{id}")
-    public ResponseEntity<Booking> getBookingById(@PathVariable int id) {
-        Booking booking = bookingService.findById(id);
-        if (booking != null) {
-            return new ResponseEntity<>(booking, HttpStatus.OK);
-        }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
-    
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Booking>> getUserBookings(
-            @PathVariable int userId,
-            @RequestParam(required = false) String status) {
-        
-        Map<String, String> params = new HashMap<>();
-        if (status != null) params.put("status", status);
-        
-        List<Booking> bookings = bookingService.findByUser(userId, params);
-        return new ResponseEntity<>(bookings, HttpStatus.OK);
-    }
-    
-    @GetMapping("/my-bookings")
-    public ResponseEntity<List<Booking>> getMyBookings(
-            @RequestParam(required = false) String status) {
-        
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
-        User user = userService.getByUsername(username);
-        
-        if (user == null) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-        
-        Map<String, String> params = new HashMap<>();
-        if (status != null) params.put("status", status);
-        
-        List<Booking> bookings = bookingService.findByUser(user.getId(), params);
-        return new ResponseEntity<>(bookings, HttpStatus.OK);
-    }
-    
+
+    @Autowired
+    private JwtService jwtService;
+
     @PostMapping
-    public ResponseEntity<Map<String, Object>> createBooking(@RequestBody Booking booking) {
+    public ResponseEntity<?> create(@RequestBody Map<String, String> bodyData,
+            HttpServletRequest request) {
         try {
-            // Validate room availability
-            Room room = roomService.getById(booking.getRoom().getId());
-            if (room == null || room.getStatus() != Room.Status.AVAILABLE) {
-                Map<String, Object> error = new HashMap<>();
-                error.put("error", "Room is not available");
-                return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-            }
-            
-            // Set user from authentication
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String username = auth.getName();
-            User user = userService.getByUsername(username);
-            booking.setUser(user);
-            booking.setRoom(room);
-            
-            Booking createdBooking = bookingService.createBooking(booking);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("booking", createdBooking);
-            response.put("message", "Booking created successfully");
-            
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
-        } catch (Exception e) {
-            Map<String, Object> error = new HashMap<>();
-            error.put("error", "Failed to create booking: " + e.getMessage());
-            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-    
-    @PutMapping("/{id}/status")
-    public ResponseEntity<Map<String, Object>> updateBookingStatus(
-            @PathVariable int id,
-            @RequestParam String status) {
-        
-        try {
-            Booking.Status bookingStatus = Booking.Status.valueOf(status.toUpperCase());
-            Booking updatedBooking = bookingService.updateBookingStatus(id, bookingStatus);
-            
-            if (updatedBooking != null) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("booking", updatedBooking);
-                response.put("message", "Booking status updated successfully");
-                return new ResponseEntity<>(response, HttpStatus.OK);
+            String token = request.getHeader("Authorization");
+            if (token != null && token.startsWith("Bearer ")) {
+                token = token.substring(7);
             } else {
-                Map<String, Object> error = new HashMap<>();
-                error.put("error", "Booking not found");
-                return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Thiếu token xác thực");
             }
-        } catch (IllegalArgumentException e) {
-            Map<String, Object> error = new HashMap<>();
-            error.put("error", "Invalid status value");
-            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+
+            String username = jwtService.getUsernameFromToken(token);
+            if (username == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token không hợp lệ");
+            }
+
+            Booking b = new Booking();
+            b.setCheckInDate(LocalDate.parse(bodyData.get("checkin")));
+            b.setCheckOutDate(LocalDate.parse(bodyData.get("checkout")));
+            b.setGuests(Integer.valueOf(bodyData.get("guests")));
+            b.setStatus(Booking.Status.PROCESSING);
+            b.setUser(this.userService.getByUsername(username));
+            b.setRoom(this.roomService.getById(Integer.parseInt(bodyData.get("roomId"))));
+
+            return new ResponseEntity<>(this.bookingService.createOrUpdate(b), HttpStatus.CREATED);
+        } catch (NumberFormatException e) {
+            return new ResponseEntity<>("Lỗi tạo đơn đặt phòng: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
+    @GetMapping("/my-bookings")
+    public ResponseEntity<?> getMyBookings(HttpServletRequest request,
+            @RequestParam Map<String, String> params) {
+        try {
+            String token = request.getHeader("Authorization");
+            if (token != null && token.startsWith("Bearer ")) {
+                token = token.substring(7);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Thiếu token xác thực");
+            }
+
+            String username = jwtService.getUsernameFromToken(token);
+            if (username == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token không hợp lệ");
+            }
+
+            List<Booking> bookings = this.bookingService.findByUsername(params, username);
+            Long totalBookings = this.bookingService.countBookingsByUsername(params, username);
+
+            return new ResponseEntity<>(new Pagination<>(bookings, totalBookings, params), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Lỗi lấy đơn đặt phòng: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/my-bookings/{id}")
+    public ResponseEntity<?> retrieveMyBooking(@PathVariable("id") int id, HttpServletRequest request) {
+        try {
+            String token = request.getHeader("Authorization");
+            if (token != null && token.startsWith("Bearer ")) {
+                token = token.substring(7);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Thiếu token xác thực");
+            }
+
+            String username = jwtService.getUsernameFromToken(token);
+            if (username == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token không hợp lệ");
+            }
+            
+            Booking booking = bookingService.getById(id);
+            if (booking != null) {
+                return new ResponseEntity<>(booking, HttpStatus.OK);
+            }
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Lỗi lấy đơn đặt phòng: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+//    @PutMapping("/{id}/status")
+//    public ResponseEntity<Map<String, Object>> updateBookingStatus(
+//            @PathVariable int id,
+//            @RequestParam String status) {
+//        
+//        try {
+//            Booking.Status bookingStatus = Booking.Status.valueOf(status.toUpperCase());
+//            Booking updatedBooking = bookingService.updateBookingStatus(id, bookingStatus);
+//            
+//            if (updatedBooking != null) {
+//                Map<String, Object> response = new HashMap<>();
+//                response.put("booking", updatedBooking);
+//                response.put("message", "Booking status updated successfully");
+//                return new ResponseEntity<>(response, HttpStatus.OK);
+//            } else {
+//                Map<String, Object> error = new HashMap<>();
+//                error.put("error", "Booking not found");
+//                return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+//            }
+//        } catch (IllegalArgumentException e) {
+//            Map<String, Object> error = new HashMap<>();
+//            error.put("error", "Invalid status value");
+//            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+//        }
+//    }
+//    @GetMapping("/user/{userId}")
+//    public ResponseEntity<List<Booking>> getUserBookings(
+//            @PathVariable int userId,
+//            @RequestParam(required = false) String status) {
+//        
+//        Map<String, String> params = new HashMap<>();
+//        if (status != null) params.put("status", status);
+//        
+//        List<Booking> bookings = bookingService.findByUser(userId, params);
+//        return new ResponseEntity<>(bookings, HttpStatus.OK);
+//    }
     @PutMapping("/{id}/cancel")
     public ResponseEntity<Map<String, Object>> cancelBooking(@PathVariable int id) {
         try {

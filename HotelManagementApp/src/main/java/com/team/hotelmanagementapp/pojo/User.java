@@ -117,10 +117,6 @@ public class User implements Serializable {
     
     @OneToMany(mappedBy = "user")
     @JsonIgnore
-    private List<Payment> payments;
-    
-    @OneToMany(mappedBy = "user")
-    @JsonIgnore
     private List<Booking> bookings;
 
     @Transient
@@ -266,14 +262,6 @@ public class User implements Serializable {
 
     public void setFile(MultipartFile file) {
         this.file = file;
-    }
-
-    public List<Payment> getPayments() {
-        return payments;
-    }
-
-    public void setPayments(List<Payment> payments) {
-        this.payments = payments;
     }
 
     public List<Booking> getBookings() {

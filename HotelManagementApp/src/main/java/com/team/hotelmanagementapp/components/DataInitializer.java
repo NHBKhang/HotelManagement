@@ -15,7 +15,6 @@ import com.team.hotelmanagementapp.pojo.Room;
 import com.team.hotelmanagementapp.pojo.RoomType;
 import com.team.hotelmanagementapp.pojo.Service;
 import com.team.hotelmanagementapp.pojo.User;
-import java.util.List;
 import com.team.hotelmanagementapp.repositories.BookingRepository;
 import com.team.hotelmanagementapp.repositories.FeedbackRepository;
 import com.team.hotelmanagementapp.repositories.RoomRepository;
@@ -79,8 +78,8 @@ public class DataInitializer {
             Room room1 = roomRepository.findAll().get(0);
             Room room2 = roomRepository.findAll().get(1);
             
-            bookingRepository.save(new Booking(null, customer, room1, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3), Booking.Status.CONFIRMED, "Early check-in requested"));
-            bookingRepository.save(new Booking(null, customer, room2, LocalDate.now().plusDays(5), LocalDate.now().plusDays(7), Booking.Status.PENDING, null));
+            bookingRepository.createOrUpdate(new Booking(null, customer, room1, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3), Booking.Status.CONFIRMED, "Early check-in requested", 2));
+            bookingRepository.createOrUpdate(new Booking(null, customer, room2, LocalDate.now().plusDays(5), LocalDate.now().plusDays(7), Booking.Status.PENDING, null, 3));
         }
 
         // Create hotel services
@@ -144,7 +143,7 @@ public class DataInitializer {
                 if (bookings.size() >= 2) {
                     Booking completedBooking = bookings.get(1);
                     completedBooking.setStatus(Booking.Status.CHECKED_OUT); // Simulate completion
-                    Booking booking = bookingRepository.save(completedBooking);
+                    Booking booking = bookingRepository.createOrUpdate(completedBooking);
 
                     // Add multiple feedback for completed booking
                     feedbackRepository.createOrUpdate(new Feedback(null, booking, booking.getUser(),
@@ -158,8 +157,8 @@ public class DataInitializer {
                 Room sampleRoom = roomRepository.findAll().get(0);
                 Booking pastBooking = new Booking(null, customer, sampleRoom,
                     LocalDate.now().minusDays(10), LocalDate.now().minusDays(8),
-                    Booking.Status.CHECKED_OUT, "Đặt phòng qua ứng dụng");
-                pastBooking = bookingRepository.save(pastBooking);
+                    Booking.Status.CHECKED_OUT, "Đặt phòng qua ứng dụng", 2);
+                pastBooking = bookingRepository.createOrUpdate(pastBooking);
 
                 // Add diverse feedback ratings
                 feedbackRepository.createOrUpdate(new Feedback(null, pastBooking, customer,
@@ -175,8 +174,8 @@ public class DataInitializer {
                 Room anotherRoom = roomRepository.findAll().get(1);
                 Booking secondBooking = new Booking(null, customer, anotherRoom,
                     LocalDate.now().minusDays(20), LocalDate.now().minusDays(18),
-                    Booking.Status.CHECKED_OUT, null);
-                secondBooking = bookingRepository.save(secondBooking);
+                    Booking.Status.CHECKED_OUT, null, 2);
+                secondBooking = bookingRepository.createOrUpdate(secondBooking);
 
                 feedbackRepository.createOrUpdate(new Feedback(null, secondBooking, customer,
                     4.0, serviceComments[1], LocalDateTime.now().minusDays(16)));
@@ -191,8 +190,8 @@ public class DataInitializer {
                 Room thirdRoom = roomRepository.findAll().get(2);
                 Booking thirdBooking = new Booking(null, customer, thirdRoom,
                     LocalDate.now().minusDays(35), LocalDate.now().minusDays(32),
-                    Booking.Status.CHECKED_OUT, "Yêu cầu thêm ga gối");
-                thirdBooking = bookingRepository.save(thirdBooking);
+                    Booking.Status.CHECKED_OUT, "Yêu cầu thêm ga gối", 4);
+                thirdBooking = bookingRepository.createOrUpdate(thirdBooking);
 
                 feedbackRepository.createOrUpdate(new Feedback(null, thirdBooking, customer,
                     4.5, positiveComments[5], LocalDateTime.now().minusDays(32)));

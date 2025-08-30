@@ -1,6 +1,6 @@
 package com.team.hotelmanagementapp.pojo;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -23,6 +23,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "booking")
+@JsonIgnoreProperties(value = {"feedbacks"}, allowSetters = true)
 @NamedQueries({
     @NamedQuery(name = "Booking.findAll", query = "SELECT u FROM Booking u"),
     @NamedQuery(name = "Booking.findById", query = "SELECT u FROM Booking u WHERE u.id = :id")})
@@ -30,6 +31,7 @@ public class Booking implements Serializable {
 
     public enum Status {
         PENDING("Chờ xác nhận", "badge bg-secondary"),
+        PROCESSING("Chờ xử lý", "badge bg-warning"),
         CONFIRMED("Đã xác nhận", "badge bg-primary"),
         CHECKED_IN("Đang ở", "badge bg-success"),
         CHECKED_OUT("Đã trả phòng", "badge bg-info"),
@@ -57,6 +59,10 @@ public class Booking implements Serializable {
     @Basic(optional = false)
     private Integer id;
 
+    @Basic(optional = false)
+    @Column(name = "code", nullable = false, unique = true)
+    private String code;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
@@ -73,6 +79,8 @@ public class Booking implements Serializable {
     @Column(name = "check_out_date")
     private LocalDate checkOutDate;
 
+    private Integer guests;
+
     @Basic(optional = false)
     private Status status;
 
@@ -88,13 +96,14 @@ public class Booking implements Serializable {
     @Column(name = "special_request")
     private String specialRequest;
 
-    @OneToMany(mappedBy = "booking")
+    @OneToMany(mappedBy = "booking", orphanRemoval = true)
     private List<Feedback> feedbacks;
 
     public Booking() {
     }
 
-    public Booking(Integer id, User user, Room room, LocalDate checkInDate, LocalDate checkOutDate, Status status, String specialRequest) {
+    public Booking(Integer id, User user, Room room, LocalDate checkInDate, LocalDate checkOutDate, 
+            Status status, String specialRequest, int guests) {
         this.id = id;
         this.user = user;
         this.room = room;
@@ -102,6 +111,7 @@ public class Booking implements Serializable {
         this.checkOutDate = checkOutDate;
         this.status = status;
         this.specialRequest = specialRequest;
+        this.guests = guests;
     }
 
     public Integer getId() {
@@ -222,6 +232,22 @@ public class Booking implements Serializable {
     @Override
     public String toString() {
         return "Booking{" + "user=" + user + ", room=" + room + ", checkInDate=" + checkInDate + ", checkOutDate=" + checkOutDate + '}';
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public Integer getGuests() {
+        return guests;
+    }
+
+    public void setGuests(Integer guests) {
+        this.guests = guests;
     }
 
 }

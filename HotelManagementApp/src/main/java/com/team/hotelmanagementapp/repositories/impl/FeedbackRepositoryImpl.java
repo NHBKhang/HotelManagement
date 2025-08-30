@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.team.hotelmanagementapp.controllers.api.dto.FeedbackDTO;
 import jakarta.persistence.criteria.*;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
@@ -25,7 +24,7 @@ public class FeedbackRepositoryImpl implements FeedbackRepository {
     private LocalSessionFactoryBean factory;
 
     @Override
-    public List<FeedbackDTO> find(Map<String, String> params) {
+    public List<Feedback> find(Map<String, String> params) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<Feedback> q = b.createQuery(Feedback.class);
@@ -92,9 +91,8 @@ public class FeedbackRepositoryImpl implements FeedbackRepository {
             query.setMaxResults(pageSize);
         }
 
-
-        List<Feedback> feedbacks = query.getResultList();
-        return feedbacks.stream().map(FeedbackDTO::new).collect(Collectors.toList());    }
+        return query.getResultList();
+    }
 
     @Override
     public Feedback findById(int id) {
@@ -103,7 +101,7 @@ public class FeedbackRepositoryImpl implements FeedbackRepository {
     }
 
     @Override
-    public List<FeedbackDTO> findByUser(int userId) {
+    public List<Feedback> findByUser(int userId) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<Feedback> q = b.createQuery(Feedback.class);
@@ -112,12 +110,11 @@ public class FeedbackRepositoryImpl implements FeedbackRepository {
         q.where(b.equal(root.get("user").get("id"), userId));
         q.orderBy(b.desc(root.get("createdAt")));
 
-        List<Feedback> feedbacks = s.createQuery(q).getResultList();
-        return feedbacks.stream().map(FeedbackDTO::new).collect(Collectors.toList());
+        return s.createQuery(q).getResultList();
     }
 
     @Override
-    public List<FeedbackDTO> findByBooking(int bookingId) {
+    public List<Feedback> findByBooking(int bookingId) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<Feedback> q = b.createQuery(Feedback.class);
@@ -126,8 +123,7 @@ public class FeedbackRepositoryImpl implements FeedbackRepository {
         q.where(b.equal(root.get("booking").get("id"), bookingId));
         q.orderBy(b.desc(root.get("createdAt")));
 
-        List<Feedback> feedbacks = s.createQuery(q).getResultList();
-        return feedbacks.stream().map(FeedbackDTO::new).collect(Collectors.toList());
+        return s.createQuery(q).getResultList();
     }
 
     @Override
