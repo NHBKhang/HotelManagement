@@ -1,19 +1,29 @@
 package com.team.hotelmanagementapp.components;
 
-import com.team.hotelmanagementapp.pojo.Booking;
-import com.team.hotelmanagementapp.pojo.Room;
-import com.team.hotelmanagementapp.pojo.RoomType;
-import com.team.hotelmanagementapp.pojo.User;
-import com.team.hotelmanagementapp.repositories.BookingRepository;
-import com.team.hotelmanagementapp.repositories.RoomRepository;
-import com.team.hotelmanagementapp.repositories.RoomTypeRepository;
-import com.team.hotelmanagementapp.services.UserService;
-import jakarta.annotation.PostConstruct;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+
+import com.team.hotelmanagementapp.pojo.Booking;
+import com.team.hotelmanagementapp.pojo.Feedback;
+import com.team.hotelmanagementapp.pojo.Room;
+import com.team.hotelmanagementapp.pojo.RoomType;
+import com.team.hotelmanagementapp.pojo.Service;
+import com.team.hotelmanagementapp.pojo.User;
+import java.util.List;
+import com.team.hotelmanagementapp.repositories.BookingRepository;
+import com.team.hotelmanagementapp.repositories.FeedbackRepository;
+import com.team.hotelmanagementapp.repositories.RoomRepository;
+import com.team.hotelmanagementapp.repositories.RoomTypeRepository;
+import com.team.hotelmanagementapp.repositories.ServiceRepository;
+import com.team.hotelmanagementapp.services.UserService;
+
+import jakarta.annotation.PostConstruct;
 
 @Component
 @DependsOn("userServiceImpl")
@@ -28,9 +38,15 @@ public class DataInitializer {
     
     @Autowired
     private RoomRepository roomRepository;
-    
+
     @Autowired
     private BookingRepository bookingRepository;
+
+    @Autowired
+    private ServiceRepository serviceRepository;
+
+    @Autowired
+    private FeedbackRepository feedbackRepository;
 
     @PostConstruct
     public void init() {
@@ -65,6 +81,128 @@ public class DataInitializer {
             
             bookingRepository.save(new Booking(null, customer, room1, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3), Booking.Status.CONFIRMED, "Early check-in requested"));
             bookingRepository.save(new Booking(null, customer, room2, LocalDate.now().plusDays(5), LocalDate.now().plusDays(7), Booking.Status.PENDING, null));
+        }
+
+        // Create hotel services
+        if (serviceRepository.find(null).isEmpty()) {
+            serviceRepository.createOrUpdate(new Service(null, "Bữa sáng", "Bữa sáng", 100000.0, true));
+            serviceRepository.createOrUpdate(new Service(null, "Bữa trưa", "Bữa trưa buffet", 150000.0, true));
+            serviceRepository.createOrUpdate(new Service(null, "Bữa tối", "Bữa tối buffet", 200000.0, true));
+            serviceRepository.createOrUpdate(new Service(null, "Spa thư giãn", "Phiên spa thư giãn 1 giờ", 500000.0, true));
+            serviceRepository.createOrUpdate(new Service(null, "Phục vụ phòng", "Phục vụ đồ uống và ăn nhẹ tại phòng", 250000.0, true));
+            serviceRepository.createOrUpdate(new Service(null, "Giặt ủi", "Giặt ủi 1 bộ trang phục", 80000.0, true));
+            serviceRepository.createOrUpdate(new Service(null, "Gym & Fitness", "Vé tập gym 1 ngày", 120000.0, true));
+            serviceRepository.createOrUpdate(new Service(null, "Internet Wifi", "Internet tốc độ cao 1 ngày", 50000.0, true));
+            serviceRepository.createOrUpdate(new Service(null, "Chỗ đậu xe", "Đậu xe an toàn 1 ngày", 30000.0, true));
+            serviceRepository.createOrUpdate(new Service(null, "Dịch vụ đưa đón", "Đưa đón sân bay bằng xe riêng", 350000.0, true));
+        }
+
+        // Create feedback data
+        if (feedbackRepository.find(null).isEmpty()) {
+            // Get all bookings for feedback
+            List<Booking> bookings = bookingRepository.findAll();
+
+            if (!bookings.isEmpty()) {
+                // Create feedback for completed bookings (simulate past guests)
+                String[] positiveComments = {
+                    "Phòng rất sạch sẽ, nhân viên hữu ích. Tôi sẽ quay trở lại!",
+                    "Vị trí trung tâm, tiện đi lại. Dịch vụ xuất sắc!",
+                    "Bữa sáng ngon, nội thất đẹp. Giá cả hợp lý.",
+                    "Nhân viên thân thiện, phòng yên tĩnh. Ngủ rất ngon!",
+                    "Tất cả đều tốt, đặc biệt là dịch vụ spa và phòng sạch sẽ.",
+                    "Kinh nghiệm tuyệt vời! Bên khách sạn chuyên nghiệp.",
+                    "Phòng ấm cúng, giường êm ái. Nhân viên rất cậu nào!",
+                    "Dịch vụ tuyệt vời, tôi đã giới thiệu bạn bè đến đây.",
+                    "Từ lúc nhận phòng đến trả phòng đều mượt mà. Tin cậy!",
+                    "Bữa ăn ngon, hồ bơi đẹp. Kỳ nghỉ đáng nhớ!"
+                };
+
+                String[] serviceComments = {
+                    "Wifi hơi chậm nhưng tổng thể tốt",
+                    "Bữa sáng khá đa dạng, nhân viên tại nhà hàng thân thiện",
+                    "Phòng ốc rất sạch, cách âm tốt, giường ngủ êm",
+                    "Vị trí thuận tiện, gần sân bay và khu thương mại",
+                    "Nhân viên lễ tân rất thân thiện và hữu ích",
+                    "Cách bàn check in, check out rất nhanh chóng",
+                    "Phảm chất dịch vụ chuyên nghiệp và chu đáo",
+                    "Bữa tối phong phú, đầu bếp nấu ăn rất ngon",
+                    "Hồ bơi sạch sẽ, nước đầy đủ khi tôi đến bơi không"
+                };
+
+                String[] constructiveComments = {
+                    "Wifi tốc độ hơi chậm, mong được cải thiện",
+                    "Xếp hạng sao thực sự thích hợp, đáng để ở lại",
+                    "Giá cả khá mềm, sẽ đến ở lại khách sạn vào dịp sau",
+                    "Nhân viên tin cậy nhất, tác lớn rất chuyên nghiệp",
+                    "Chất lượng dịch vụ vượt trội, tôi hài lòng với sự đón tiếp",
+                    "Đặt phòng dễ dàng, thủ tục xong xuôi rút gọn",
+                    "Dịch vụ phòng khá được, ưu đãi giá rất hấp dẫn",
+                    "Nhà hàng ngon miệng, mặt bằng sạch sẽ lịch sự"
+                };
+
+                // Create feedback for first booking (completed)
+                if (bookings.size() >= 2) {
+                    Booking completedBooking = bookings.get(1);
+                    completedBooking.setStatus(Booking.Status.CHECKED_OUT); // Simulate completion
+                    Booking booking = bookingRepository.save(completedBooking);
+
+                    // Add multiple feedback for completed booking
+                    feedbackRepository.createOrUpdate(new Feedback(null, booking, booking.getUser(),
+                        4.5, positiveComments[0], LocalDateTime.now().minusDays(30)));
+
+                    feedbackRepository.createOrUpdate(new Feedback(null, booking, customer,
+                        4.0, positiveComments[1], LocalDateTime.now().minusDays(25)));
+                }
+
+                // Create standalone completed booking with feedback
+                Room sampleRoom = roomRepository.findAll().get(0);
+                Booking pastBooking = new Booking(null, customer, sampleRoom,
+                    LocalDate.now().minusDays(10), LocalDate.now().minusDays(8),
+                    Booking.Status.CHECKED_OUT, "Đặt phòng qua ứng dụng");
+                pastBooking = bookingRepository.save(pastBooking);
+
+                // Add diverse feedback ratings
+                feedbackRepository.createOrUpdate(new Feedback(null, pastBooking, customer,
+                    5.0, positiveComments[2], LocalDateTime.now().minusDays(8)));
+
+                feedbackRepository.createOrUpdate(new Feedback(null, pastBooking, customer,
+                    3.5, serviceComments[0], LocalDateTime.now().minusDays(6)));
+
+                feedbackRepository.createOrUpdate(new Feedback(null, pastBooking, customer,
+                    4.5, positiveComments[3], LocalDateTime.now().minusDays(4)));
+
+                // Create second past booking with feedback
+                Room anotherRoom = roomRepository.findAll().get(1);
+                Booking secondBooking = new Booking(null, customer, anotherRoom,
+                    LocalDate.now().minusDays(20), LocalDate.now().minusDays(18),
+                    Booking.Status.CHECKED_OUT, null);
+                secondBooking = bookingRepository.save(secondBooking);
+
+                feedbackRepository.createOrUpdate(new Feedback(null, secondBooking, customer,
+                    4.0, serviceComments[1], LocalDateTime.now().minusDays(16)));
+
+                feedbackRepository.createOrUpdate(new Feedback(null, secondBooking, customer,
+                    3.0, constructiveComments[0], LocalDateTime.now().minusDays(15)));
+
+                feedbackRepository.createOrUpdate(new Feedback(null, secondBooking, customer,
+                    4.5, positiveComments[4], LocalDateTime.now().minusDays(14)));
+
+                // Create third booking with mixed reviews
+                Room thirdRoom = roomRepository.findAll().get(2);
+                Booking thirdBooking = new Booking(null, customer, thirdRoom,
+                    LocalDate.now().minusDays(35), LocalDate.now().minusDays(32),
+                    Booking.Status.CHECKED_OUT, "Yêu cầu thêm ga gối");
+                thirdBooking = bookingRepository.save(thirdBooking);
+
+                feedbackRepository.createOrUpdate(new Feedback(null, thirdBooking, customer,
+                    4.5, positiveComments[5], LocalDateTime.now().minusDays(32)));
+
+                feedbackRepository.createOrUpdate(new Feedback(null, thirdBooking, customer,
+                    2.5, constructiveComments[1], LocalDateTime.now().minusDays(30)));
+
+                feedbackRepository.createOrUpdate(new Feedback(null, thirdBooking, customer,
+                    5.0, positiveComments[6], LocalDateTime.now().minusDays(28)));
+            }
         }
     }
 }

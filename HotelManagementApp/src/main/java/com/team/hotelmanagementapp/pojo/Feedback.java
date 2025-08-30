@@ -47,12 +47,13 @@ public class Feedback implements Serializable {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    public Feedback(Integer id, Booking booking, User user, Double rating, String comment) {
+    public Feedback(Integer id, Booking booking, User user, Double rating, String comment, LocalDateTime createdAt) {
         this.id = id;
         this.booking = booking;
         this.user = user;
         this.rating = rating;
         this.comment = comment;
+        this.createdAt = createdAt;
     }
 
     public Feedback() {

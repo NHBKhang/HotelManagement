@@ -49,11 +49,12 @@ public class Service implements Serializable {
     public Service() {
     }
 
-    public Service(Integer id, String name, String description, Double price) {
+    public Service(Integer id, String name, String description, Double price, Boolean active) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.price = price;
+        this.active = active;
     }
 
     public Integer getId() {

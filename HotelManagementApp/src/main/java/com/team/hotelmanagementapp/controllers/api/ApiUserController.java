@@ -1,11 +1,9 @@
 package com.team.hotelmanagementapp.controllers.api;
 
-import com.team.hotelmanagementapp.components.JwtService;
-import com.team.hotelmanagementapp.pojo.User;
-import com.team.hotelmanagementapp.services.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,6 +18,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.team.hotelmanagementapp.components.JwtService;
+import com.team.hotelmanagementapp.pojo.User;
+import com.team.hotelmanagementapp.services.UserService;
+import com.team.hotelmanagementapp.utils.Pagination;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api")
@@ -84,7 +89,9 @@ public class ApiUserController {
     @GetMapping(path = "/users")
     public ResponseEntity<?> list(@RequestParam Map<String, String> params) {
         try {
-            return null;
+            List<User> users = this.userService.find(params);
+            long totalUsers = this.userService.countUsers(params);
+            return ResponseEntity.ok(new Pagination<>(users, totalUsers, params));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Có lỗi xảy ra khi tải danh sách người dùng!");
         }

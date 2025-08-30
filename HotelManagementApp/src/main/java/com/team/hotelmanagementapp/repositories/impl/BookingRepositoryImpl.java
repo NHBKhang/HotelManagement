@@ -1,15 +1,18 @@
 package com.team.hotelmanagementapp.repositories.impl;
 
-import com.team.hotelmanagementapp.pojo.Booking;
-import com.team.hotelmanagementapp.repositories.BookingRepository;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.team.hotelmanagementapp.pojo.Booking;
+import com.team.hotelmanagementapp.repositories.BookingRepository;
 
 @Repository
 @Transactional
@@ -57,8 +60,7 @@ public class BookingRepositoryImpl implements BookingRepository {
     @Override
     public Booking save(Booking booking) {
         Session session = sessionFactory.getCurrentSession();
-        session.merge(booking);
-        return booking;
+        return (Booking) session.merge(booking);
     }
 
     @Override
@@ -101,5 +103,60 @@ public class BookingRepositoryImpl implements BookingRepository {
         Query<Booking> query = session.createQuery("SELECT DISTINCT b FROM Booking b LEFT JOIN FETCH b.feedbacks WHERE b.status = :status", Booking.class);
         query.setParameter("status", status);
         return query.getResultList();
+    }
+
+    @Override
+    public List<Booking> findBookingsByRoom(int roomId) {
+        Session session = sessionFactory.getCurrentSession();
+        Query<Booking> query = session.createQuery("SELECT DISTINCT b FROM Booking b LEFT JOIN FETCH b.feedbacks WHERE b.room.id = :roomId", Booking.class);
+        query.setParameter("roomId", roomId);
+        return query.getResultList();
+    }
+
+    @Override
+    public List<Booking> findBookingsByRoomAndDateRange(int roomId, LocalDate checkIn, LocalDate checkOut) {
+        Session session = sessionFactory.getCurrentSession();
+        Query<Booking> query = session.createQuery(
+            "SELECT DISTINCT b FROM Booking b LEFT JOIN FETCH b.feedbacks WHERE b.room.id = :roomId AND b.status IN (:activeStatuses) AND ((b.checkInDate <= :checkOut AND b.checkOutDate >= :checkIn))",
+            Booking.class
+        );
+        query.setParameter("roomId", roomId);
+        query.setParameter("checkIn", checkIn);
+        query.setParameter("checkOut", checkOut);
+
+        // Only consider bookings that are confirmed, checked in, or checked out (not cancelled)
+        List<Booking.Status> activeStatuses = List.of(
+            Booking.Status.CONFIRMED,
+            Booking.Status.CHECKED_IN,
+            Booking.Status.CHECKED_OUT
+        );
+        query.setParameter("activeStatuses", activeStatuses);
+
+        return query.getResultList();
+    }
+
+    @Override
+    public boolean isRoomBooked(int roomId, LocalDate checkIn, LocalDate checkOut) {
+        Session session = sessionFactory.getCurrentSession();
+
+        // Check if there are any overlapping bookings
+        Query<Long> query = session.createQuery(
+            "SELECT COUNT(b) FROM Booking b WHERE b.room.id = :roomId AND b.status IN (:activeStatuses) AND ((b.checkInDate <= :checkOut AND b.checkOutDate >= :checkIn))",
+            Long.class
+        );
+        query.setParameter("roomId", roomId);
+        query.setParameter("checkIn", checkIn);
+        query.setParameter("checkOut", checkOut);
+
+        // Only consider bookings that are confirmed, checked in, or checked out (not cancelled or pending)
+        List<Booking.Status> activeStatuses = List.of(
+            Booking.Status.CONFIRMED,
+            Booking.Status.CHECKED_IN,
+            Booking.Status.CHECKED_OUT
+        );
+        query.setParameter("activeStatuses", activeStatuses);
+
+        Long count = query.getSingleResult();
+        return count > 0;
     }
 }
