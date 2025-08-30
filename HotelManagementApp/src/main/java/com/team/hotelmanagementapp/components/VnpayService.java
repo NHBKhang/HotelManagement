@@ -32,17 +32,19 @@ public class VnpayService {
     @Value("${vnpay.hashSecret}")
     private String vnp_HashSecret;
 
-    public String createPayment(@RequestBody Map<String, Object> bodyData) {
+    public String createPaymentByRequest(@RequestBody Map<String, Object> bodyData) {
         int amount = (int) bodyData.get("amount");
-        Long packageId = Long.valueOf(bodyData.get("package").toString());
-        String vnp_BankCode = bodyData.get("bankCode").toString();
-        String vnp_Locale = bodyData.get("locale").toString();
+        String itemName = bodyData.get("itemType").toString() 
+                + "-" + bodyData.get("itemId").toString() 
+                + "-" + bodyData.get("bookingId").toString() ;
+        String vnp_BankCode = (String) bodyData.getOrDefault("bankCode", "");
+        String vnp_Locale = (String) bodyData.getOrDefault("locale", "vn");
 
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
         String vnp_TxnRef = paymentService.createRandomCode(10);
         String vnp_IpAddr = "127.0.0.1";
-        String vnp_OrderInfo = "Dang ky goi tap #" + packageId;
+        String vnp_OrderInfo = "Thanh toan #" + itemName;
         String vnp_OrderType = (String) bodyData.get("orderType");
 
         Map<String, String> vnp_Params = new HashMap<>();

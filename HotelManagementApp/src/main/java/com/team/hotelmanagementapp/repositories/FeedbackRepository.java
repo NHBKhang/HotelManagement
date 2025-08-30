@@ -2,19 +2,17 @@ package com.team.hotelmanagementapp.repositories;
 
 import java.util.List;
 import java.util.Map;
-
-import com.team.hotelmanagementapp.controllers.api.dto.FeedbackDTO;
 import com.team.hotelmanagementapp.pojo.Feedback;
 
 public interface FeedbackRepository {
 
-    List<FeedbackDTO> find(Map<String, String> params);
+    List<Feedback> find(Map<String, String> params);
 
     Feedback findById(int id);
 
-    List<FeedbackDTO> findByUser(int userId);
+    List<Feedback> findByUser(int userId);
 
-    List<FeedbackDTO> findByBooking(int bookingId);
+    List<Feedback> findByBooking(int bookingId);
 
     Feedback createOrUpdate(Feedback feedback);
 

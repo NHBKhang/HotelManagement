@@ -3,7 +3,6 @@ package com.team.hotelmanagementapp.services.impl;
 import java.util.List;
 import java.util.Map;
 
-import com.team.hotelmanagementapp.controllers.api.dto.FeedbackDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +17,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     private FeedbackRepository feedbackRepository;
 
     @Override
-    public List<FeedbackDTO> findAll() {
+    public List<Feedback> findAll() {
         return this.feedbackRepository.find(null);
     }
 
@@ -28,7 +27,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
 
     @Override
-    public List<FeedbackDTO> findByUser(int userId, Map<String, String> params) {
+    public List<Feedback> findByUser(int userId, Map<String, String> params) {
         if (params == null) {
             return this.feedbackRepository.findByUser(userId);
         }
@@ -39,7 +38,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
 
     @Override
-    public List<FeedbackDTO> findByBooking(int bookingId) {
+    public List<Feedback> findByBooking(int bookingId) {
         return this.feedbackRepository.findByBooking(bookingId);
     }
 

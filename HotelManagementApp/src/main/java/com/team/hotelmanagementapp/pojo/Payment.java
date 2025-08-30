@@ -90,10 +90,6 @@ public class Payment implements Serializable {
     @JoinColumn(name = "booking_id")
     private Booking booking;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
-
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -109,7 +105,7 @@ public class Payment implements Serializable {
         this.id = id;
     }
 
-    public Payment(Integer id, String code, String transactionNo, Double amount, Method method, String receiptImage, String bankCode, Status status, String description, Booking booking, User user) {
+    public Payment(Integer id, String code, String transactionNo, Double amount, Method method, String receiptImage, String bankCode, Status status, String description, Booking booking) {
         this.id = id;
         this.code = code;
         this.transactionNo = transactionNo;
@@ -120,7 +116,6 @@ public class Payment implements Serializable {
         this.status = status;
         this.description = description;
         this.booking = booking;
-        this.user = user;
     }
 
     public Integer getId() {
@@ -235,12 +230,9 @@ public class Payment implements Serializable {
         return !((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id)));
     }
 
+    @Transient
     public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
+        return booking != null ? booking.getUser() : null;
     }
 
     @Override
