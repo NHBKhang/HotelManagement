@@ -27,6 +27,12 @@ public class PaymentRepositoryImpl implements PaymentRepository {
     private LocalSessionFactoryBean factory;
 
     @Override
+    public List<Payment> findAll() {
+        Session session = this.factory.getObject().getCurrentSession();
+        return session.createNamedQuery("Payment.findAll", Payment.class).getResultList();
+    }
+
+    @Override
     public List<Payment> findByUserId(int id, Map<String, String> params) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();

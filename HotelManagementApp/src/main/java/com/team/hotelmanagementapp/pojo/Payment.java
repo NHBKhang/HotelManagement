@@ -75,6 +75,10 @@ public class Payment implements Serializable {
     @Column(name = "bank_code", nullable = true)
     private String bankCode;
 
+    @ManyToOne
+    @JoinColumn(name = "invoice_id")
+    private Invoice invoice;
+
     @Transient
     private MultipartFile file;
 
@@ -246,5 +250,13 @@ public class Payment implements Serializable {
 
     public void setBooking(Booking booking) {
         this.booking = booking;
+    }
+
+    public Invoice getInvoice() {
+        return invoice;
+    }
+
+    public void setInvoice(Invoice invoice) {
+        this.invoice = invoice;
     }
 }

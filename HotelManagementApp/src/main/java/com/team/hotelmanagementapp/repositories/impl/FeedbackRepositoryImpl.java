@@ -47,7 +47,6 @@ public class FeedbackRepositoryImpl implements FeedbackRepository {
                     double rating = Double.parseDouble(ratingStr);
                     predicates.add(b.greaterThanOrEqualTo(root.get("rating"), rating));
                 } catch (NumberFormatException ex) {
-                    // Ignore invalid rating
                 }
             }
 
@@ -57,7 +56,6 @@ public class FeedbackRepositoryImpl implements FeedbackRepository {
                     int userId = Integer.parseInt(userIdStr);
                     predicates.add(b.equal(root.get("user").get("id"), userId));
                 } catch (NumberFormatException ex) {
-                    // Ignore invalid userId
                 }
             }
 
@@ -67,7 +65,6 @@ public class FeedbackRepositoryImpl implements FeedbackRepository {
                     int bookingId = Integer.parseInt(bookingIdStr);
                     predicates.add(b.equal(root.get("booking").get("id"), bookingId));
                 } catch (NumberFormatException ex) {
-                    // Ignore invalid bookingId
                 }
             }
         }
@@ -95,35 +92,9 @@ public class FeedbackRepositoryImpl implements FeedbackRepository {
     }
 
     @Override
-    public Feedback findById(int id) {
+    public Feedback getById(int id) {
         Session s = this.factory.getObject().getCurrentSession();
         return s.find(Feedback.class, id);
-    }
-
-    @Override
-    public List<Feedback> findByUser(int userId) {
-        Session s = this.factory.getObject().getCurrentSession();
-        CriteriaBuilder b = s.getCriteriaBuilder();
-        CriteriaQuery<Feedback> q = b.createQuery(Feedback.class);
-        Root<Feedback> root = q.from(Feedback.class);
-        q.select(root);
-        q.where(b.equal(root.get("user").get("id"), userId));
-        q.orderBy(b.desc(root.get("createdAt")));
-
-        return s.createQuery(q).getResultList();
-    }
-
-    @Override
-    public List<Feedback> findByBooking(int bookingId) {
-        Session s = this.factory.getObject().getCurrentSession();
-        CriteriaBuilder b = s.getCriteriaBuilder();
-        CriteriaQuery<Feedback> q = b.createQuery(Feedback.class);
-        Root<Feedback> root = q.from(Feedback.class);
-        q.select(root);
-        q.where(b.equal(root.get("booking").get("id"), bookingId));
-        q.orderBy(b.desc(root.get("createdAt")));
-
-        return s.createQuery(q).getResultList();
     }
 
     @Override
@@ -142,7 +113,7 @@ public class FeedbackRepositoryImpl implements FeedbackRepository {
     @Override
     public void delete(int id) {
         Session s = this.factory.getObject().getCurrentSession();
-        Feedback feedback = this.findById(id);
+        Feedback feedback = this.getById(id);
         if (feedback != null) {
             s.remove(feedback);
         }

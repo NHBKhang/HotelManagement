@@ -8,11 +8,7 @@ public interface FeedbackRepository {
 
     List<Feedback> find(Map<String, String> params);
 
-    Feedback findById(int id);
-
-    List<Feedback> findByUser(int userId);
-
-    List<Feedback> findByBooking(int bookingId);
+    Feedback getById(int id);
 
     Feedback createOrUpdate(Feedback feedback);
 

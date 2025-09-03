@@ -13,8 +13,10 @@ export const endpoints = {
     'room': (roomId) => `rooms/${roomId}`,
     'room-types': 'room-types',
     'bookings': 'bookings',
-    'my-booking': (bookingId) => `bookings/my-bookings/${bookingId}`,
     'my-bookings': 'bookings/my-bookings',
+    'my-booking': (bookingId) => `bookings/my-bookings/${bookingId}`,
+    'my-feedbacks': (bookingId) => `bookings/my-bookings/${bookingId}/feedbacks`,
+    'feedbacks': "feedbacks",
     'vnpay-payment': 'payments/vnpay',
     'vnpay-return': 'payments/vnpay-return',
 }
