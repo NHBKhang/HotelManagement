@@ -1,11 +1,8 @@
 package com.team.hotelmanagementapp.repositories;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-
 import com.team.hotelmanagementapp.pojo.Booking;
-import com.team.hotelmanagementapp.pojo.Payment;
 
 public interface BookingRepository {
 

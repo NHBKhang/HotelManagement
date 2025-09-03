@@ -8,17 +8,15 @@ public interface FeedbackService {
 
     List<Feedback> findAll();
 
-    Feedback findById(int id);
+    Feedback getById(int id);
 
     List<Feedback> findByUser(int userId, Map<String, String> params);
 
-    List<Feedback> findByBooking(int bookingId);
+    List<Feedback> findByBooking(int bookingId, Map<String, String> params);
 
-    Feedback createFeedback(Feedback feedback);
+    Feedback createOrUpdate(Feedback feedback);
 
-    Feedback updateFeedback(int feedbackId, Feedback feedback);
-
-    void deleteFeedback(int feedbackId);
+    void delete(int feedbackId);
 
     double getAverageRating();
 

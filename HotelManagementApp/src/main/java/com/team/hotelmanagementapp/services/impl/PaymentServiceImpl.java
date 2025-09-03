@@ -22,6 +22,11 @@ public class PaymentServiceImpl implements PaymentService {
     private BookingService bookingService;
 
     @Override
+    public List<Payment> findAll() {
+        return paymentRepository.findAll();
+    }
+
+    @Override
     public List<Payment> findByUserId(int id, Map<String, String> params) {
         return this.paymentRepository.findByUserId(id, params);
     }

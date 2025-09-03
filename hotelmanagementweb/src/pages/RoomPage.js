@@ -90,7 +90,7 @@ const RoomPage = () => {
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow space-y-6">
                     <div className="text-center">
                         <span className="text-4xl font-bold text-indigo-600">
-                            {roomType.pricePerNight?.toLocaleString()}₫
+                            {roomType.pricePerNight?.toLocaleString()}VND
                         </span>
                         <p className="text-sm text-gray-500">/ đêm</p>
                     </div>

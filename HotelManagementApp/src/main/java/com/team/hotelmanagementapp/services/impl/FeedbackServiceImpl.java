@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.team.hotelmanagementapp.pojo.Feedback;
 import com.team.hotelmanagementapp.repositories.FeedbackRepository;
 import com.team.hotelmanagementapp.services.FeedbackService;
+import java.util.HashMap;
 
 @Service
 public class FeedbackServiceImpl implements FeedbackService {
@@ -22,34 +23,34 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
 
     @Override
-    public Feedback findById(int id) {
-        return this.feedbackRepository.findById(id);
+    public Feedback getById(int id) {
+        return this.feedbackRepository.getById(id);
     }
 
     @Override
     public List<Feedback> findByUser(int userId, Map<String, String> params) {
         if (params == null) {
-            return this.feedbackRepository.findByUser(userId);
+            params = new HashMap<>();
         }
-
-        Map<String, String> paramsCopy = new java.util.HashMap<>(params);
-        paramsCopy.put("userId", String.valueOf(userId));
-        return this.feedbackRepository.find(paramsCopy);
+        params.put("userId", String.valueOf(userId));
+        return this.feedbackRepository.find(params);
     }
 
     @Override
-    public List<Feedback> findByBooking(int bookingId) {
-        return this.feedbackRepository.findByBooking(bookingId);
+    public List<Feedback> findByBooking(int bookingId, Map<String, String> params) {
+        if (params == null) {
+            params = new HashMap<>();
+        }
+        params.put("bookingId", String.valueOf(bookingId));
+        return this.feedbackRepository.find(params);
     }
 
     @Override
-    public Feedback createFeedback(Feedback feedback) {
-        // Validate rating range
-        if (feedback.getRating() < 1 || feedback.getRating() > 5) {
+    public Feedback createOrUpdate(Feedback feedback) {
+        if (feedback.getRating() < 0.5 || feedback.getRating() > 5.0) {
             throw new IllegalArgumentException("Rating phải nằm trong khoảng 1-5");
         }
 
-        // Validate booking exists and user is authorized
         if (feedback.getBooking() == null) {
             throw new IllegalArgumentException("Booking không được để trống");
         }
@@ -62,29 +63,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
 
     @Override
-    public Feedback updateFeedback(int feedbackId, Feedback feedback) {
-        Feedback existing = this.feedbackRepository.findById(feedbackId);
-        if (existing == null) {
-            throw new IllegalArgumentException("Feedback không tồn tại");
-        }
-
-        // Preserve creation timestamp
-        feedback.setCreatedAt(existing.getCreatedAt());
-
-        // Only allow updating specific fields
-        existing.setRating(feedback.getRating());
-        existing.setComment(feedback.getComment());
-
-        return this.feedbackRepository.createOrUpdate(existing);
-    }
-
-    @Override
-    public void deleteFeedback(int feedbackId) {
-        Feedback feedback = this.feedbackRepository.findById(feedbackId);
-        if (feedback == null) {
-            throw new IllegalArgumentException("Feedback không tồn tại");
-        }
-
+    public void delete(int feedbackId) {
         this.feedbackRepository.delete(feedbackId);
     }
 

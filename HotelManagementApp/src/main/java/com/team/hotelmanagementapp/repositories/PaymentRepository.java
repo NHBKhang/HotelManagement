@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 public interface PaymentRepository {
+    
+    List<Payment> findAll();
 
     List<Payment> findByUserId(int id, Map<String, String> params);
 

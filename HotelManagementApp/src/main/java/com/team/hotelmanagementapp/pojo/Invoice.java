@@ -1,6 +1,7 @@
 package com.team.hotelmanagementapp.pojo;
 
 import jakarta.persistence.Basic;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -10,9 +11,12 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -50,9 +54,12 @@ public class Invoice implements Serializable {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "payment_id", nullable = false)
-    private Payment payment;
+    @JoinColumn(name = "booking_id", nullable = false)
+    private Booking booking;
 
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Payment> payments = new ArrayList<>();
+    
     @Column(name = "issue_at")
     private LocalDateTime issueAt;
 
@@ -68,9 +75,8 @@ public class Invoice implements Serializable {
     public Invoice() {
     }
 
-    public Invoice(Integer id, Payment payment, LocalDateTime issueAt, String invoiceNumber, String sentToEmail, Status status) {
+    public Invoice(Integer id, LocalDateTime issueAt, String invoiceNumber, String sentToEmail, Status status) {
         this.id = id;
-        this.payment = payment;
         this.issueAt = issueAt;
         this.invoiceNumber = invoiceNumber;
         this.sentToEmail = sentToEmail;
@@ -83,14 +89,6 @@ public class Invoice implements Serializable {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public Payment getPayment() {
-        return payment;
-    }
-
-    public void setPayment(Payment payment) {
-        this.payment = payment;
     }
 
     public LocalDateTime getIssueAt() {
@@ -127,9 +125,10 @@ public class Invoice implements Serializable {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 59 * hash + Objects.hashCode(this.payment);
-        hash = 59 * hash + Objects.hashCode(this.invoiceNumber);
+        int hash = 5;
+        hash = 29 * hash + Objects.hashCode(this.booking);
+        hash = 29 * hash + Objects.hashCode(this.issueAt);
+        hash = 29 * hash + Objects.hashCode(this.invoiceNumber);
         return hash;
     }
 
@@ -148,12 +147,26 @@ public class Invoice implements Serializable {
         if (!Objects.equals(this.invoiceNumber, other.invoiceNumber)) {
             return false;
         }
-        return Objects.equals(this.payment, other.payment);
+        if (!Objects.equals(this.booking, other.booking)) {
+            return false;
+        }
+        return Objects.equals(this.issueAt, other.issueAt);
     }
 
-    @Override
-    public String toString() {
-        return "Invoice{" + "payment=" + payment + ", invoiceNumber=" + invoiceNumber + '}';
+    public Booking getBooking() {
+        return booking;
+    }
+
+    public void setBooking(Booking booking) {
+        this.booking = booking;
+    }
+
+    public List<Payment> getPayments() {
+        return payments;
+    }
+
+    public void setPayments(List<Payment> payments) {
+        this.payments = payments;
     }
 
 }
