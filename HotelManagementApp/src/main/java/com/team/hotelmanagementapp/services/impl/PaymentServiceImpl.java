@@ -1,9 +1,11 @@
 package com.team.hotelmanagementapp.services.impl;
 
 import com.team.hotelmanagementapp.pojo.Booking;
+import com.team.hotelmanagementapp.pojo.Invoice;
 import com.team.hotelmanagementapp.pojo.Payment;
 import com.team.hotelmanagementapp.repositories.PaymentRepository;
 import com.team.hotelmanagementapp.services.BookingService;
+import com.team.hotelmanagementapp.services.InvoiceService;
 import com.team.hotelmanagementapp.services.PaymentService;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -20,6 +22,8 @@ public class PaymentServiceImpl implements PaymentService {
     private PaymentRepository paymentRepository;
     @Autowired
     private BookingService bookingService;
+    @Autowired
+    private InvoiceService invoiceService;
 
     @Override
     public List<Payment> findAll() {
@@ -57,34 +61,45 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public Payment createByRequest(Map<String, Object> bodyData, String username,
-            Payment.Method method) {
-        try {
+    public Payment createByRequest(Map<String, Object> bodyData, String username, Payment.Method method) {
+//        try {
             Payment payment = new Payment();
+
             if (method == Payment.Method.VNPAY) {
+                Double amount = Double.parseDouble(bodyData.get("amount").toString()) / 100;
+                
                 if ("room".equals(bodyData.get("itemType").toString())) {
-                    Booking b = this.bookingService.createByIdAndUsername(
-                            Integer.parseInt(bodyData.get("bookingId").toString()), username, method);
-                    payment.setBooking(b);
+                    int bookingId = Integer.parseInt(bodyData.get("bookingId").toString());
+                    Booking booking = this.bookingService.createByIdAndUsername(bookingId, username, method);
+
+                    Invoice invoice = new Invoice(
+                            booking, "INV-" + System.currentTimeMillis(), 
+                            booking.getUser().getEmail(), 
+                            amount, Invoice.Status.PAID);
+
+                    payment.setInvoice(invoiceService.createOrUpdate(invoice));
                 }
 
-                payment.setAmount(Double.parseDouble(bodyData.get("amount").toString()) / 100);
+                payment.setAmount(amount);
                 payment.setStatus(Payment.Status.SUCCESS);
                 payment.setCode(this.paymentRepository.generateCode());
                 payment.setMethod(method);
                 payment.setBankCode(bodyData.get("bankCode").toString());
-                payment.setTransactionNo(bodyData.get("transactionNo").toString());
+                payment.setTransactionNo(
+                        method.toString() + bodyData.get("transactionNo").toString());
                 payment.setDescription("Đã chuyển khoản vào ngày "
                         + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 
-                return this.createOrUpdate(payment);
+                payment = this.createOrUpdate(payment);
+
+                return payment;
             } else {
                 return null;
             }
-        } catch (Exception e) {
-            System.out.print(e);
-            return null;
-        }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return null;
+//        }
     }
 
     @Override

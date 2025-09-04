@@ -12,7 +12,8 @@ import {
     ArrowLeft,
     FileDown,
     Star,
-    StarHalf
+    StarHalf,
+    XCircle
 } from "lucide-react";
 import { formatDate } from "../utils/formatDate";
 
@@ -54,21 +55,17 @@ const BookingDetailPage = () => {
         loadFeedbacks();
     }, [id, authAPI, sendNotification]);
 
-    const downloadInvoice = async () => {
+    const previewInvoice = async () => {
         try {
-            const res = await authAPI.get(`/invoices/${booking.id}/download`, {
+            const res = await authAPI.get(endpoints["export-invoice"](booking.id), {
                 responseType: "blob",
             });
-            const url = window.URL.createObjectURL(new Blob([res.data]));
-            const link = document.createElement("a");
-            link.href = url;
-            link.setAttribute("download", `invoice-${booking.code}.pdf`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
+            const file = new Blob([res.data], { type: "application/pdf" });
+            const fileURL = window.URL.createObjectURL(file);
+            window.open(fileURL);
         } catch (err) {
             console.error(err);
-            sendNotification({ message: "Xuất hóa đơn thất bại!" }, "error");
+            sendNotification({ message: "Xem hóa đơn thất bại!" }, "error");
         }
     };
 
@@ -91,6 +88,18 @@ const BookingDetailPage = () => {
             sendNotification({ message: "Gửi đánh giá thất bại!" }, "error");
         } finally {
             setSubmitting(false);
+        }
+    };
+
+    const cancelBooking = async () => {
+        if (!window.confirm("Bạn có chắc chắn muốn hủy đặt phòng này?")) return;
+        try {
+            await authAPI.put(endpoints["cancel-booking"](booking.id));
+            sendNotification({ message: "Hủy đặt phòng thành công!" }, "success");
+            setBooking({ ...booking, status: "CANCELLED" });
+        } catch (err) {
+            console.error(err);
+            sendNotification({ message: "Hủy đặt phòng thất bại!" }, "error");
         }
     };
 
@@ -127,7 +136,7 @@ const BookingDetailPage = () => {
 
     return (
         <div className="mx-auto max-w-7xl px-6 py-12 space-y-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex flex-col lg:flex-row lg:items-center md:justify-between gap-4">
                 <div className="flex flex-row">
                     <h1 className="text-3xl font-bold dark:text-white me-5">
                         Đơn đặt phòng #{booking.code}
@@ -141,11 +150,19 @@ const BookingDetailPage = () => {
 
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={downloadInvoice}
+                        onClick={previewInvoice}
                         className="inline-flex items-center gap-1 px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700"
                     >
                         <FileDown size={16} /> Xuất hóa đơn
                     </button>
+                    {booking.status !== "CHECKED_IN" && booking.status !== "CHECKED_OUT" && booking.status !== "CANCELLED" && (
+                        <button
+                            onClick={cancelBooking}
+                            className="inline-flex items-center gap-1 px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700"
+                        >
+                            <XCircle size={16} />Hủy phòng
+                        </button>
+                    )}
                     <Link
                         to="/my-bookings"
                         className="inline-flex items-center gap-1 px-4 py-2 rounded-md border border-indigo-600 text-indigo-600 hover:bg-indigo-50 dark:border-indigo-400 dark:text-indigo-400"

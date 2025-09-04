@@ -94,16 +94,16 @@ public class DataInitializer {
 
         // Create hotel services
         if (serviceRepository.find(null).isEmpty()) {
-            serviceRepository.createOrUpdate(new Service(null, "Bữa sáng", "Bữa sáng", 100000.0, true));
-            serviceRepository.createOrUpdate(new Service(null, "Bữa trưa", "Bữa trưa buffet", 150000.0, true));
-            serviceRepository.createOrUpdate(new Service(null, "Bữa tối", "Bữa tối buffet", 200000.0, true));
-            serviceRepository.createOrUpdate(new Service(null, "Spa thư giãn", "Phiên spa thư giãn 1 giờ", 500000.0, true));
-            serviceRepository.createOrUpdate(new Service(null, "Phục vụ phòng", "Phục vụ đồ uống và ăn nhẹ tại phòng", 250000.0, true));
-            serviceRepository.createOrUpdate(new Service(null, "Giặt ủi", "Giặt ủi 1 bộ trang phục", 80000.0, true));
-            serviceRepository.createOrUpdate(new Service(null, "Gym & Fitness", "Vé tập gym 1 ngày", 120000.0, true));
-            serviceRepository.createOrUpdate(new Service(null, "Internet Wifi", "Internet tốc độ cao 1 ngày", 50000.0, true));
-            serviceRepository.createOrUpdate(new Service(null, "Chỗ đậu xe", "Đậu xe an toàn 1 ngày", 30000.0, true));
-            serviceRepository.createOrUpdate(new Service(null, "Dịch vụ đưa đón", "Đưa đón sân bay bằng xe riêng", 350000.0, true));
+            serviceRepository.createOrUpdate(new Service(null, "Bữa sáng", "Bữa sáng đơn giản", 50000.0, true, "suất", true));
+            serviceRepository.createOrUpdate(new Service(null, "Bữa trưa buffet", "Bữa trưa buffet", 150000.0, true, "suất", true));
+            serviceRepository.createOrUpdate(new Service(null, "Bữa tối buffet", "Bữa tối buffet", 250000.0, true, "suất", true));
+            serviceRepository.createOrUpdate(new Service(null, "Spa thư giãn", "Phiên spa thư giãn 1 giờ", 55000.0, true, "giờ", true));
+            serviceRepository.createOrUpdate(new Service(null, "Phục vụ phòng", "Phục vụ đồ uống và ăn nhẹ tại phòng", 180000.0, true, "lượt", false));
+            serviceRepository.createOrUpdate(new Service(null, "Giặt ủi", "Giặt ủi 1 bộ trang phục", 55000.0, true, "lượt", true));
+            serviceRepository.createOrUpdate(new Service(null, "Gym & Fitness", "Vé tập gym 1 ngày", 85000.0, true, "ngày", true));
+            serviceRepository.createOrUpdate(new Service(null, "Internet Wifi", "Internet tốc độ cao 1 ngày", 50000.0, true, "ngày", false));
+            serviceRepository.createOrUpdate(new Service(null, "Chỗ đậu xe", "Đậu xe an toàn 1 ngày", 30000.0, true, "ngày", true));
+            serviceRepository.createOrUpdate(new Service(null, "Dịch vụ đưa đón", "Đưa đón bằng xe riêng", 400000.0, true, "lượt", false));
         }
 
         // Create feedback data
@@ -214,59 +214,69 @@ public class DataInitializer {
             }
         }
 
-        // Create payments for sample bookings
-        if (paymentRepository.findAll().isEmpty()) {
+        if (paymentRepository.findAll().isEmpty() && invoiceRepository.findAll().isEmpty()) {
             List<Booking> bookings = bookingRepository.findAll();
 
             if (!bookings.isEmpty()) {
                 Booking booking1 = bookings.get(0);
                 Booking booking2 = bookings.get(1);
 
-                // Payment thành công qua VNPAY
-                Payment payment1 = new Payment();
-                payment1.setCode(paymentRepository.generateCode());
-                payment1.setTransactionNo("VNPAY123456");
-                payment1.setAmount(booking1.getRoom().getRoomType().getPricePerNight());
-                payment1.setMethod(Payment.Method.VNPAY);
-                payment1.setStatus(Payment.Status.SUCCESS);
-                payment1.setDescription("Thanh toán phòng qua VNPAY");
-                payment1.setBooking(booking1);
-                paymentRepository.createOrUpdate(payment1);
+                // ===== Invoice 1 cho booking1 =====
+                Invoice invoice1 = new Invoice();
+                invoice1.setBooking(booking1);
+                invoice1.setIssueAt(LocalDateTime.now());
+                invoice1.setInvoiceNumber("INV-" + System.currentTimeMillis());
+                invoice1.setSentToEmail(booking1.getUser().getEmail());
+                invoice1.setStatus(Invoice.Status.UNPAID);
+                invoice1.setTotalAmount(booking1.getRoom().getRoomType().getPricePerNight());
+                invoice1 = invoiceRepository.createOrUpdate(invoice1);
 
+                // Payment trả góp 2 lần cho invoice1
+                Payment payment1a = new Payment();
+                payment1a.setCode(paymentRepository.generateCode());
+                payment1a.setTransactionNo("VNPAY123456");
+                payment1a.setAmount(booking1.getRoom().getRoomType().getPricePerNight() / 2);
+                payment1a.setMethod(Payment.Method.VNPAY);
+                payment1a.setStatus(Payment.Status.SUCCESS);
+                payment1a.setDescription("Thanh toán đợt 1 qua VNPAY");
+                payment1a.setInvoice(invoice1); // ✅ liên kết invoice
+                paymentRepository.createOrUpdate(payment1a);
+
+                Payment payment1b = new Payment();
+                payment1b.setCode(paymentRepository.generateCode());
+                payment1b.setTransactionNo("VNPAY654321");
+                payment1b.setAmount(booking1.getRoom().getRoomType().getPricePerNight() / 2);
+                payment1b.setMethod(Payment.Method.VNPAY);
+                payment1b.setStatus(Payment.Status.SUCCESS);
+                payment1b.setDescription("Thanh toán đợt 2 qua VNPAY");
+                payment1b.setInvoice(invoice1);
+                paymentRepository.createOrUpdate(payment1b);
+
+                invoice1.setStatus(Invoice.Status.PAID);
+                invoiceRepository.createOrUpdate(invoice1);
+
+                // ===== Invoice 2 cho booking2 =====
+                Invoice invoice2 = new Invoice();
+                invoice2.setBooking(booking2);
+                invoice2.setIssueAt(LocalDateTime.now());
+                invoice2.setInvoiceNumber("INV-" + (System.currentTimeMillis() + 1));
+                invoice2.setSentToEmail(booking2.getUser().getEmail());
+                invoice2.setStatus(Invoice.Status.UNPAID);
+                invoice2.setTotalAmount(booking2.getRoom().getRoomType().getPricePerNight());
+                invoice2 = invoiceRepository.createOrUpdate(invoice2);
+
+                // Payment mới pending
                 Payment payment2 = new Payment();
                 payment2.setCode(paymentRepository.generateCode());
                 payment2.setTransactionNo("TRANSFER987654");
                 payment2.setAmount(booking2.getRoom().getRoomType().getPricePerNight());
                 payment2.setMethod(Payment.Method.TRANSFER);
                 payment2.setStatus(Payment.Status.PENDING);
-                payment2.setDescription("Thanh toán phòng qua MOMO");
-                payment2.setBooking(booking2);
+                payment2.setDescription("Thanh toán qua chuyển khoản");
+                payment2.setInvoice(invoice2); // ✅ gắn vào invoice2
                 paymentRepository.createOrUpdate(payment2);
-            }
-        }
 
-        if (invoiceRepository.findAll().isEmpty()) {
-            List<Booking> bookings = bookingRepository.findAll();
-            if (!bookings.isEmpty()) {
-                Booking booking1 = bookings.get(0);
-                Booking booking2 = bookings.get(1);
-
-                // Invoice cho booking1 (đã có Payment thành công)
-                Invoice invoice1 = new Invoice();
-                invoice1.setBooking(booking1);
-                invoice1.setIssueAt(LocalDateTime.now());
-                invoice1.setInvoiceNumber("INV-" + System.currentTimeMillis());
-                invoice1.setSentToEmail(booking1.getUser().getEmail());
-                invoice1.setStatus(Invoice.Status.PAID);
-                invoiceRepository.createOrUpdate(invoice1);
-
-                // Invoice cho booking2 (Payment đang pending)
-                Invoice invoice2 = new Invoice();
-                invoice2.setBooking(booking2);
-                invoice2.setIssueAt(LocalDateTime.now());
-                invoice2.setInvoiceNumber("INV-" + (System.currentTimeMillis() + 1));
-                invoice2.setSentToEmail(booking2.getUser().getEmail());
-                invoice2.setStatus(Invoice.Status.UNPAID); // hoặc PARTIALLY_PAID nếu có một phần tiền
+                invoice2.setStatus(Invoice.Status.UNPAID); // vì chưa thanh toán đủ
                 invoiceRepository.createOrUpdate(invoice2);
             }
         }

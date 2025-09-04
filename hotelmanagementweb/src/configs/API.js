@@ -16,9 +16,12 @@ export const endpoints = {
     'my-bookings': 'bookings/my-bookings',
     'my-booking': (bookingId) => `bookings/my-bookings/${bookingId}`,
     'my-feedbacks': (bookingId) => `bookings/my-bookings/${bookingId}/feedbacks`,
+    'export-invoice': (bookingId) => `bookings/my-bookings/${bookingId}/export-invoice`,
+    'cancel-booking': (bookingId) => `bookings/my-bookings/${bookingId}/cancel`,
     'feedbacks': "feedbacks",
     'vnpay-payment': 'payments/vnpay',
     'vnpay-return': 'payments/vnpay-return',
+    'services': 'services',
 }
 
 export const useAuthAPI = () => {

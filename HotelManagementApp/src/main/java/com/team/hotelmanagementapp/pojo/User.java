@@ -24,7 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Entity
 @Table(name = "user")
-@JsonIgnoreProperties(value = {"password"}, allowSetters = true)
+@JsonIgnoreProperties(value = {"password", "bookings"}, allowSetters = true)
 @NamedQueries({
     @NamedQuery(name = "User.findAll", query = "SELECT u FROM User u"),
     @NamedQuery(name = "User.findById", query = "SELECT u FROM User u WHERE u.id = :id"),
@@ -38,11 +38,6 @@ import org.springframework.web.multipart.MultipartFile;
     @NamedQuery(name = "User.findByRole", query = "SELECT u FROM User u WHERE u.role = :role"),
     @NamedQuery(name = "User.findByAvatar", query = "SELECT u FROM User u WHERE u.avatar = :avatar")})
 public class User implements Serializable {
-
-    @Override
-    public String toString() {
-        return "User{" + "username=" + username + '}';
-    }
 
     public enum Role {
         CUSTOMER, RECEPTIONIST, HOUSEKEEPING, ACCOUNTANT, MANAGER, ADMIN
@@ -114,7 +109,7 @@ public class User implements Serializable {
     @Column(name = "updated_at")
     @UpdateTimestamp
     private LocalDateTime updatedAt;
-    
+
     @OneToMany(mappedBy = "user")
     @JsonIgnore
     private List<Booking> bookings;
@@ -196,7 +191,7 @@ public class User implements Serializable {
     public void setPassword(String password) {
         this.password = password;
     }
-    
+
     public Role getRole() {
         return role;
     }
@@ -239,7 +234,7 @@ public class User implements Serializable {
         }
         return true;
     }
-    
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -270,6 +265,15 @@ public class User implements Serializable {
 
     public void setBookings(List<Booking> bookings) {
         this.bookings = bookings;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" + "username=" + username + '}';
+    }
+
+    public String getFullName() {
+        return this.firstName + " " + this.lastName;
     }
 
 }

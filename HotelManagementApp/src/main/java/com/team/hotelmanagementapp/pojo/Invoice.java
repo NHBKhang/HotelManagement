@@ -14,10 +14,12 @@ import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "invoice")
@@ -59,15 +61,19 @@ public class Invoice implements Serializable {
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Payment> payments = new ArrayList<>();
-    
+
     @Column(name = "issue_at")
+    @CreationTimestamp
     private LocalDateTime issueAt;
 
     @Column(name = "invoice_number")
     private String invoiceNumber;
 
-    @Column(name = "sent_to_email")
+    @Column(name = "sent_to_email", nullable = true)
     private String sentToEmail;
+
+    @Column(name = "total_amount")
+    private Double totalAmount;
 
     @Basic(optional = false)
     private Status status;
@@ -80,6 +86,14 @@ public class Invoice implements Serializable {
         this.issueAt = issueAt;
         this.invoiceNumber = invoiceNumber;
         this.sentToEmail = sentToEmail;
+        this.status = status;
+    }
+
+    public Invoice(Booking booking, String invoiceNumber, String sentToEmail, Double totalAmount, Status status) {
+        this.booking = booking;
+        this.invoiceNumber = invoiceNumber;
+        this.sentToEmail = sentToEmail;
+        this.totalAmount = totalAmount;
         this.status = status;
     }
 
@@ -167,6 +181,14 @@ public class Invoice implements Serializable {
 
     public void setPayments(List<Payment> payments) {
         this.payments = payments;
+    }
+
+    public Double getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(Double totalAmount) {
+        this.totalAmount = totalAmount;
     }
 
 }
