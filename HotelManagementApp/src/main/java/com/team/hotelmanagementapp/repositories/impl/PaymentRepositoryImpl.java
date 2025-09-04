@@ -1,6 +1,7 @@
 package com.team.hotelmanagementapp.repositories.impl;
 
 import com.team.hotelmanagementapp.pojo.Booking;
+import com.team.hotelmanagementapp.pojo.Invoice;
 import com.team.hotelmanagementapp.pojo.Payment;
 import com.team.hotelmanagementapp.pojo.User;
 import com.team.hotelmanagementapp.repositories.PaymentRepository;
@@ -41,8 +42,10 @@ public class PaymentRepositoryImpl implements PaymentRepository {
 
         List<Predicate> predicates = new ArrayList<>();
 
-        Join<Payment, Booking> bookingJoin = root.join("booking");
+        Join<Payment, Invoice> invoiceJoin = root.join("invoice");
+        Join<Invoice, Booking> bookingJoin = invoiceJoin.join("booking");
         Join<Booking, User> userJoin = bookingJoin.join("user");
+
         predicates.add(b.equal(userJoin.get("id"), id));
 
         if (params != null) {
@@ -106,8 +109,10 @@ public class PaymentRepositoryImpl implements PaymentRepository {
 
         List<Predicate> predicates = new ArrayList<>();
 
-        Join<Payment, Booking> bookingJoin = root.join("booking");
+        Join<Payment, Invoice> invoiceJoin = root.join("invoice");
+        Join<Invoice, Booking> bookingJoin = invoiceJoin.join("booking");
         Join<Booking, User> userJoin = bookingJoin.join("user");
+
         predicates.add(b.equal(userJoin.get("id"), id));
 
         if (params != null) {

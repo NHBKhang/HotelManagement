@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+    <head>
+        <title>Cài đặt - Hotel Management</title>
+    <th:block th:replace="base :: head"></th:block>
+</head>
+
+<body>
+    <div th:replace="base :: layout(~{::content})">
+        <div th:fragment="content">
+            <div class="container mt-5">
+                <h1 class="mb-4">Cài đặt tài khoản</h1>
+
+                <div class="row">
+                    <!-- Sidebar -->
+                    <div class="col-md-3 mb-3">
+                        <div class="list-group">
+                            <a href="#" class="list-group-item list-group-item-action active" aria-current="true">
+                                Thông tin cá nhân
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action">Đổi mật khẩu</a>
+                            <a href="#" class="list-group-item list-group-item-action">Cài đặt thông báo</a>
+                            <a href="#" class="list-group-item list-group-item-action">Ngôn ngữ & khu vực</a>
+                        </div>
+                    </div>
+
+                    <!-- Content chính -->
+                    <div class="col-md-9">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h2 class="card-title mb-4">Thông tin cá nhân</h2>
+                                <form th:action="@{/settings/update}" method="post">
+                                    <div class="mb-3">
+                                        <label for="firstName" class="form-label">Họ và tên</label>
+                                        <input type="text" class="form-control" id="firstName" name="firstName"
+                                               th:value="${user.firstName}">
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="email" name="email"
+                                               th:value="${user.email}">
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

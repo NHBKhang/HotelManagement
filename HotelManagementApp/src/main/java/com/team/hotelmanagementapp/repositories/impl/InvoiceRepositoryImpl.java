@@ -43,13 +43,31 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
             if (kw != null && !kw.isEmpty()) {
                 predicates.add(b.like(root.get("code"), "%" + kw + "%"));
             }
+
+            String userIdStr = params.get("userId");
+            if (userIdStr != null && !userIdStr.isEmpty()) {
+                try {
+                    int userId = Integer.parseInt(userIdStr);
+                    predicates.add(b.equal(root.get("user").get("id"), userId));
+                } catch (NumberFormatException ex) {
+                }
+            }
+
+            String bookingIdStr = params.get("bookingId");
+            if (bookingIdStr != null && !bookingIdStr.isEmpty()) {
+                try {
+                    int bookingId = Integer.parseInt(bookingIdStr);
+                    predicates.add(b.equal(root.get("booking").get("id"), bookingId));
+                } catch (NumberFormatException ex) {
+                }
+            }
         }
 
         if (!predicates.isEmpty()) {
             q.where(predicates.toArray(Predicate[]::new));
         }
 
-        q.select(root).orderBy(b.desc(root.get("createdAt")));
+        q.select(root).orderBy(b.desc(root.get("issueAt")));
 
         Query<Invoice> query = s.createQuery(q);
 

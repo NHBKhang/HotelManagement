@@ -90,10 +90,6 @@ public class Payment implements Serializable {
     @Column(name = "description", nullable = true)
     private String description;
 
-    @ManyToOne
-    @JoinColumn(name = "booking_id")
-    private Booking booking;
-
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -109,7 +105,7 @@ public class Payment implements Serializable {
         this.id = id;
     }
 
-    public Payment(Integer id, String code, String transactionNo, Double amount, Method method, String receiptImage, String bankCode, Status status, String description, Booking booking) {
+    public Payment(Integer id, String code, String transactionNo, Double amount, Method method, String receiptImage, String bankCode, Status status, String description, Invoice invoice) {
         this.id = id;
         this.code = code;
         this.transactionNo = transactionNo;
@@ -119,7 +115,7 @@ public class Payment implements Serializable {
         this.bankCode = bankCode;
         this.status = status;
         this.description = description;
-        this.booking = booking;
+        this.invoice = invoice;
     }
 
     public Integer getId() {
@@ -236,20 +232,13 @@ public class Payment implements Serializable {
 
     @Transient
     public User getUser() {
-        return booking != null ? booking.getUser() : null;
+        return invoice != null && invoice.getBooking() != null ? 
+                invoice.getBooking().getUser() : null;
     }
 
     @Override
     public String toString() {
         return "Payment{" + "code=" + code + ", transactionNo=" + transactionNo + '}';
-    }
-
-    public Booking getBooking() {
-        return booking;
-    }
-
-    public void setBooking(Booking booking) {
-        this.booking = booking;
     }
 
     public Invoice getInvoice() {

@@ -42,6 +42,12 @@ public class Service implements Serializable {
     @Basic(optional = false)
     private Double price;
 
+    @Basic(optional = false)
+    private String unit;
+
+    @Column(name = "allow_quantity")
+    private Boolean allowQuantity;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -49,12 +55,15 @@ public class Service implements Serializable {
     public Service() {
     }
 
-    public Service(Integer id, String name, String description, Double price, Boolean active) {
+    public Service(Integer id, String name, String description, Double price, Boolean active, 
+            String unit, Boolean allowQuantity) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.price = price;
         this.active = active;
+        this.unit = unit;
+        this.allowQuantity = allowQuantity;
     }
 
     public Integer getId() {
@@ -142,6 +151,22 @@ public class Service implements Serializable {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
+
+    public Boolean getAllowQuantity() {
+        return allowQuantity;
+    }
+
+    public void setAllowQuantity(Boolean allowQuantity) {
+        this.allowQuantity = allowQuantity;
     }
 
 }

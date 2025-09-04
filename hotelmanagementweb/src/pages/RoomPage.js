@@ -8,6 +8,8 @@ const RoomPage = () => {
     const [room, setRoom] = useState(null);
     const [payload, setPayload] = useState({});
     const [loading, setLoading] = useState(true);
+    const [totalPrice, setTotalPrice] = useState(0);
+    const [services, setServices] = useState([]);
 
     const updatePayload = (e) =>
         setPayload((p) => ({ ...p, [e.target.name]: e.target.value }));
@@ -26,6 +28,38 @@ const RoomPage = () => {
         loadRoom();
     }, [id]);
 
+    useEffect(() => {
+        const loadServices = async () => {
+            try {
+                const res = await API.get(endpoints.services);
+                setServices(res.data);
+            } catch (err) {
+            }
+        };
+        loadServices();
+    }, []);
+
+    useEffect(() => {
+        if (room?.roomType?.pricePerNight && payload.checkin && payload.checkout) {
+            const checkinDate = new Date(payload.checkin);
+            const checkoutDate = new Date(payload.checkout);
+            const nights = Math.max(
+                (checkoutDate - checkinDate) / (1000 * 60 * 60 * 24), 0);
+
+            let total = (nights + 1) * room.roomType.pricePerNight;
+
+            // if (payload.services) {
+            //     payload.services.forEach(s => {
+            //         total += s.price * s.quantity;
+            //     });
+            // }
+
+            setTotalPrice(Math.round(total));
+        } else {
+            setTotalPrice(0);
+        }
+    }, [payload.checkin, payload.checkout, payload.services, room]);
+
     if (loading) return <p className="p-6 text-center text-gray-500">Đang tải...</p>;
     if (!room) return <p className="p-6 text-center text-red-500">Không tìm thấy phòng.</p>;
 
@@ -40,13 +74,13 @@ const RoomPage = () => {
             checkin: payload.checkin,
             checkout: payload.checkout,
             guests: payload.guests || 1,
-            total: roomType.pricePerNight,
+            total: totalPrice,
         };
         navigate("/payment", { state: { bookingData } });
     };
 
     return (
-        <div className="max-w-7xl mx-auto px-6 py-12 space-y-10">
+        <div className="max-w-7xl mx-auto px-6 xl:px-0 py-12 space-y-10">
             <div className="relative w-full h-80 md:h-96 rounded-xl overflow-hidden shadow-lg">
                 <img
                     src={room.image || "/img/room-placeholder.jpg"}
@@ -63,14 +97,16 @@ const RoomPage = () => {
                 </div>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-10">
-                <div className="md:col-span-2 space-y-8">
-                    <section className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow space-y-3">
+            <div className="grid lg:grid-cols-10 gap-10">
+                <div className="lg:col-span-6 space-y-8 bg-white dark:bg-slate-900 rounded-xl shadow">
+                    <section className="p-6 space-y-3">
                         <h2 className="text-2xl font-semibold border-b pb-2">Mô tả</h2>
-                        <p className="text-slate-700 dark:text-slate-300">{roomType.description || "Phòng thoải mái, đầy đủ tiện nghi."}</p>
+                        <p className="text-slate-700 dark:text-slate-300">
+                            {roomType.description || "Phòng thoải mái, đầy đủ tiện nghi."}
+                        </p>
                     </section>
 
-                    <section className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow space-y-3">
+                    <section className="p-6 space-y-3">
                         <h2 className="text-2xl font-semibold border-b pb-2">Tiện nghi</h2>
                         <ul className="list-disc list-inside text-slate-700 dark:text-slate-300 space-y-1">
                             {roomType.amenities?.length > 0 ? (
@@ -81,57 +117,137 @@ const RoomPage = () => {
                         </ul>
                     </section>
 
-                    <section className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow space-y-3">
+                    <section className="p-6 space-y-3">
                         <h2 className="text-2xl font-semibold border-b pb-2">Chính sách</h2>
-                        <p className="text-slate-700 dark:text-slate-300">{roomType.policy || "Hủy miễn phí trước 24h."}</p>
+                        <p className="text-slate-700 dark:text-slate-300">
+                            {roomType.policy || "Hủy miễn phí trước 24h."}
+                        </p>
                     </section>
                 </div>
 
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow space-y-6">
+                <div className="lg:col-span-4 bg-white dark:bg-slate-900 p-6 rounded-xl shadow space-y-6">
                     <div className="text-center">
                         <span className="text-4xl font-bold text-indigo-600">
-                            {roomType.pricePerNight?.toLocaleString()}VND
+                            {roomType.pricePerNight?.toLocaleString()} VND
                         </span>
                         <p className="text-sm text-gray-500">/ đêm</p>
                     </div>
+
                     <form onSubmit={onBook} className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium mb-1">Nhận phòng</label>
                             <input
                                 name="checkin"
-                                onChange={updatePayload}
-                                value={payload.checkin}
                                 type="date"
                                 min={today}
                                 required
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none dark:text-black" />
+                                value={payload.checkin || ""}
+                                onChange={updatePayload}
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none dark:text-black"
+                            />
                         </div>
+
                         <div>
                             <label className="block text-sm font-medium mb-1">Trả phòng</label>
                             <input
                                 name="checkout"
-                                onChange={updatePayload}
-                                value={payload.checkout}
                                 type="date"
                                 min={minCheckout}
                                 required
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none dark:text-black" />
+                                value={payload.checkout || ""}
+                                onChange={updatePayload}
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none dark:text-black"
+                            />
                         </div>
+
                         <div>
                             <label className="block text-sm font-medium mb-1">Số khách</label>
                             <input
                                 name="guests"
                                 type="number"
-                                value={payload.guests}
-                                onChange={updatePayload}
                                 min="1"
                                 max={roomType.maxGuests || 10}
                                 step="1"
-                                defaultValue="1"
                                 required
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none dark:text-black" />
+                                value={payload.guests || 1}
+                                onChange={updatePayload}
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none dark:text-black"
+                            />
                         </div>
-                        <div className="my-4 h-px bg-slate-200 dark:bg-slate-800" />
+
+                        <div>
+                            <h3 className="block text-sm font-medium mb-2">Dịch vụ đi kèm</h3>
+                            <div className="space-y-3 max-h-48 overflow-y-auto pr-1 custom-scroll">
+                                {services.results?.map((s) => {
+                                    const selected = payload.services?.find(item => item.id === s.id);
+                                    return (
+                                        <div
+                                            key={s.id}
+                                            className={`flex items-center justify-between p-3 rounded-lg border transition-colors duration-200 ${selected
+                                                    ? "bg-indigo-50 dark:bg-slate-800 border-indigo-400"
+                                                    : "bg-gray-50 dark:bg-slate-900 border-gray-200 dark:border-slate-700 hover:border-indigo-300"}`}
+                                        >
+                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={!!selected}
+                                                    onChange={(e) => {
+                                                        if (e.target.checked) {
+                                                            setPayload((p) => ({
+                                                                ...p,
+                                                                services: [...(p.services || []), { ...s, quantity: 1 }]
+                                                            }));
+                                                        } else {
+                                                            setPayload((p) => ({
+                                                                ...p,
+                                                                services: p.services.filter(item => item.id !== s.id)
+                                                            }));
+                                                        }
+                                                    }}
+                                                    className="w-4 h-4 accent-indigo-600"
+                                                />
+                                                <span className="text-sm font-medium">
+                                                    {s.name}
+                                                    <span className="text-gray-500 text-xs"> ({s.unit})</span>
+                                                </span>
+                                            </label>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-green-600 dark:text-green-400 text-sm font-semibold">
+                                                    +{s.price.toLocaleString()} VND
+                                                </span>
+                                                {selected && s.allowQuantity && (
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        value={selected.quantity}
+                                                        onChange={(e) =>
+                                                            setPayload((p) => ({
+                                                                ...p,
+                                                                services: p.services.map(item =>
+                                                                    item.id === s.id
+                                                                        ? { ...item, quantity: parseInt(e.target.value) || 1 }
+                                                                        : item
+                                                                )
+                                                            }))
+                                                        }
+                                                        className="w-14 border rounded px-2 py-1 text-right text-sm dark:bg-slate-800 dark:border-slate-600"
+                                                    />
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {totalPrice > 0 && (
+                            <div className="p-3 bg-indigo-50 dark:bg-slate-800 rounded-lg text-center">
+                                <p className="text-lg font-semibold text-indigo-700 dark:text-indigo-300">
+                                    Tổng: {totalPrice.toLocaleString()} VND
+                                </p>
+                            </div>
+                        )}
+
                         <button
                             type="submit"
                             className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors duration-200"

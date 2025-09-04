@@ -23,6 +23,7 @@ import com.team.hotelmanagementapp.components.JwtService;
 import com.team.hotelmanagementapp.pojo.User;
 import com.team.hotelmanagementapp.services.UserService;
 import com.team.hotelmanagementapp.utils.Pagination;
+import com.team.hotelmanagementapp.utils.RequestValidation;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -57,33 +58,21 @@ public class ApiUserController {
 
     @GetMapping(path = "/current-user")
     public ResponseEntity<Object> getCurrentUser(HttpServletRequest request) {
-        String token = request.getHeader("Authorization");
-        if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Thiếu token xác thực");
+        try {
+            RequestValidation val = RequestValidation.getUserFromRequest(request, userService, jwtService);
+
+            if(val.getUser() == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(val.getMessage());
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("user", val.getUser());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Lỗi máy chủ: " + ex.getMessage());
         }
-
-        if (token == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token không hợp lệ hoặc không tồn tại.");
-        }
-
-        String username = jwtService.getUsernameFromToken(token);
-
-        if (username == null || jwtService.isTokenExpired(token)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token hết hạn hoặc không hợp lệ.");
-        }
-
-        User user = userService.getByUsername(username);
-
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User không tồn tại.");
-        }
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("user", user);
-
-        return ResponseEntity.ok(response);
     }
 
     @GetMapping(path = "/users")
