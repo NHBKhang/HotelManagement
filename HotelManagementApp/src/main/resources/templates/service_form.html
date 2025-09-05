@@ -66,6 +66,17 @@
                                 </select>
                             </div> 
                         </div>
+                        <div class="row"> 
+                            <div class="col-md-6 mb-3"> 
+                                <label for="unit" class="form-label">Đơn vị tính</label> 
+                                <input type="text" id="unit" th:field="*{unit}" class="form-control"> 
+                                <p class="text-danger" th:if="${#fields.hasErrors('unit')}" th:errors="*{unit}"></p>
+                            </div> 
+                            <div class="col-md-2 mb-3 text-start"> 
+                                <label for="allowQuantity" class="form-label">Cho phép số lượng</label> 
+                                <input type="checkbox" id="allowQuantity" th:field="*{allowQuantity}"> 
+                            </div> 
+                        </div>
                         <div class="mb-3">
                             <label for="description" class="form-label">Mô tả</label>
                             <textarea id="description" th:field="*{description}" class="form-control"

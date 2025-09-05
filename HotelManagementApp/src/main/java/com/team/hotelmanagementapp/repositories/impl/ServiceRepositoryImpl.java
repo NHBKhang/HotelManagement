@@ -7,6 +7,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.hibernate.Session;
@@ -41,6 +42,12 @@ public class ServiceRepositoryImpl implements ServiceRepository {
                 Predicate namePredicate = b.like(root.get("name"), "%" + kw + "%");
                 Predicate pricePredicate = b.equal(root.get("price"), "%" + kw + "%");
                 predicates.add(b.or(codePredicate, namePredicate, pricePredicate));
+            }
+
+            String activeStr = params.get("active");
+            if (activeStr != null && !activeStr.isEmpty()) {
+                boolean active = Boolean.parseBoolean(activeStr);
+                predicates.add(b.equal(root.get("active"), active));
             }
         }
 
@@ -147,5 +154,17 @@ public class ServiceRepositoryImpl implements ServiceRepository {
 
         int nextId = (maxId != null) ? maxId + 1 : 1;
         return "DV" + String.format("%03d", nextId);
+    }
+
+    @Override
+    public List<Service> getByIds(List<Integer> serviceIds) {
+        if (serviceIds == null || serviceIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        Session s = this.factory.getObject().getCurrentSession();
+        String hql = "FROM Service s WHERE s.id IN (:ids)";
+        return s.createQuery(hql, Service.class)
+                .setParameterList("ids", serviceIds)
+                .getResultList();
     }
 }

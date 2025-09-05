@@ -23,7 +23,7 @@ const SearchRooms = () => {
         const loadTypes = async () => {
             try {
                 const res = await API.get(endpoints["room-types"]);
-                setTypes(res.data);
+                setTypes(res.data.results);
             } catch (error) {
                 console.error(error);
             }

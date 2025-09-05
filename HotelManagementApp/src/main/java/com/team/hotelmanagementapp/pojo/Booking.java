@@ -23,7 +23,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "booking")
-@JsonIgnoreProperties(value = {"feedbacks"}, allowSetters = true)
+@JsonIgnoreProperties(value = {"feedbacks", "services"}, allowSetters = true)
 @NamedQueries({
     @NamedQuery(name = "Booking.findAll", query = "SELECT u FROM Booking u"),
     @NamedQuery(name = "Booking.findById", query = "SELECT u FROM Booking u WHERE u.id = :id")})
@@ -98,6 +98,9 @@ public class Booking implements Serializable {
 
     @OneToMany(mappedBy = "booking", orphanRemoval = true)
     private List<Feedback> feedbacks;
+
+    @OneToMany(mappedBy = "booking", orphanRemoval = true)
+    private List<ServiceBooking> services;
 
     public Booking() {
     }
@@ -248,6 +251,14 @@ public class Booking implements Serializable {
 
     public void setGuests(Integer guests) {
         this.guests = guests;
+    }
+
+    public List<ServiceBooking> getServices() {
+        return services;
+    }
+
+    public void setServices(List<ServiceBooking> services) {
+        this.services = services;
     }
 
 }

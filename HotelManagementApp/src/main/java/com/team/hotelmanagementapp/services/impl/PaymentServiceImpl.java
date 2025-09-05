@@ -62,7 +62,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Payment createByRequest(Map<String, Object> bodyData, String username, Payment.Method method) {
-//        try {
+        try {
             Payment payment = new Payment();
 
             if (method == Payment.Method.VNPAY) {
@@ -96,10 +96,10 @@ public class PaymentServiceImpl implements PaymentService {
             } else {
                 return null;
             }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return null;
-//        }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override

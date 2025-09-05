@@ -71,7 +71,8 @@ form.styled-form select[required] {
 }
 
 form.styled-form input:not([type="file"]),
-form.styled-form select {
+form.styled-form select,
+form.styled-form button.form-select {
     border-top: none !important;
     border-left: none !important;
     border-right: none !important;

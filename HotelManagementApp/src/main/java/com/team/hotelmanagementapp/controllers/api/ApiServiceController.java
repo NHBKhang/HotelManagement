@@ -45,27 +45,16 @@ public class ApiServiceController {
     @GetMapping
     public ResponseEntity<?> list(@RequestParam Map<String, String> params) {
         try {
+            params.put("active", "true");
+            
             List<Service> services = serviceService.find(params);
             long totalServices = serviceService.countServices(params);
             return ResponseEntity.ok(new Pagination<>(services, totalServices, params));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Có lỗi xảy ra khi tải danh sách dịch vụ!"));
+                    .body("Có lỗi xảy ra khi tải danh sách dịch vụ!");
         }
     }
-
-//    @GetMapping("/active")
-//    public ResponseEntity<?> listActive(@RequestParam Map<String, String> params) {
-//        try {
-//            params.put("active", "true");
-//            List<Service> services = serviceService.find(params);
-//            long totalServices = serviceService.countServices(params);
-//            return ResponseEntity.ok(new Pagination<>(services, totalServices, params));
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                    .body(Map.of("error", "Có lỗi xảy ra khi tải danh sách dịch vụ hoạt động!"));
-//        }
-//    }
 
 //    @GetMapping("/{id}")
 //    public ResponseEntity<?> getService(@PathVariable int id) {
@@ -220,42 +209,6 @@ public class ApiServiceController {
 //        } catch (Exception e) {
 //            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 //                    .body(Map.of("error", "Có lỗi xảy ra khi xóa dịch vụ!"));
-//        }
-//    }
-//
-//    @PostMapping("/{id}/activate")
-//    public ResponseEntity<?> activateService(@PathVariable int id, HttpServletRequest request) {
-//        try {
-//            // Check authentication and authorization
-//            User user = getCurrentUser(request);
-//            if (user == null) {
-//                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-//                        .body(Map.of("error", "Token không hợp lệ"));
-//            }
-//
-//            if (!user.getRole().equals(User.Role.ADMIN) && !user.getRole().equals(User.Role.MANAGER)) {
-//                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-//                        .body(Map.of("error", "Bạn không có quyền kích hoạt dịch vụ"));
-//            }
-//
-//            Service service = serviceService.getById(id);
-//            if (service == null) {
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-//                        .body(Map.of("error", "Không tìm thấy dịch vụ"));
-//            }
-//
-//            service.setActive(true);
-//            Service activated = serviceService.createOrUpdate(service);
-//
-//            Map<String, Object> response = new HashMap<>();
-//            response.put("message", "Dịch vụ đã được kích hoạt thành công");
-//            response.put("service", activated);
-//
-//            return ResponseEntity.ok(response);
-//
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                    .body(Map.of("error", "Có lỗi xảy ra khi kích hoạt dịch vụ!"));
 //        }
 //    }
 //

@@ -42,5 +42,10 @@ public class ServiceServiceImpl implements ServiceService {
     public void delete(List<Integer> ids) {
         this.serviceRepository.delete(ids);
     }
+
+    @Override
+    public List<Service> getByIds(List<Integer> serviceIds) {
+        return this.serviceRepository.getByIds(serviceIds);
+    }
     
 }

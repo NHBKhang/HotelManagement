@@ -48,11 +48,11 @@ const RoomPage = () => {
 
             let total = (nights + 1) * room.roomType.pricePerNight;
 
-            // if (payload.services) {
-            //     payload.services.forEach(s => {
-            //         total += s.price * s.quantity;
-            //     });
-            // }
+            if (payload.services) {
+                payload.services.forEach(s => {
+                    total += s.price * s.quantity;
+                });
+            }
 
             setTotalPrice(Math.round(total));
         } else {
@@ -75,7 +75,9 @@ const RoomPage = () => {
             checkout: payload.checkout,
             guests: payload.guests || 1,
             total: totalPrice,
+            services: payload.services
         };
+        console.info(bookingData);
         navigate("/payment", { state: { bookingData } });
     };
 

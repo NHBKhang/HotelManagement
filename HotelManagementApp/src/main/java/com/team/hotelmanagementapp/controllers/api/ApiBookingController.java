@@ -1,7 +1,6 @@
 package com.team.hotelmanagementapp.controllers.api;
 
 import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
@@ -17,11 +16,12 @@ import com.team.hotelmanagementapp.components.JwtService;
 import com.team.hotelmanagementapp.pojo.Booking;
 import com.team.hotelmanagementapp.pojo.Feedback;
 import com.team.hotelmanagementapp.pojo.Invoice;
-import com.team.hotelmanagementapp.pojo.User;
+import com.team.hotelmanagementapp.pojo.ServiceBooking;
 import com.team.hotelmanagementapp.services.BookingService;
 import com.team.hotelmanagementapp.services.FeedbackService;
 import com.team.hotelmanagementapp.services.InvoiceService;
 import com.team.hotelmanagementapp.services.RoomService;
+import com.team.hotelmanagementapp.services.ServiceBookingService;
 import com.team.hotelmanagementapp.services.UserService;
 import com.team.hotelmanagementapp.utils.Pagination;
 import com.team.hotelmanagementapp.utils.RequestValidation;
@@ -69,27 +69,35 @@ public class ApiBookingController {
 
     @Autowired
     private InvoiceService invoiceService;
+    
+    @Autowired
+    private ServiceBookingService serviceBookingService;
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody Map<String, String> bodyData,
+    public ResponseEntity<?> create(@RequestBody Map<String, ?> bodyData,
             HttpServletRequest request) {
         try {
             RequestValidation val = RequestValidation.getUserFromRequest(request, userService, jwtService);
-
-            if(val.getUser() == null) {
+            if (val.getUser() == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(val.getMessage());
             }
 
             Booking b = new Booking();
-            b.setCheckInDate(LocalDate.parse(bodyData.get("checkin")));
-            b.setCheckOutDate(LocalDate.parse(bodyData.get("checkout")));
-            b.setGuests(Integer.valueOf(bodyData.get("guests")));
+            b.setCheckInDate(LocalDate.parse((String) bodyData.get("checkin")));
+            b.setCheckOutDate(LocalDate.parse((String) bodyData.get("checkout")));
+            b.setGuests(Integer.valueOf(bodyData.get("guests").toString()));
             b.setStatus(Booking.Status.PROCESSING);
             b.setUser(val.getUser());
-            b.setRoom(this.roomService.getById(Integer.parseInt(bodyData.get("roomId"))));
+            b.setRoom(this.roomService.getById(Integer.parseInt(bodyData.get("roomId").toString())));
 
-            return new ResponseEntity<>(this.bookingService.createOrUpdate(b), HttpStatus.CREATED);
-        } catch (NumberFormatException e) {
+            List<Map<String, Object>> services = (List<Map<String, Object>>) bodyData.get("services");
+            b = this.bookingService.createOrUpdate(b);
+            if (services != null) {
+                b.setServices(serviceBookingService.createMulti(b, services));
+            }
+
+            return new ResponseEntity<>(b, HttpStatus.CREATED);
+        } catch (Exception e) {
             return new ResponseEntity<>("Lỗi tạo đơn đặt phòng: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -150,13 +158,13 @@ public class ApiBookingController {
         try {
             RequestValidation val = RequestValidation.getUserFromRequest(request, userService, jwtService);
 
-            if(val.getUser() == null) {
+            if (val.getUser() == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(val.getMessage());
             }
 
             List<Feedback> feedbacks = feedbackService.findByBooking(id, params);
-//            long totalFeedbacks = feedbackService.countFeedback(params);
-            return ResponseEntity.ok(new Pagination<>(feedbacks, 10, params));
+            long totalFeedbacks = feedbackService.countFeedback(params);
+            return ResponseEntity.ok(new Pagination<>(feedbacks, totalFeedbacks, params));
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -172,7 +180,7 @@ public class ApiBookingController {
         try {
             RequestValidation val = RequestValidation.getUserFromRequest(request, userService, jwtService);
 
-            if(val.getUser() == null) {
+            if (val.getUser() == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(val.getMessage());
             }
 
@@ -210,7 +218,7 @@ public class ApiBookingController {
         try {
             RequestValidation val = RequestValidation.getUserFromRequest(request, userService, jwtService);
 
-            if(val.getUser() == null) {
+            if (val.getUser() == null) {
                 response.sendError(HttpStatus.UNAUTHORIZED.value(), val.getMessage());
             }
 
