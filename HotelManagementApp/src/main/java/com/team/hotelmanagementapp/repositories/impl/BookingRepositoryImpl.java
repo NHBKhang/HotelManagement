@@ -149,14 +149,6 @@ public class BookingRepositoryImpl implements BookingRepository {
     }
 
     @Override
-    public List<Booking> findBookingsByRoom(int roomId) {
-        Session s = this.factory.getObject().getCurrentSession();
-        Query<Booking> query = s.createQuery("SELECT DISTINCT b FROM Booking b LEFT JOIN FETCH b.feedbacks WHERE b.room.id = :roomId", Booking.class);
-        query.setParameter("roomId", roomId);
-        return query.getResultList();
-    }
-
-    @Override
     public List<Booking> findBookingsByRoomAndDateRange(int roomId, LocalDate checkIn, LocalDate checkOut) {
         Session s = this.factory.getObject().getCurrentSession();
         Query<Booking> query = s.createQuery(
@@ -177,11 +169,6 @@ public class BookingRepositoryImpl implements BookingRepository {
         query.setParameter("activeStatuses", activeStatuses);
 
         return query.getResultList();
-    }
-
-    @Override
-    public boolean isRoomAvailable(int roomId, LocalDate checkIn, LocalDate checkOut) {
-        return isRoomAvailable(roomId, checkIn, checkOut, null);
     }
 
     @Override

@@ -235,11 +235,11 @@
             const ids = Array.from(checkedBoxes).map(cb => cb.value);
             
             if (ids.length === 0) {
-                alert('Vui lòng chọn ít nhất một booking để xóa');
+                alert('Vui lòng chọn ít nhất một booking để Hủy');
                 return;
             }
             
-            if (confirm(`Bạn có chắc chắn muốn xóa ${ids.length} ${itemType} đã chọn?`)) {
+            if (confirm(`Bạn có chắc chắn muốn Hủy ${ids.length} ${itemType} đã chọn?`)) {
                 fetch(url, {
                     method: 'DELETE',
                     headers: {
@@ -257,7 +257,7 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Có lỗi xảy ra khi xóa');
+                    alert('Có lỗi xảy ra khi Hủy');
                 });
             }
         }
