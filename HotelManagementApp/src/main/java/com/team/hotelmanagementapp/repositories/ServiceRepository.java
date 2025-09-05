@@ -17,5 +17,7 @@ public interface ServiceRepository {
     void delete(List<Integer> ids);
 
     long countServices(Map<String, String> params);
+
+    List<Service> getByIds(List<Integer> serviceIds);
  
 }

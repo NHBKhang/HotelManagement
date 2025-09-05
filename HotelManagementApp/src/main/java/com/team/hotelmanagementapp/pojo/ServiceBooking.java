@@ -40,7 +40,7 @@ public class ServiceBooking implements Serializable {
     private Double totalPrice;
 
     @Column(nullable = false)
-    private Integer quantity;
+    private Integer quantity = 1;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

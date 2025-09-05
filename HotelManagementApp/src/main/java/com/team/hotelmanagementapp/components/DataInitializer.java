@@ -17,12 +17,14 @@ import com.team.hotelmanagementapp.pojo.RoomType;
 import com.team.hotelmanagementapp.pojo.Service;
 import com.team.hotelmanagementapp.pojo.User;
 import com.team.hotelmanagementapp.pojo.Payment;
+import com.team.hotelmanagementapp.pojo.ServiceBooking;
 import com.team.hotelmanagementapp.repositories.BookingRepository;
 import com.team.hotelmanagementapp.repositories.FeedbackRepository;
 import com.team.hotelmanagementapp.repositories.InvoiceRepository;
 import com.team.hotelmanagementapp.repositories.PaymentRepository;
 import com.team.hotelmanagementapp.repositories.RoomRepository;
 import com.team.hotelmanagementapp.repositories.RoomTypeRepository;
+import com.team.hotelmanagementapp.repositories.ServiceBookingRepository;
 import com.team.hotelmanagementapp.repositories.ServiceRepository;
 import com.team.hotelmanagementapp.services.UserService;
 
@@ -47,6 +49,9 @@ public class DataInitializer {
 
     @Autowired
     private ServiceRepository serviceRepository;
+
+    @Autowired
+    private ServiceBookingRepository serviceBookingRepository;
 
     @Autowired
     private FeedbackRepository feedbackRepository;
@@ -94,16 +99,20 @@ public class DataInitializer {
 
         // Create hotel services
         if (serviceRepository.find(null).isEmpty()) {
-            serviceRepository.createOrUpdate(new Service(null, "Bữa sáng", "Bữa sáng đơn giản", 50000.0, true, "suất", true));
-            serviceRepository.createOrUpdate(new Service(null, "Bữa trưa buffet", "Bữa trưa buffet", 150000.0, true, "suất", true));
+            Service s1 = serviceRepository.createOrUpdate(new Service(null, "Bữa sáng", "Bữa sáng đơn giản", 50000.0, true, "suất", true));
+            Service s2 = serviceRepository.createOrUpdate(new Service(null, "Bữa trưa buffet", "Bữa trưa buffet", 150000.0, true, "suất", true));
             serviceRepository.createOrUpdate(new Service(null, "Bữa tối buffet", "Bữa tối buffet", 250000.0, true, "suất", true));
             serviceRepository.createOrUpdate(new Service(null, "Spa thư giãn", "Phiên spa thư giãn 1 giờ", 55000.0, true, "giờ", true));
             serviceRepository.createOrUpdate(new Service(null, "Phục vụ phòng", "Phục vụ đồ uống và ăn nhẹ tại phòng", 180000.0, true, "lượt", false));
             serviceRepository.createOrUpdate(new Service(null, "Giặt ủi", "Giặt ủi 1 bộ trang phục", 55000.0, true, "lượt", true));
             serviceRepository.createOrUpdate(new Service(null, "Gym & Fitness", "Vé tập gym 1 ngày", 85000.0, true, "ngày", true));
             serviceRepository.createOrUpdate(new Service(null, "Internet Wifi", "Internet tốc độ cao 1 ngày", 50000.0, true, "ngày", false));
-            serviceRepository.createOrUpdate(new Service(null, "Chỗ đậu xe", "Đậu xe an toàn 1 ngày", 30000.0, true, "ngày", true));
+            Service s9 = serviceRepository.createOrUpdate(new Service(null, "Chỗ đậu xe", "Đậu xe an toàn 1 ngày", 30000.0, true, "ngày", true));
             serviceRepository.createOrUpdate(new Service(null, "Dịch vụ đưa đón", "Đưa đón bằng xe riêng", 400000.0, true, "lượt", false));
+            
+            serviceBookingRepository.createOrUpdate(new ServiceBooking(null, bookingRepository.getById(1), s9, s1.getPrice() * 2, 2));
+            serviceBookingRepository.createOrUpdate(new ServiceBooking(null, bookingRepository.getById(1), s1, s1.getPrice(), 1));
+            serviceBookingRepository.createOrUpdate(new ServiceBooking(null, bookingRepository.getById(2), s2, s1.getPrice(), 1));
         }
 
         // Create feedback data
@@ -228,14 +237,14 @@ public class DataInitializer {
                 invoice1.setInvoiceNumber("INV-" + System.currentTimeMillis());
                 invoice1.setSentToEmail(booking1.getUser().getEmail());
                 invoice1.setStatus(Invoice.Status.UNPAID);
-                invoice1.setTotalAmount(booking1.getRoom().getRoomType().getPricePerNight());
+                invoice1.setTotalAmount(booking1.getRoom().getRoomType().getPricePerNight() + 150000);
                 invoice1 = invoiceRepository.createOrUpdate(invoice1);
 
                 // Payment trả góp 2 lần cho invoice1
                 Payment payment1a = new Payment();
                 payment1a.setCode(paymentRepository.generateCode());
                 payment1a.setTransactionNo("VNPAY123456");
-                payment1a.setAmount(booking1.getRoom().getRoomType().getPricePerNight() / 2);
+                payment1a.setAmount(booking1.getRoom().getRoomType().getPricePerNight() / 2 + 100000);
                 payment1a.setMethod(Payment.Method.VNPAY);
                 payment1a.setStatus(Payment.Status.SUCCESS);
                 payment1a.setDescription("Thanh toán đợt 1 qua VNPAY");
@@ -245,7 +254,7 @@ public class DataInitializer {
                 Payment payment1b = new Payment();
                 payment1b.setCode(paymentRepository.generateCode());
                 payment1b.setTransactionNo("VNPAY654321");
-                payment1b.setAmount(booking1.getRoom().getRoomType().getPricePerNight() / 2);
+                payment1b.setAmount(booking1.getRoom().getRoomType().getPricePerNight() / 2 + 50000);
                 payment1b.setMethod(Payment.Method.VNPAY);
                 payment1b.setStatus(Payment.Status.SUCCESS);
                 payment1b.setDescription("Thanh toán đợt 2 qua VNPAY");
@@ -262,14 +271,14 @@ public class DataInitializer {
                 invoice2.setInvoiceNumber("INV-" + (System.currentTimeMillis() + 1));
                 invoice2.setSentToEmail(booking2.getUser().getEmail());
                 invoice2.setStatus(Invoice.Status.UNPAID);
-                invoice2.setTotalAmount(booking2.getRoom().getRoomType().getPricePerNight());
+                invoice2.setTotalAmount(booking2.getRoom().getRoomType().getPricePerNight() + 50000);
                 invoice2 = invoiceRepository.createOrUpdate(invoice2);
 
                 // Payment mới pending
                 Payment payment2 = new Payment();
                 payment2.setCode(paymentRepository.generateCode());
                 payment2.setTransactionNo("TRANSFER987654");
-                payment2.setAmount(booking2.getRoom().getRoomType().getPricePerNight());
+                payment2.setAmount(booking2.getRoom().getRoomType().getPricePerNight() + 50000);
                 payment2.setMethod(Payment.Method.TRANSFER);
                 payment2.setStatus(Payment.Status.PENDING);
                 payment2.setDescription("Thanh toán qua chuyển khoản");

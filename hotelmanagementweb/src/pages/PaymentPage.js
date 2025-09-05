@@ -130,15 +130,19 @@ const PaymentPage = () => {
     const onSubmit = async (e) => {
         e.preventDefault();
         try {
-            let bookingRes = await authAPI.post(endpoints.bookings, {
+            const bookingRes = await authAPI.post(endpoints.bookings, {
                 checkin: bookingData.checkin,
                 checkout: bookingData.checkout,
                 guests: bookingData.guests,
+                services: bookingData.services.map(s => ({
+                    id: s.id,
+                    quantity: s.quantity
+                })),
                 roomId: room.id
             });
 
             let res = null;
-
+            console.info(bookingRes.data)
             if (paymentMethod === 'vnpay') {
                 res = await authAPI.post(endpoints['vnpay-payment'], {
                     itemId: room.id,

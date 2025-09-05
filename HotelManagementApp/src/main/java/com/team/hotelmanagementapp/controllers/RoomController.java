@@ -82,6 +82,7 @@ public class RoomController {
             redirectAttributes.addFlashAttribute("error", "Tên người dùng đã tồn tại!");
             return "redirect:/rooms/add";
         } catch (Exception e) {
+            e.printStackTrace();
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra, vui lòng thử lại!");
             return "redirect:/rooms/add";
         }
