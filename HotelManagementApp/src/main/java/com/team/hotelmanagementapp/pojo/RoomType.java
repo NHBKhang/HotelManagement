@@ -43,10 +43,10 @@ public class RoomType implements Serializable {
     @Column(name = "max_guests")
     private Integer maxGuests;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "room_amenities", joinColumns = @JoinColumn(name = "room_id"))
-    @Column(name = "amenity")
-    private List<String> amenities;
+//    @ElementCollection(fetch = FetchType.EAGER)
+//    @CollectionTable(name = "room_amenities", joinColumns = @JoinColumn(name = "room_id"))
+//    @Column(name = "amenity")
+//    private List<String> amenities;
 
     private String policy;
 
@@ -136,13 +136,13 @@ public class RoomType implements Serializable {
         this.maxGuests = maxGuests;
     }
 
-    public List<String> getAmenities() {
-        return amenities;
-    }
+//    public List<String> getAmenities() {
+//        return amenities;
+//    }
 
-    public void setAmenities(List<String> amenities) {
-        this.amenities = amenities;
-    }
+//    public void setAmenities(List<String> amenities) {
+//        this.amenities = amenities;
+//    }
 
     public String getPolicy() {
         return policy;

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title th:text="${isEdit} ? 'Chỉnh sửa Booking - Quản lý khách sạn' : 'Tạo Booking mới - Quản lý khách sạn'"></title>
+    <th:block th:replace="base :: head"></th:block>
+</head>
+
+<body>
+    <div th:replace="base :: layout(~{::content})">
+        <div th:fragment="content">
+            <div class="container">
+                <h2 class="text-center mb-4">
+                    <span th:if="${isEdit}">
+                        <i class="fas fa-edit me-2"></i> Chỉnh sửa Booking
+                    </span>
+                    <span th:unless="${isEdit}">
+                        <i class="fas fa-plus me-2"></i> Tạo Booking mới
+                    </span>
+                </h2>
+
+                <form th:action="@{/bookings/save}" method="post" th:object="${booking}" class="styled-form">
+                    <!-- Action Buttons -->
+                    <div class="mb-3">
+                        <button type="submit" class="btn btn-success me-2">
+                            <i class="fas fa-save me-1"></i>
+                            <span th:text="${isEdit} ? 'Cập nhật' : 'Tạo Booking'"></span>
+                        </button>
+                        
+                        <button type="button" class="btn btn-danger me-2" th:if="${isEdit}"
+                                th:data-item-id="${booking.id}"
+                                th:onclick="confirmAndRequest(event)">
+                            <i class="fas fa-ban me-1"></i> Hủy Booking
+                        </button>
+                        
+                        <a th:href="@{/bookings}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Quay lại
+                        </a>
+                    </div>
+
+                    <!-- Main Form Content -->
+                    <div class="row">
+                        <!-- Left Column: Booking Details -->
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Thông tin Booking</h5>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Hidden ID field for edit mode -->
+                                    <input type="hidden" th:if="${isEdit}" th:field="*{id}">
+                                    
+                                    <!-- Booking Code (read-only for edit) -->
+                                    <div class="mb-3" th:if="${isEdit}">
+                                        <label class="form-label">Mã Booking</label>
+                                        <input type="text" class="form-control" th:value="*{code}" readonly>
+                                    </div>
+
+                                    <!-- Customer Selection -->
+                                    <div class="mb-3">
+                                        <label for="user" class="form-label">Khách hàng <span class="text-danger">*</span></label>
+                                        <select id="user" th:field="*{user.id}" class="form-select" required>
+                                            <option value="">-- Chọn khách hàng --</option>
+                                            <option th:each="user : ${users}" 
+                                                    th:value="${user.id}" 
+                                                    th:text="${user.firstName + ' ' + user.lastName + ' (' + user.email + ')'}">
+                                                Nguyễn Văn A (user@example.com)
+                                            </option>
+                                        </select>
+                                        <div class="text-danger" th:if="${#fields.hasErrors('user')}" th:errors="*{user}"></div>
+                                    </div>
+
+                                    <!-- Room Selection -->
+                                    <div class="mb-3">
+                                        <label for="room" class="form-label">Phòng <span class="text-danger">*</span></label>
+                                        <select id="room" th:field="*{room.id}" class="form-select" required>
+                                            <option value="">-- Chọn phòng --</option>
+                                            <option th:each="room : ${rooms}"
+                                                    th:value="${room.id}"
+                                                    th:text="${room.roomNumber + ' - ' + room.roomType.name + ' (' + room.roomType.pricePerNight + 'đ/đêm)'}">
+                                                Phòng 101 - Standard (500000đ/đêm)
+                                            </option>
+                                        </select>
+                                        <div class="text-danger" th:if="${#fields.hasErrors('room')}" th:errors="*{room}"></div>
+                                        <div id="roomAvailabilityStatus" class="mt-2"></div>
+                                    </div>
+
+                                    <!-- Date Range -->
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="checkInDate" class="form-label">Ngày nhận phòng <span class="text-danger">*</span></label>
+                                                <input type="date" id="checkInDate" th:value="*{#temporals.format(checkInDate, 'yyyy-MM-dd')}" name="checkInDate"
+                                                       class="form-control" required onchange="calculateDays(); checkRoomAvailability();">
+                                                <div class="text-danger" th:if="${#fields.hasErrors('checkInDate')}" th:errors="*{checkInDate}"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="checkOutDate" class="form-label">Ngày trả phòng <span class="text-danger">*</span></label>
+                                                <input type="date" id="checkOutDate" th:value="*{#temporals.format(checkOutDate, 'yyyy-MM-dd')}" name="checkOutDate"
+                                                       class="form-control" required onchange="calculateDays(); checkRoomAvailability();">
+                                                <div class="text-danger" th:if="${#fields.hasErrors('checkOutDate')}" th:errors="*{checkOutDate}"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Number of Guests -->
+                                    <div class="mb-3">
+                                        <label for="guests" class="form-label">Số lượng khách</label>
+                                        <input type="number" id="guests" th:field="*{guests}" 
+                                               class="form-control" min="1" max="10" value="1">
+                                        <div class="form-text">Tối đa 10 khách mỗi phòng</div>
+                                        <div class="text-danger" th:if="${#fields.hasErrors('guests')}" th:errors="*{guests}"></div>
+                                    </div>
+
+                                    <!-- Special Requests -->
+                                    <div class="mb-3">
+                                        <label for="specialRequest" class="form-label">Yêu cầu đặc biệt</label>
+                                        <textarea id="specialRequest" th:field="*{specialRequest}" 
+                                                  class="form-control" rows="3" 
+                                                  placeholder="Ví dụ: Phòng tầng cao, giường đôi, không hút thuốc..."></textarea>
+                                        <div class="text-danger" th:if="${#fields.hasErrors('specialRequest')}" th:errors="*{specialRequest}"></div>
+                                    </div>
+
+                                    <!-- Status (only for edit mode) -->
+                                    <div class="mb-3" th:if="${isEdit}">
+                                        <label for="status" class="form-label">Trạng thái</label>
+                                        <select id="status" th:field="*{status}" class="form-select">
+                                            <option th:each="status : ${bookingStatuses}" 
+                                                    th:value="${status.name()}" 
+                                                    th:text="${status.description}"
+                                                    th:selected="*{status == status}"></option>
+                                        </select>
+                                        <div class="text-danger" th:if="${#fields.hasErrors('status')}" th:errors="*{status}"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Summary & Info -->
+                        <div class="col-md-4">
+                            <!-- Booking Summary -->
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-receipt"></i> Tóm tắt</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="bookingSummary">
+                                        <div class="mb-2">
+                                            <strong>Số đêm:</strong> <span id="totalNights">-</span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>Giá/đêm:</strong> <span id="pricePerNight">-</span>
+                                        </div>
+                                        <hr>
+                                        <div class="mb-2">
+                                            <strong>Tổng tiền:</strong> <span id="totalAmount" class="text-success fw-bold">-</span>
+                                        </div>
+                                        <small class="text-muted">*Chưa bao gồm thuế và phí dịch vụ</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Booking Info (for edit mode) -->
+                            <div class="card" th:if="${isEdit}">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-clock"></i> Thông tin thêm</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <strong>Ngày tạo:</strong><br>
+                                        <span th:text="*{createdAt != null ? #temporals.format(createdAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">01/01/2024 10:30</span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>Cập nhật cuối:</strong><br>
+                                        <span th:text="*{updatedAt != null ? #temporals.format(updatedAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">01/01/2024 15:45</span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>Trạng thái hiện tại:</strong><br>
+                                        <span th:class="*{status != null ? status.badgeClass : 'badge bg-secondary'}" 
+                                              th:text="*{status != null ? status.description : 'Chưa xác định'}">Chờ xác nhận</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quick Tips -->
+                            <div class="card mt-3">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-lightbulb"></i> Lưu ý</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled small mb-0">
+                                        <li><i class="fas fa-check text-success"></i> Kiểm tra tình trạng phòng trước khi booking</li>
+                                        <li><i class="fas fa-check text-success"></i> Xác nhận thông tin khách hàng chính xác</li>
+                                        <li><i class="fas fa-check text-success"></i> Ngày trả phòng phải sau ngày nhận phòng</li>
+                                        <li><i class="fas fa-check text-success"></i> Checkout time: 12:00 PM</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Include message fragment for validation errors -->
+            <div th:replace="fragments/message :: message"></div>
+        </div>
+    </div>
+
+    <!-- JavaScript for dynamic calculations -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize form
+            calculateDays();
+            
+            // Room selection change handler
+            document.getElementById('room').addEventListener('change', function() {
+                calculateDays();
+                checkRoomAvailability();
+            });
+        });
+
+        function calculateDays() {
+            const checkInDate = document.getElementById('checkInDate').value;
+            const checkOutDate = document.getElementById('checkOutDate').value;
+            const roomSelect = document.getElementById('room');
+            
+            const totalNightsElement = document.getElementById('totalNights');
+            const pricePerNightElement = document.getElementById('pricePerNight');
+            const totalAmountElement = document.getElementById('totalAmount');
+            
+            if (checkInDate && checkOutDate) {
+                const checkIn = new Date(checkInDate);
+                const checkOut = new Date(checkOutDate);
+                const timeDiff = checkOut.getTime() - checkIn.getTime();
+                const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                
+                if (daysDiff > 0) {
+                    totalNightsElement.textContent = daysDiff + ' đêm';
+                    
+                    // Extract price from room option text
+                    if (roomSelect.value) {
+                        const selectedOption = roomSelect.options[roomSelect.selectedIndex];
+                        const roomText = selectedOption.text;
+                        const priceMatch = roomText.match(/\(([\d.]+)đ\/đêm\)/);
+                        
+                        if (priceMatch) {
+                            const pricePerNight = parseInt(priceMatch[1]);
+                            const totalAmount = pricePerNight * daysDiff;
+                            
+                            pricePerNightElement.textContent = formatCurrency(pricePerNight) + 'đ';
+                            totalAmountElement.textContent = formatCurrency(totalAmount) + 'đ';
+                        } else {
+                            pricePerNightElement.textContent = '-';
+                            totalAmountElement.textContent = '-';
+                        }
+                    } else {
+                        pricePerNightElement.textContent = '-';
+                        totalAmountElement.textContent = '-';
+                    }
+                } else {
+                    totalNightsElement.textContent = 'Ngày không hợp lệ';
+                    pricePerNightElement.textContent = '-';
+                    totalAmountElement.textContent = '-';
+                }
+            } else {
+                totalNightsElement.textContent = '-';
+                pricePerNightElement.textContent = '-';
+                totalAmountElement.textContent = '-';
+            }
+        }
+
+        function formatCurrency(amount) {
+            return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        function confirmAndRequest(event) {
+            if (confirm('Bạn có chắc chắn muốn thực hiện hành động này?')) {
+                // Create a form and submit
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/HotelManagementApp/bookings/${event.target.dataset.itemId}/cancel`;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // Validate dates
+        document.getElementById('checkInDate').addEventListener('change', function() {
+            const checkInDate = new Date(this.value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (checkInDate < today) {
+                alert('Ngày nhận phòng không thể là ngày trong quá khứ');
+                this.value = '';
+            }
+        });
+
+        document.getElementById('checkOutDate').addEventListener('change', function() {
+            const checkInDate = new Date(document.getElementById('checkInDate').value);
+            const checkOutDate = new Date(this.value);
+            
+            if (checkOutDate <= checkInDate) {
+                alert('Ngày trả phòng phải sau ngày nhận phòng');
+                this.value = '';
+            }
+        });
+
+        // Check room availability function
+        function checkRoomAvailability() {
+            const roomId = document.getElementById('room').value;
+            const checkInDate = document.getElementById('checkInDate').value;
+            const checkOutDate = document.getElementById('checkOutDate').value;
+            const statusDiv = document.getElementById('roomAvailabilityStatus');
+            
+            // Clear previous status
+            statusDiv.innerHTML = '';
+            
+            if (!roomId || !checkInDate || !checkOutDate) {
+                return;
+            }
+            
+            // Show loading
+            statusDiv.innerHTML = '<div class="text-info"><i class="fas fa-spinner fa-spin"></i> Đang kiểm tra tình trạng phòng...</div>';
+            
+            // Get current booking ID for edit mode (exclude from availability check)
+            const currentBookingId = document.querySelector('input[name="id"]')?.value;
+            
+            // Build URL with parameters
+            let url = '/HotelManagementApp/bookings/check-availability?roomId=' + roomId +
+                     '&checkIn=' + checkInDate +
+                     '&checkOut=' + checkOutDate;
+            
+            if (currentBookingId) {
+                url += '&excludeBookingId=' + currentBookingId;
+            }
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.available) {
+                        statusDiv.innerHTML = '<div class="text-success"><i class="fas fa-check-circle"></i> ' + data.message + '</div>';
+                    } else {
+                        statusDiv.innerHTML = '<div class="text-danger"><i class="fas fa-exclamation-triangle"></i> ' + data.message +
+                                             '</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking availability:', error);
+                    statusDiv.innerHTML = '<div class="text-warning"><i class="fas fa-exclamation-triangle"></i> Không thể kiểm tra tình trạng phòng</div>';
+                });
+        }
+
+        // Initial availability check if all fields are filled
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(checkRoomAvailability, 500); // Small delay to ensure form is fully loaded
+        });
+    </script>
+</body>
+</html>

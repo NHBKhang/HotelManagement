@@ -1,9 +1,11 @@
 package com.team.hotelmanagementapp.services;
 
-import com.team.hotelmanagementapp.pojo.Booking;
-import com.team.hotelmanagementapp.pojo.Payment;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+
+import com.team.hotelmanagementapp.pojo.Booking;
+import com.team.hotelmanagementapp.pojo.Payment;
 
 public interface BookingService {
     
@@ -22,6 +24,9 @@ public interface BookingService {
     long countBookings(Map<String, String> params);
     
     long countBookingsByUsername(Map<String, String> params, String username);
+    
+    boolean isRoomAvailable(int roomId, LocalDate checkIn, LocalDate checkOut, Integer excludeBookingId);
+    List<Booking> findBookingsByRoomAndDateRange(int roomId, LocalDate checkIn, LocalDate checkOut);
     
 //    List<Booking> findByStatus(Booking.Status status);
     

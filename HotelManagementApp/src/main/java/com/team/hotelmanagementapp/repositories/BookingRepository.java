@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.team.hotelmanagementapp.pojo.Booking;
-import com.team.hotelmanagementapp.pojo.Payment;
 
 public interface BookingRepository {
 
@@ -24,7 +23,11 @@ public interface BookingRepository {
 //    List<Booking> findByStatus(Booking.Status status);
 
     // Room availability methods
-//    List<Booking> findBookingsByRoom(int roomId);
-//    List<Booking> findBookingsByRoomAndDateRange(int roomId, LocalDate checkIn, LocalDate checkOut);
-//    boolean isRoomBooked(int roomId, LocalDate checkIn, LocalDate checkOut);
+    List<Booking> findBookingsByRoom(int roomId);
+    List<Booking> findBookingsByRoomAndDateRange(int roomId, LocalDate checkIn, LocalDate checkOut);
+    boolean isRoomAvailable(int roomId, LocalDate checkIn, LocalDate checkOut);
+    boolean isRoomAvailable(int roomId, LocalDate checkIn, LocalDate checkOut, Integer excludeBookingId);
+    
+    List<Booking> find(Map<String, String> params);
+    long countBookings(Map<String, String> params);
 }

@@ -116,6 +116,7 @@ public class RoomRepositoryImpl implements RoomRepository {
 
     @Override
     public Room createOrUpdate(Room room) {
+        System.out.println(room);
         Session s = this.factory.getObject().getCurrentSession();
 
         if (room.getId() == null) {

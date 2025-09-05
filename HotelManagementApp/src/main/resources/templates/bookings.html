@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Quản lý Booking - Quản lý khách sạn</title>
+    <th:block th:replace="base :: head"></th:block>
+</head>
+
+<body>
+    <div th:replace="base :: layout(~{::content})">
+        <div th:fragment="content">
+            <div class="container">
+                <h2 class="text-center w-100 mb-3"><i class="fas fa-calendar-check"></i> Quản lý Booking</h2>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <a th:href="@{/bookings/add}" class="btn btn-success me-2">
+                            <i class="fas fa-plus"></i> Tạo Booking
+                        </a>
+
+                        <a th:href="@{/bookings/calendar}" class="btn btn-info me-2">
+                            <i class="fas fa-calendar-alt"></i> Xem Lịch
+                        </a>
+
+                        <button th:onclick="|deleteAll('@{/bookings/bulk-delete}', 'booking')|" 
+                                id="deleteButton" class="btn btn-danger" disabled>
+                            <i class="fas fa-trash-alt"></i>  Hủy Booking
+                        </button>
+                    </div>
+
+                    <!-- Search and Filter Form -->
+                    <form th:action="@{/bookings}" method="get" class="d-flex align-items-center">
+                        <input type="text" name="kw" th:value="${param.kw}" class="form-control me-2" 
+                               style="width: 200px;" placeholder="Tìm theo mã booking, tên khách...">
+                        
+                        <select name="status" class="form-select me-2" style="width: 150px;">
+                            <option value="">Tất cả trạng thái</option>
+                            <option th:each="status : ${bookingStatuses}" 
+                                    th:value="${status.name()}" 
+                                    th:text="${status.description}"
+                                    th:selected="${param.status == status.name()}"></option>
+                        </select>
+
+                        <input type="date" name="checkInDate" th:value="${param.checkInDate}" 
+                               class="form-control me-2" style="width: 150px;" placeholder="Ngày nhận">
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <h5>Tổng Booking</h5>
+                                <h3 th:text="${totalBookings ?: 0}">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body">
+                                <h5>Chờ xác nhận</h5>
+                                <h3 th:text="${pendingCount ?: 0}">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <h5>Đã xác nhận</h5>
+                                <h3 th:text="${confirmedCount ?: 0}">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <h5>Đang ở</h5>
+                                <h3 th:text="${checkedInCount ?: 0}">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bookings Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered text-center">
+                        <thead class="table-dark">
+                            <tr>
+                                <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th>
+                                <th>Mã Booking</th>
+                                <th>Khách hàng</th>
+                                <th>Phòng</th>
+                                <th>Ngày nhận</th>
+                                <th>Ngày trả</th>
+                                <th>Số khách</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày tạo</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="bookingDTO : ${rows}">
+                                <td><input type="checkbox" th:value="${bookingDTO.id}" class="booking-checkbox"></td>
+                                <td>
+                                    <a th:href="@{/bookings/{id}(id=${bookingDTO.id})}"
+                                       class="text-decoration-none fw-bold text-primary"
+                                       th:text="${bookingDTO.code}">BK001</a>
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong th:text="${bookingDTO.customerName}">Nguyễn Văn A</strong>
+                                        <br>
+                                        <small class="text-muted" th:text="${bookingDTO.customerEmail}">email@example.com</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong th:text="${bookingDTO.roomName}">Phòng 101</strong>
+                                        <br>
+                                        <small class="text-muted" th:text="${bookingDTO.roomTypeName}">Standard</small>
+                                    </div>
+                                </td>
+                                <td th:text="${bookingDTO.checkInDateFormatted}">01/01/2024</td>
+                                <td th:text="${bookingDTO.checkOutDateFormatted}">05/01/2024</td>
+                                <td>
+                                    <span class="badge bg-secondary" th:text="${bookingDTO.guestsText}">2 khách</span>
+                                </td>
+                                <td>
+                                    <span th:class="${bookingDTO.statusBadgeClass}" th:text="${bookingDTO.statusDescription}">Chờ xác nhận</span>
+                                </td>
+                                <td th:text="${bookingDTO.createdAtFormatted}">01/01/2024 10:30</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a th:href="@{/bookings/{id}(id=${bookingDTO.id})}"
+                                           class="btn btn-sm btn-outline-primary" title="Xem chi tiết">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a th:href="@{/bookings/edit/{id}(id=${bookingDTO.id})}"
+                                           class="btn btn-sm btn-outline-warning" title="Chỉnh sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-info dropdown-toggle"
+                                                data-bs-toggle="dropdown" title="Cập nhật trạng thái">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li th:each="newStatus : ${bookingStatuses}">
+                                                <form th:action="@{/bookings/{id}/status(id=${bookingDTO.id})}" method="post" class="d-inline">
+                                                    <input type="hidden" name="status" th:value="${newStatus.name()}">
+                                                    <button type="submit" class="dropdown-item"
+                                                            th:disabled="${bookingDTO.status == newStatus}"
+                                                            th:text="${newStatus.description}">Trạng thái</button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(rows)}">
+                                <td colspan="10" class="text-center text-muted py-4">
+                                    <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                                    <br>Không có booking nào được tìm thấy
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div th:if="${pagination != null and pagination.totalPages > 1}" class="d-flex justify-content-center">
+                    <nav>
+                        <ul class="pagination">
+                            <li class="page-item" th:classappend="${!pagination.hasPrevious()} ? 'disabled'">
+                                <a class="page-link" th:href="@{/bookings(page=1, kw=${param.kw}, status=${param.status}, checkInDate=${param.checkInDate})}">Đầu</a>
+                            </li>
+                            <li class="page-item" th:classappend="${!pagination.hasPrevious()} ? 'disabled'">
+                                <a class="page-link" th:href="@{/bookings(page=${pagination.current - 1}, kw=${param.kw}, status=${param.status}, checkInDate=${param.checkInDate})}">Trước</a>
+                            </li>
+                            
+                            <li th:each="pageNum : ${pagination.pageNumbers}"
+                                class="page-item"
+                                th:classappend="${pageNum == pagination.current} ? 'active'">
+                                <a class="page-link" th:href="@{/bookings(page=${pageNum}, kw=${param.kw}, status=${param.status}, checkInDate=${param.checkInDate})}" th:text="${pageNum}">1</a>
+                            </li>
+                            
+                            <li class="page-item" th:classappend="${!pagination.hasNext()} ? 'disabled'">
+                                <a class="page-link" th:href="@{/bookings(page=${pagination.current + 1}, kw=${param.kw}, status=${param.status}, checkInDate=${param.checkInDate})}">Sau</a>
+                            </li>
+                            <li class="page-item" th:classappend="${!pagination.hasNext()} ? 'disabled'">
+                                <a class="page-link" th:href="@{/bookings(page=${pagination.totalPages}, kw=${param.kw}, status=${param.status}, checkInDate=${param.checkInDate})}">Cuối</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Include message fragment for success/error notifications -->
+            <div th:replace="fragments/message :: message"></div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.booking-checkbox');
+            const deleteButton = document.getElementById('deleteButton');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+            
+            deleteButton.disabled = !selectAll.checked;
+        }
+
+        // Update delete button state when individual checkboxes change
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('.booking-checkbox');
+            const deleteButton = document.getElementById('deleteButton');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const checkedBoxes = document.querySelectorAll('.booking-checkbox:checked');
+                    deleteButton.disabled = checkedBoxes.length === 0;
+                });
+            });
+        });
+
+        function deleteAll(url, itemType) {
+            const checkedBoxes = document.querySelectorAll('.booking-checkbox:checked');
+            const ids = Array.from(checkedBoxes).map(cb => cb.value);
+            
+            if (ids.length === 0) {
+                alert('Vui lòng chọn ít nhất một booking để xóa');
+                return;
+            }
+            
+            if (confirm(`Bạn có chắc chắn muốn xóa ${ids.length} ${itemType} đã chọn?`)) {
+                fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(ids)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Có lỗi xảy ra: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi xóa');
+                });
+            }
+        }
+    </script>
+</body>
+</html>
