@@ -1,5 +1,12 @@
 package com.team.hotelmanagementapp.services.impl;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.team.hotelmanagementapp.pojo.Booking;
 import com.team.hotelmanagementapp.pojo.Payment;
 import com.team.hotelmanagementapp.pojo.Room;
@@ -7,10 +14,6 @@ import com.team.hotelmanagementapp.repositories.BookingRepository;
 import com.team.hotelmanagementapp.services.BookingService;
 import com.team.hotelmanagementapp.services.RoomService;
 import com.team.hotelmanagementapp.services.UserService;
-import java.util.List;
-import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 public class BookingServiceImpl implements BookingService {
@@ -56,7 +59,7 @@ public class BookingServiceImpl implements BookingService {
     public void cancelBooking(int bookingId) {
         Booking b = this.getById(bookingId);
         b.setStatus(Booking.Status.CANCELLED);
-        this.updateRoomStatus(b);
+        this.createOrUpdate(b);
     }
 
     private void updateRoomStatus(Booking booking) {
@@ -107,5 +110,15 @@ public class BookingServiceImpl implements BookingService {
         }
 
         return this.createOrUpdate(b);
+    }
+
+    @Override
+    public boolean isRoomAvailable(int roomId, LocalDate checkIn, LocalDate checkOut, Integer excludeBookingId) {
+        return bookingRepository.isRoomAvailable(roomId, checkIn, checkOut, excludeBookingId);
+    }
+
+    @Override
+    public List<Booking> findBookingsByRoomAndDateRange(int roomId, LocalDate checkIn, LocalDate checkOut) {
+        return bookingRepository.findBookingsByRoomAndDateRange(roomId, checkIn, checkOut);
     }
 }

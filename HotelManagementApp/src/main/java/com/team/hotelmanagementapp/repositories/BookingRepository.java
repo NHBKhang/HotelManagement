@@ -21,7 +21,9 @@ public interface BookingRepository {
 //    List<Booking> findByStatus(Booking.Status status);
 
     // Room availability methods
-//    List<Booking> findBookingsByRoom(int roomId);
-//    List<Booking> findBookingsByRoomAndDateRange(int roomId, LocalDate checkIn, LocalDate checkOut);
-//    boolean isRoomBooked(int roomId, LocalDate checkIn, LocalDate checkOut);
+    List<Booking> findBookingsByRoomAndDateRange(int roomId, LocalDate checkIn, LocalDate checkOut);
+    boolean isRoomAvailable(int roomId, LocalDate checkIn, LocalDate checkOut, Integer excludeBookingId);
+    
+    List<Booking> find(Map<String, String> params);
+    long countBookings(Map<String, String> params);
 }

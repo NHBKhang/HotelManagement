@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title th:text="'Chi tiết Booking ' + ${booking.code} + ' - Quản lý khách sạn'">Chi tiết Booking - Quản lý khách sạn</title>
+    <th:block th:replace="base :: head"></th:block>
+</head>
+
+<body>
+    <div th:replace="base :: layout(~{::content})">
+        <div th:fragment="content">
+            <div class="container">
+                <!-- Header with Booking Code and Status -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="mb-1">
+                            <i class="fas fa-file-invoice"></i>
+                            Booking <span class="text-primary" th:text="${booking.code}">BK001</span>
+                        </h2>
+                        <span th:class="${booking.status.badgeClass} + ' fs-6'" th:text="${booking.status.description}">Chờ xác nhận</span>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div>
+                        <a th:href="@{/bookings/edit/{id}(id=${booking.id})}" class="btn btn-warning me-2">
+                            <i class="fas fa-edit"></i> Chỉnh sửa
+                        </a>
+
+                        <div class="btn-group me-2" role="group">
+                            <button type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="fas fa-sync-alt"></i> Cập nhật trạng thái
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li th:each="status : ${bookingStatuses}">
+                                    <form th:action="@{/bookings/{id}/status(id=${booking.id})}" method="post" class="d-inline">
+                                        <input type="hidden" name="status" th:value="${status.name()}">
+                                        <button type="submit" class="dropdown-item"
+                                                th:disabled="${booking.status == status}"
+                                                th:text="${status.description}">Trạng thái</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <a th:href="@{/bookings}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-user"></i> Thông tin Khách hàng</h5>
+                            </div>
+                            <div class="card-body" th:object="${booking.user}">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Họ tên:</strong> <span th:text="*{firstName + ' ' + lastName}">Nguyễn Văn A</span></p>
+                                        <p><strong>Email:</strong> <span th:text="*{email}">user@example.com</span></p>
+                                        <p><strong>Số điện thoại:</strong> <span th:text="*{phone ?: 'Chưa cung cấp'}">0123456789</span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Username:</strong> <span th:text="*{username}">user123</span></p>
+                                        <p><strong>Ngày tham gia:</strong> <span th:text="*{createdAt != null ? #temporals.format(createdAt, 'dd/MM/yyyy') : 'N/A'}">05/09/2025</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-bed"></i> Thông tin Phòng</h5>
+                            </div>
+                            <div class="card-body" th:object="${booking.room}">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Tên phòng:</strong> <span th:text="*{roomNumber}">Phòng 101</span></p>
+                                        <p><strong>Loại phòng:</strong> <span th:text="*{roomType.name}">Standard</span></p>
+                                        <p><strong>Giá/đêm:</strong>
+                                            <span class="text-success fw-bold" th:text="*{#numbers.formatDecimal(roomType.pricePerNight, 0, 'COMMA', 0, 'POINT')} + 'đ'">500,000đ</span>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Sức chứa:</strong> <span th:text="*{roomType.maxGuests + ' khách'}">4 khách</span></p>
+                                        <p><strong>Mô tả:</strong> <span th:text="*{roomType.description ?: 'Không có mô tả'}">Phòng tiêu chuẩn</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> Chi tiết Booking</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Ngày nhận phòng:</strong>
+                                            <span th:text="${#temporals.format(booking.checkInDate, 'dd/MM/yyyy')}">01/01/2024</span>
+                                        </p>
+                                        <p><strong>Ngày trả phòng:</strong>
+                                            <span th:text="${#temporals.format(booking.checkOutDate, 'dd/MM/yyyy')}">05/01/2024</span>
+                                        </p>
+                                        <p><strong>Số đêm:</strong>
+                                            <span class="badge bg-info" th:text="${T(java.time.temporal.ChronoUnit).DAYS.between(booking.checkInDate, booking.checkOutDate)} + ' đêm'">4 đêm</span>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Số lượng khách:</strong> <span th:text="${booking.guests ?: 1} + ' khách'">2 khách</span></p>
+                                        <p><strong>Ngày tạo booking:</strong>
+                                            <span th:text="${#temporals.format(booking.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:30</span>
+                                        </p>
+                                        <p><strong>Cập nhật cuối:</strong>
+                                            <span th:text="${#temporals.format(booking.updatedAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 15:45</span>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3" th:if="${booking.specialRequest != null and !#strings.isEmpty(booking.specialRequest)}">
+                                    <strong>Yêu cầu đặc biệt:</strong>
+                                    <div class="alert alert-info mt-2" th:text="${booking.specialRequest}">
+                                        Phòng tầng cao, view biển
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Feedback Section (if available) -->
+                        <div class="card" th:if="${booking.feedbacks != null and !#lists.isEmpty(booking.feedbacks)}">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-star"></i> Đánh giá từ khách hàng</h5>
+                            </div>
+                            <div class="card-body">
+                                <div th:each="feedback : ${booking.feedbacks}" class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <strong th:text="${feedback.user.firstName + ' ' + feedback.user.lastName}">Nguyễn Văn A</strong>
+                                            <div class="text-warning">
+                                                <span th:each="i : ${#numbers.sequence(1, feedback.rating)}">★</span>
+                                                <span th:each="i : ${#numbers.sequence(feedback.rating + 1, 5)}">☆</span>
+                                                <span class="text-muted ms-2" th:text="'(' + ${feedback.rating} + '/5)'">Rating</span>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted" th:text="${#temporals.format(feedback.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 12:00</small>
+                                    </div>
+                                    <p class="mt-2 mb-1" th:text="${feedback.comment}">Phòng rất sạch sẽ và thoải mái!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-calculator"></i> Tóm tắt Chi phí</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Giá phòng/đêm:</span>
+                                    <span th:text="${#numbers.formatDecimal(booking.room.roomType.pricePerNight, 0, 'COMMA', 0, 'POINT')} + 'đ'">500,000đ</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Số đêm:</span>
+                                    <span th:text="${T(java.time.temporal.ChronoUnit).DAYS.between(booking.checkInDate, booking.checkOutDate)} + ' đêm'">4 đêm</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Tổng tiền phòng:</span>
+                                    <span th:text="${#numbers.formatDecimal(booking.room.roomType.pricePerNight * T(java.time.temporal.ChronoUnit).DAYS.between(booking.checkInDate, booking.checkOutDate), 0, 'COMMA', 0, 'POINT')} + 'đ'">2,000,000đ</span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between fw-bold text-success">
+                                    <span>Tổng cộng:</span>
+                                    <span th:text="${#numbers.formatDecimal(booking.room.roomType.pricePerNight * T(java.time.temporal.ChronoUnit).DAYS.between(booking.checkInDate, booking.checkOutDate), 0, 'COMMA', 0, 'POINT')} + 'đ'">2,000,000đ</span>
+                                </div>
+                                <small class="text-muted">*Chưa bao gồm thuế và phí dịch vụ</small>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-tools"></i> Thao tác nhanh</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <a th:href="@{/payments(bookingId=${booking.id})}" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-credit-card"></i> Xem thanh toán
+                                    </a>
+                                    <a th:href="@{/invoices(bookingId=${booking.id})}" class="btn btn-outline-info btn-sm">
+                                        <i class="fas fa-file-invoice"></i> Tạo hóa đơn
+                                    </a>
+                                    <button type="button" class="btn btn-outline-success btn-sm"
+                                            onclick="printBookingDetails()">
+                                        <i class="fas fa-print"></i> In thông tin
+                                    </button>
+                                    <a th:href="@{/bookings/{id}/details(id=${booking.id})}" class="btn btn-outline-secondary btn-sm"
+                                       target="_blank">
+                                        <i class="fas fa-external-link-alt"></i> Xem JSON
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-history"></i> Lịch sử Trạng thái</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="timeline">
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker bg-success"></div>
+                                        <div class="timeline-content">
+                                            <h6 class="mb-1">Tạo booking</h6>
+                                            <small class="text-muted" th:text="${#temporals.format(booking.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:30</small>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-item" th:if="${booking.status.name() != 'PENDING'}">
+                                        <div class="timeline-marker" th:classappend="${booking.status.name() == 'CANCELLED'} ? 'bg-danger' : 'bg-primary'"></div>
+                                        <div class="timeline-content">
+                                            <h6 class="mb-1" th:text="${booking.status.description}">Đã xác nhận</h6>
+                                            <small class="text-muted" th:text="${#temporals.format(booking.updatedAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 15:45</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div th:replace="fragments/message :: message"></div>
+        </div>
+    </div>
+
+    <style>
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: -35px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #dee2e6;
+        }
+
+        @media print {
+            .btn, .dropdown, .card-header .fas {
+                display: none !important;
+            }
+        }
+    </style>
+
+    <script>
+        function printBookingDetails() {
+            window.print();
+        }
+    </script>
+</body>
+</html>
