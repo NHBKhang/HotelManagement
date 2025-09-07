@@ -1,6 +1,8 @@
 package com.team.hotelmanagementapp.controllers;
 
 import com.team.hotelmanagementapp.pojo.Room;
+import com.team.hotelmanagementapp.services.BookingService;
+import com.team.hotelmanagementapp.services.FeedbackService;
 import com.team.hotelmanagementapp.services.RoomService;
 import com.team.hotelmanagementapp.utils.Pagination;
 import jakarta.validation.Valid;
@@ -30,9 +32,14 @@ public class RoomController {
 
     @Autowired
     private RoomService roomService;
+    @Autowired
+    private BookingService bookingService;
+    @Autowired
+    private FeedbackService feedbackService;
 
     @GetMapping
-    public String rooms(Model model, @RequestParam Map<String, String> params,
+    public String rooms(Model model,
+            @RequestParam Map<String, String> params,
             RedirectAttributes redirectAttributes) {
         try {
             long totalRooms = roomService.countRooms(params, false);
@@ -41,12 +48,39 @@ public class RoomController {
             model.addAttribute("rows", rooms);
             model.addAttribute("totalRooms", totalRooms);
             model.addAttribute("pagination", new Pagination(totalRooms, params));
+
+            model.addAttribute("availableCount", roomService.countByStatus(Room.Status.AVAILABLE));
+            model.addAttribute("occupiedCount", roomService.countByStatus(Room.Status.OCCUPIED));
+            model.addAttribute("maintenanceCount", roomService.countByStatus(Room.Status.MAINTENANCE));
+            model.addAttribute("cleaningCount", roomService.countByStatus(Room.Status.CLEANING));
+            model.addAttribute("bookedCount", roomService.countByStatus(Room.Status.BOOKED));
         } catch (NumberFormatException e) {
-            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra, vui lòng thử lại!");
+            redirectAttributes.addFlashAttribute("error", "Có lỗi khi đọc tham số tìm kiếm!");
+            return "redirect:/rooms";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải danh sách phòng!");
+            return "redirect:/rooms";
         }
         return "rooms";
+    }
+    
+    @GetMapping("/{id}")
+    public String roomDetail(@PathVariable(value = "id") int id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Room room = roomService.getById(id);
+            if (room == null) {
+                redirectAttributes.addFlashAttribute("error", "Không tìm thấy phòng với ID: " + id);
+                return "redirect:/rooms";
+            }
+
+            model.addAttribute("room", room);
+            model.addAttribute("bookings", this.bookingService.findRecentBookingsByRoom(room, 5));
+//            model.addAttribute("feedbacks", this.feedbackService.findByRoom(room));
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải thông tin phòng!");
+            e.printStackTrace();
+        }
+        return "room_detail";
     }
 
     @GetMapping("/add")
@@ -106,7 +140,7 @@ public class RoomController {
         }
     }
 
-    @DeleteMapping(value = "/delete", produces = "application/json")
+    @DeleteMapping(value = "/bulk-delete", produces = "application/json")
     @ResponseBody
     public ResponseEntity<?> deleteRooms(@RequestBody Map<String, List<Integer>> request) {
         List<Integer> ids = request.get("ids");
@@ -121,5 +155,5 @@ public class RoomController {
             return ResponseEntity.badRequest().body(Map.of("message", "Đã xảy ra lỗi khi xóa phòng!"));
         }
     }
-    
+
 }

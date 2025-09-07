@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.team.hotelmanagementapp.pojo.Booking;
+import com.team.hotelmanagementapp.pojo.Room;
 import com.team.hotelmanagementapp.repositories.BookingRepository;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -212,5 +213,14 @@ public class BookingRepositoryImpl implements BookingRepository {
 
         int nextId = (maxId != null) ? maxId + 1 : 1;
         return "B" + String.format("%04d", nextId);
+    }
+
+    @Override
+    public List<Booking> findRecentBookingsByRoom(Room room, int limit) {
+        Session s = this.factory.getObject().getCurrentSession();
+        return s.createQuery("SELECT b FROM Booking b WHERE b.room.id = :roomId ORDER BY b.checkInDate DESC", Booking.class)
+                .setParameter("roomId", room.getId())
+                .setMaxResults(limit)
+                .getResultList();
     }
 }

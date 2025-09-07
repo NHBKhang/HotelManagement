@@ -3,7 +3,7 @@
 
     <head>
         <title
-            th:text="${service.id != null} ? 'Cập Nhật Dịch vụ - Quản lý khách sạn' : ('Thêm Dịch vụ - Quản lý khách sạn')">
+            th:text="${service.id != null} ? 'Chỉnh sửa Dịch vụ - Quản lý khách sạn' : ('Thêm Dịch vụ - Quản lý khách sạn')">
         </title>
 
     <th:block th:replace="base :: head"></th:block>
@@ -15,7 +15,7 @@
             <div class="container">
                 <h2 class="text-center mb-3">
                     <span th:if="${service.id != null}">
-                        <i class="fa-solid fa-pen-to-square me-2"></i> Chi tiết Dịch vụ
+                        <i class="fa-solid fa-pen-to-square me-2"></i> Chỉnh sửa Dịch vụ
                     </span>
                     <span th:unless="${service.id != null}">
                         <i class="fa-solid fa-service-plus me-2"></i> Thêm Dịch vụ

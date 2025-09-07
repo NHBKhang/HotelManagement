@@ -51,4 +51,9 @@ public class RoomServiceImpl implements RoomService {
         return roomRepository.countRooms(params, available);
     }
 
+    @Override
+    public long countByStatus(Room.Status status) {
+        return roomRepository.countByStatus(status);
+    }
+
 }

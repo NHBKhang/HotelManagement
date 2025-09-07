@@ -19,4 +19,6 @@ public interface RoomRepository {
     void delete(List<Integer> ids);
     
     long countRooms(Map<String, String> params, Boolean available);
+
+    long countByStatus(Room.Status status);
 }

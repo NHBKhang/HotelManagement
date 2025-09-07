@@ -52,6 +52,25 @@ public class UserController {
         }
         return "users";
     }
+    
+    @GetMapping("/{id}")
+    public String userDetail(@PathVariable(value = "id") int id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            User user = userService.getById(id);
+            if (user == null) {
+                redirectAttributes.addFlashAttribute("error", "Không tìm thấy người dùng với ID: " + id);
+                return "redirect:/users";
+            }
+
+            model.addAttribute("user", user);
+//            model.addAttribute("bookings", this.bookingService.findRecentBookingsByRoom(room, 5));
+//            model.addAttribute("feedbacks", this.feedbackService.findByRoom(room));
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải thông tin người dùng!");
+            e.printStackTrace();
+        }
+        return "user_detail";
+    }
 
     @GetMapping("/add")
     public String showAddUserForm(Model model) {
@@ -123,21 +142,5 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", "Đã xảy ra lỗi khi xóa khách hàng!"));
         }
-    }
-
-    @GetMapping("/{id}/payments")
-    public String getPaymentsPage(@PathVariable("id") int id,
-            @RequestParam(value = "page", defaultValue = "1") int page,
-            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
-            Model model) {
-        Map<String, String> params = Map.of("page", String.valueOf(page),
-                "pageSize", String.valueOf(pageSize));
-        List<Payment> payments = paymentService.findByUserId(id, params);
-        long totalPayments = paymentService.countByUserId(id, params);
-
-        model.addAttribute("payments", payments);
-        model.addAttribute("pagination", new Pagination(totalPayments, params));
-
-        return "fragments/tables/payments :: table";
     }
 }

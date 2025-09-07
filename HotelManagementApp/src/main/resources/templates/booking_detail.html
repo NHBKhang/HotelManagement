@@ -62,7 +62,7 @@
                                         <p><strong>Số điện thoại:</strong> <span th:text="*{phone ?: 'Chưa cung cấp'}">0123456789</span></p>
                                     </div>
                                     <div class="col-md-6">
-                                        <p><strong>Username:</strong> <span th:text="*{username}">user123</span></p>
+                                        <p><strong>Tên người dùng: </strong> <span th:text="*{username}">user123</span></p>
                                         <p><strong>Ngày tham gia:</strong> <span th:text="*{createdAt != null ? #temporals.format(createdAt, 'dd/MM/yyyy') : 'N/A'}">05/09/2025</span></p>
                                     </div>
                                 </div>
@@ -228,8 +228,6 @@
                     </div>
                 </div>
             </div>
-
-            <div th:replace="fragments/message :: message"></div>
         </div>
     </div>
 

@@ -40,7 +40,22 @@ import org.springframework.web.multipart.MultipartFile;
 public class User implements Serializable {
 
     public enum Role {
-        CUSTOMER, RECEPTIONIST, HOUSEKEEPING, ACCOUNTANT, MANAGER, ADMIN
+        CUSTOMER("Khách hàng"),
+        RECEPTIONIST("Lễ tân"),
+        HOUSEKEEPING("Dọn phòng"),
+        ACCOUNTANT("Kế toán"),
+        MANAGER("Quản lý"),
+        ADMIN("Quản trị");
+
+        private final String viName;
+
+        Role(String viName) {
+            this.viName = viName;
+        }
+
+        public String getViName() {
+            return viName;
+        }
     }
 
     public enum Status {

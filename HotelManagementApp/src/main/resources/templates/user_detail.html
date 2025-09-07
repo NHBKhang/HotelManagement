@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title th:text="'Chi tiết Người dùng ' + ${user.username} + ' - Quản lý khách sạn'">Chi tiết Người dùng</title>
+    <th:block th:replace="base :: head"></th:block>
+</head>
+<body>
+    <div th:replace="base :: layout(~{::content})">
+        <div th:fragment="content">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="mb-1">
+                            <i class="fas fa-users"></i>
+                            <span class="text-primary" th:text="${user.username}">unknown user</span>
+                        </h2>
+                    </div>
+                    <div>
+                        <a th:href="@{/users/edit/{id}(id=${user.id})}" class="btn btn-warning me-2">
+                            <i class="fas fa-edit"></i> Chỉnh sửa
+                        </a>
+                        <a th:href="@{/users}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-user"></i> Thông tin Người dùng</h5>
+                            </div>
+                            <div class="card-body" th:object="${user}">
+                                <div class="vertical text-center mb-3"> 
+                                    <img th:src="${user.avatar != null ? user.avatar : '/HotelManagementApp/img/default_avatar.svg'}" class="border shadow-sm mb-2" width="149" height="149" alt="avatar"> 
+                                </div> 
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Họ tên:</strong> <span th:text="*{firstName + ' ' + lastName}">Nguyễn Văn A</span></p>
+                                        <p><strong>Email:</strong> <span th:text="*{email}">user@example.com</span></p>
+                                        <p><strong>Số điện thoại:</strong> <span th:text="*{phone ?: 'Chưa cung cấp'}">0123456789</span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Tên người dùng: </strong> <span th:text="*{username}">user123</span></p>
+                                        <p><strong>Ngày tham gia:</strong> <span th:text="*{createdAt != null ? #temporals.format(createdAt, 'dd/MM/yyyy') : 'N/A'}">05/09/2025</span></p>
+                                        <p><strong>Vai trò:</strong> <span th:text="*{role.viName}">-</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--                        <div class="card mb-4">
+                                                    <div class="card-header">
+                                                        <h5 class="mb-0"><i class="fas fa-history"></i> Lịch sử Booking</h5>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <table class="table table-hover table-bordered text-center table-sm">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Mã Booking</th>
+                                                                    <th>Khách hàng</th>
+                                                                    <th>Nhận</th>
+                                                                    <th>Trả</th>
+                                                                    <th>Trạng thái</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr th:each="b : ${bookings}">
+                                                                    <td><a th:href="@{/bookings/{id}(id=${b.id})}" th:text="${b.code}"
+                                                                           class="text-decoration-none fw-bold text-primary"></a></td>
+                                                                    <td th:text="${b.user.fullName}">Nguyễn Văn A</td>
+                                                                    <td th:text="${#temporals.format(b.checkInDate, 'dd/MM/yyyy')}">01/01/2024</td>
+                                                                    <td th:text="${#temporals.format(b.checkOutDate, 'dd/MM/yyyy')}">05/01/2024</td>
+                                                                    <td><span th:text="${b.status.description}" class="badge bg-info">Đã xác nhận</span></td>
+                                                                </tr>
+                                                                <tr th:if="${#lists.isEmpty(bookings)}">
+                                                                    <td colspan="5" class="text-center text-muted">Chưa có booking nào</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>-->
+
+                        <!-- Feedback -->
+                        <!--                        <div class="card" th:if="${feedbacks != null and !#lists.isEmpty(feedbacks)}">
+                                                    <div class="card-header">
+                                                        <h5 class="mb-0"><i class="fas fa-star"></i> Đánh giá phòng</h5>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div th:each="fb : ${feedbacks}" class="mb-3">
+                                                            <div class="d-flex justify-content-between">
+                                                                <div>
+                                                                    <strong th:text="${fb.user.fullName}">Nguyễn Văn B</strong>
+                                                                    <div class="text-warning">
+                                                                        <span th:each="i : ${#numbers.sequence(1, fb.rating)}">★</span>
+                                                                        <span th:each="i : ${#numbers.sequence(fb.rating+1, 5)}">☆</span>
+                                                                        <span class="text-muted ms-2" th:text="'(' + ${fb.rating} + '/5)'"></span>
+                                                                    </div>
+                                                                </div>
+                                                                <small class="text-muted"
+                                                                       th:text="${#temporals.format(fb.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</small>
+                                                            </div>
+                                                            <p class="mt-2 mb-1" th:text="${fb.comment}">Phòng sạch và thoải mái</p>
+                                                        </div>
+                                                    </div>
+                                                </div>-->
+                    </div>
+
+                    <!-- Right: Quick Info -->
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-tools"></i> Thao tác nhanh</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <a th:href="@{/users/edit/{id}(id=${user.id})}" class="btn btn-outline-warning btn-sm">
+                                        <i class="fas fa-edit"></i> Chỉnh sửa
+                                    </a>
+                                    <button type="button" class="btn btn-outline-success btn-sm" onclick="printUserDetails()">
+                                        <i class="fas fa-print"></i> In thông tin
+                                    </button>
+                                    <a th:href="@{/users/{id}/details(id=${user.id})}" class="btn btn-outline-secondary btn-sm" target="_blank">
+                                        <i class="fas fa-external-link-alt"></i> Xem JSON
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-history"></i> Lịch sử Cập nhật</h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Ngày tạo:</strong> <span th:text="${#temporals.format(user.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</span></p>
+                                <p><strong>Cập nhật cuối:</strong> <span th:text="${#temporals.format(user.updatedAt, 'dd/MM/yyyy HH:mm')}">05/01/2024</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function printUserDetails() {
+            window.print();
+        }
+    </script>
+</body>
+</html>
