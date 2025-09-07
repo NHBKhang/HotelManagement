@@ -43,20 +43,34 @@
                                 <th>Tên</th>
                                 <th>Email</th>
                                 <th>SĐT</th>
+                                <th>Vai trò</th>
+                                <th>Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr th:each="r : ${rows}">
                                 <td><input type="checkbox" th:value="${r.id}"></td>
-                                <td><a th:href="@{/users/edit/{id}(id=${r.id})}" th:text="${r.username}"
+                                <td><a th:href="@{/users/{id}(id=${r.id})}" th:text="${r.username}"
                                        class="text-decoration-none fw-bold text-primary"></a></td>
                                 <td th:text="${r.firstName}"></td>
                                 <td th:text="${r.lastName}"></td>
                                 <td th:text="${r.email}"></td>
                                 <td th:text="${r.phone}"></td>
+                                <td th:text="${r.role.viName}"></td> <td>
+                                    <div class="btn-group" role="group">
+                                        <a th:href="@{/users/{id}(id=${r.id})}"
+                                           class="btn btn-sm btn-outline-primary" title="Xem chi tiết">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a th:href="@{/users/edit/{id}(id=${r.id})}"
+                                           class="btn btn-sm btn-outline-warning" title="Chỉnh sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </td>
                             </tr>
                             <tr th:if="${#lists.isEmpty(rows)}">
-                                <td colspan="6">Không có khách hàng nào.</td>
+                                <td colspan="8">Không có khách hàng nào.</td>
                             </tr>
                         </tbody>
                     </table>

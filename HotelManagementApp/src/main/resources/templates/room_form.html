@@ -1,81 +1,149 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-
     <head>
-        <title
-            th:text="${room.id != null} ? 'Cập Nhật Phòng - Quản lý khách sạn' : ('Thêm Phòng - Quản lý khách sạn')">
-        </title>
-
+        <title th:text="${room.id != null} ? 'Chỉnh sửa Phòng - Quản lý khách sạn' : 'Thêm Phòng - Quản lý khách sạn'"></title>
     <th:block th:replace="base :: head"></th:block>
 </head>
-
 <body>
     <div th:replace="base :: layout(~{::content})">
         <div th:fragment="content">
             <div class="container">
-                <h2 class="text-center mb-3">
+                <h2 class="text-center mb-4">
                     <span th:if="${room.id != null}">
-                        <i class="fa-solid fa-pen-to-square me-2"></i> Cập Nhật Phòng
+                        <i class="fa-solid fa-pen-to-square me-2"></i> Chỉnh sửa Phòng
                     </span>
                     <span th:unless="${room.id != null}">
-                        <i class="fa-solid fa-room-plus me-2"></i> Thêm Phòng
+                        <i class="fa-solid fa-plus me-2"></i> Thêm Phòng
                     </span>
                 </h2>
 
-                <form th:action="@{/rooms/save}" method="post" th:object="${room}" 
-                      class="styled-form" enctype="multipart/form-data"> 
-                    <div class="my-2">
-                        <button type="submit" class="btn btn-success me-1">
+                <form th:action="@{/rooms/save}" method="post" th:object="${room}"
+                      class="styled-form" enctype="multipart/form-data">
+                    <!-- Action buttons -->
+                    <div class="my-3">
+                        <button type="submit" class="btn btn-success me-2">
                             <i class="fa-solid fa-save me-1"></i>
-                            <span th:text="${room.id != null} ? 'Cập Nhật' : 'Lưu'"></span>
+                            <span th:text="${room.id != null} ? 'Cập nhật' : 'Lưu'"></span>
                         </button>
-                        <button type="button" class="btn btn-danger"
+                        <button type="button" class="btn btn-danger" th:if="${room.id != null}"
                                 th:onclick="|confirmAndRequest('@{/rooms/delete/{id}(id=${room.id})}', '@{/rooms}')|">
                             <i class="fa-solid fa-trash me-1"></i> Xóa
                         </button>
                         <a th:href="@{/rooms}" class="btn btn-secondary">
-                            <i class="fa-solid fa-circle-left me-1"></i> Trở về
+                            <i class="fa-solid fa-arrow-left me-1"></i> Quay lại
                         </a>
                     </div>
 
-                    <div class="p-4 border rounded shadow-sm bg-light">
-                        <input type="hidden" th:if="${room.id != null}" th:field="*{id}"> 
-                        <div class="mb-3" th:if="${room.id != null}">
-                            <label class="form-label fw-bold">Mã phòng</label>
-                            <span id="code"
-                                  th:text="*{code}" 
-                                  class="badge bg-primary fs-5 fw-bold">
-                            </span>
-                            <input th:field="*{code}" hidden/>
-                        </div>
-                        <div class="mb-3"> 
-                            <label for="roomNumber" class="form-label">Số phòng</label> 
-                            <input type="text" id="roomNumber" th:field="*{roomNumber}" class="form-control" required> 
-                            <p class="text-danger" th:if="${#fields.hasErrors('roomNumber')}" th:errors="*{roomNumber}"></p> 
-                        </div> 
-                        <div class="row"> 
-                            <div class="col-md-6 mb-3"> 
-                                <label for="size" class="form-label">Kích thước (m²)</label> 
-                                <input type="number" id="size" th:field="*{size}" class="form-control"
-                                       min="0.01" max="1000" step="0.01" placeholder="Nhập diện tích phòng"> 
-                                <p class="text-danger" th:if="${#fields.hasErrors('size')}" th:errors="*{size}"></p>
-                            </div>
-                            <div class="col-md-6 mb-3"> 
-                                <label for="status" class="form-label">Trạng thái</label> 
-                                <select id="status" th:field="*{status}" class="form-select">  
-                                    <option th:each="status : ${T(com.team.hotelmanagementapp.pojo.Room.Status).values()}" 
-                                            th:value="${status}" 
-                                            th:text="${status.description}"></option>
-                                </select>
-                            </div> 
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="roomType" class="form-label">Loại phòng</label>
-                                <div id="room-type-dropdown">
-                                    <input id="roomType" th:field="*{roomType.id}" required/>
+                    <div class="row">
+                        <!-- Left column: form inputs -->
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Thông tin Phòng</h5>
                                 </div>
-                                <p class="text-danger" th:if="${#fields.hasErrors('roomType')}" th:errors="*{roomType}"></p>
+                                <div class="p-4 border rounded shadow-sm bg-light">
+                                    <input type="hidden" th:if="${room.id != null}" th:field="*{id}">
+
+                                    <!-- Mã phòng -->
+                                    <div class="mb-3" th:if="${room.id != null}">
+                                        <label class="form-label fw-bold">Mã phòng</label>
+                                        <span th:text="*{code}" class="badge bg-primary fs-6 fw-bold"></span>
+                                        <input type="hidden" th:field="*{code}">
+                                    </div>
+
+                                    <!-- Số phòng -->
+                                    <div class="mb-3">
+                                        <label for="roomNumber" class="form-label">Số phòng</label>
+                                        <input type="text" id="roomNumber" th:field="*{roomNumber}" class="form-control" required>
+                                        <p class="text-danger" th:if="${#fields.hasErrors('roomNumber')}" th:errors="*{roomNumber}"></p>
+                                    </div>
+
+                                    <!-- Kích thước + Trạng thái -->
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="size" class="form-label">Kích thước (m²)</label>
+                                            <input type="number" id="size" th:field="*{size}" class="form-control"
+                                                   min="0.01" max="1000" step="0.01" placeholder="Nhập diện tích phòng">
+                                            <p class="text-danger" th:if="${#fields.hasErrors('size')}" th:errors="*{size}"></p>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="status" class="form-label">Trạng thái</label>
+                                            <select id="status" th:field="*{status}" class="form-select">
+                                                <option th:each="status : ${T(com.team.hotelmanagementapp.pojo.Room.Status).values()}"
+                                                        th:value="${status}"
+                                                        th:text="${status.description}"></option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <!-- Loại phòng -->
+                                    <div class="mb-3">
+                                        <label for="roomType" class="form-label">Loại phòng</label>
+                                        <div id="room-type-dropdown">
+                                            <input id="roomType" th:field="*{roomType.id}" required/>
+                                        </div>
+                                        <p class="text-danger" th:if="${#fields.hasErrors('roomType')}" th:errors="*{roomType}"></p>
+                                    </div>
+
+                                    <!-- Upload ảnh -->
+                                    <div class="mb-3">
+                                        <label for="image" class="form-label">Ảnh phòng</label>
+                                        <input type="file" id="image" name="file" class="form-control">
+                                        <div th:if="${room.image != null}" class="mt-2">
+                                            <img th:src="@{${room.image}}" alt="Room Image" class="img-thumbnail" style="max-height:150px;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right column: summary -->
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-receipt"></i> Tóm tắt</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2" th:if="${room.roomType != null}">
+                                            <strong>Loại phòng:</strong> <span th:text="${room.roomType.name}"></span>
+                                        </li>
+                                        <li class="mb-2" th:if="${room.roomType != null}">
+                                            <strong>Giá phòng:</strong> <span th:text="|${#numbers.formatDecimal(room.roomType.pricePerNight, 0, 'COMMA', 0, 'POINT')} VND|"></span>
+                                        </li>
+                                        <li class="mb-2" th:if="${room.roomType != null}">
+                                            <strong>Số khách tối đa:</strong> <span th:text="|${room.roomType.maxGuests} khách|"></span>
+                                        </li>
+                                        <li class="mb-2" th:if="${room.size != null}">
+                                            <strong>Kích thước:</strong> <span th:text="${room.size}"></span> m²
+                                        </li>
+                                    </ul>
+
+                                    <div class="alert alert-info mt-3">
+                                        <i class="fa-solid fa-lightbulb me-1"></i>
+                                        Vui lòng đảm bảo thông tin chính xác trước khi lưu.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card" th:if="${room.id}">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-history"></i> Lịch sử Cập nhật</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <strong>Ngày tạo:</strong><br>
+                                        <span th:text="*{createdAt != null ? #temporals.format(createdAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">01/01/2024 10:30</span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>Cập nhật cuối:</strong><br>
+                                        <span th:text="*{updatedAt != null ? #temporals.format(updatedAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">01/01/2024 15:45</span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>Trạng thái hiện tại:</strong>
+                                        <span th:class="*{status != null ? status.badgeClass : 'badge bg-secondary'}" 
+                                              th:text="*{status != null ? status.description : 'Chưa xác định'}">-</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -83,19 +151,18 @@
             </div>
         </div>
     </div>
+
     <script th:inline="javascript">
         renderDynamicDropdown({
         containerId: 'room-type-dropdown',
-                apiUrl: [[@{/api/room-types}]],
+                apiUrl: [[@{/api/room - types}]],
                 buildOptionText: item => item.name,
                 value: {
                 id: [[${room.roomType.id}]],
                         name: [[${room.roomType.name}]]
                 },
-                required: true,
+                required: true
         });
     </script>
 </body>
-
 </html>
-

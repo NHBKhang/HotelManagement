@@ -51,36 +51,36 @@
                 </div>
 
                 <!-- Quick Stats -->
-                <div class="row mb-3">
-                    <div class="col-md-3">
-                        <div class="card bg-primary text-white">
-                            <div class="card-body">
-                                <h5>Tổng Booking</h5>
-                                <h3 th:text="${totalBookings ?: 0}">0</h3>
+                <div class="row row-cols-2 row-cols-md-4 g-2 mb-3">
+                    <div class="col">
+                        <div class="card bg-primary text-white text-center p-1">
+                            <div class="card-body py-0 pt-1">
+                                <h6 class="mb-1">Tổng Booking</h6>
+                                <h5 th:text="${totalBookings ?: 0}">0</h5>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card bg-warning text-white">
-                            <div class="card-body">
-                                <h5>Chờ xác nhận</h5>
-                                <h3 th:text="${pendingCount ?: 0}">0</h3>
+                    <div class="col">
+                        <div class="card bg-warning text-white text-center p-1">
+                            <div class="card-body py-0 pt-1">
+                                <h6 class="mb-1">Chờ xác nhận</h6>
+                                <h5 th:text="${pendingCount ?: 0}">0</h5>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card bg-success text-white">
-                            <div class="card-body">
-                                <h5>Đã xác nhận</h5>
-                                <h3 th:text="${confirmedCount ?: 0}">0</h3>
+                    <div class="col">
+                        <div class="card bg-success text-white text-center p-1">
+                            <div class="card-body py-0 pt-1">
+                                <h6 class="mb-1">Đã xác nhận</h6>
+                                <h5 th:text="${confirmedCount ?: 0}">0</h5>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card bg-info text-white">
-                            <div class="card-body">
-                                <h5>Đang ở</h5>
-                                <h3 th:text="${checkedInCount ?: 0}">0</h3>
+                    <div class="col">
+                        <div class="card bg-info text-white text-center p-1">
+                            <div class="card-body py-0 pt-1">
+                                <h6 class="mb-1">Đang ở</h6>
+                                <h5 th:text="${checkedInCount ?: 0}">0</h5>
                             </div>
                         </div>
                     </div>
@@ -169,6 +169,10 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+
+                <div class="text-end fw-bold mb-1">
+                    Tổng số booking: <span th:text="${totalBookings ?: 0}"></span>
                 </div>
 
                 <!-- Pagination -->

@@ -1,6 +1,5 @@
 package com.team.hotelmanagementapp.services;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -21,5 +20,7 @@ public interface RoomService {
     void delete(List<Integer> ids);
 
     long countRooms(Map<String, String> params, Boolean available);
+
+    long countByStatus(Room.Status status);
 
 }

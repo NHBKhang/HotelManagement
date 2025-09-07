@@ -1,65 +1,156 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-
     <head>
-        <title>Phòng - Quản lý khách sạn</title>
+        <title>Quản lý Phòng - Quản lý khách sạn</title>
     <th:block th:replace="base :: head"></th:block>
 </head>
-
 <body>
     <div th:replace="base :: layout(~{::content})">
         <div th:fragment="content">
             <div class="container">
-                <h2 class="text-center w-100 mb-3"><i class="fas fa-list"></i> Danh sách Phòng</h2>
+                <h2 class="text-center w-100 mb-3"><i class="fas fa-door-open"></i> Quản lý Phòng</h2>
 
-                <div class="d-flex justify-content-between align-items-center mb-1">
+                <!-- Action buttons -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
                     <div>
-                        <a th:href="@{/rooms/add}" class="btn btn-success me-1">
-                            <i class="fas fa-plus"></i> Thêm
+                        <a th:href="@{/rooms/add}" class="btn btn-success me-2">
+                            <i class="fas fa-plus"></i> Thêm Phòng
                         </a>
 
-                        <button th:onclick="|deleteAll('@{/rooms/delete}', 'thành viên')|" 
+                        <button th:onclick="|deleteAll('@{/rooms/bulk-delete}', 'phòng')|" 
                                 id="deleteButton" class="btn btn-danger" disabled>
-                            <i class="fas fa-trash-alt"></i> Xóa
+                            <i class="fas fa-trash-alt"></i>  Xóa Phòng
                         </button>
                     </div>
 
-                    <form th:action="@{/rooms}" method="get" class="mb-1 d-flex">
-                        <input type="text" name="kw" th:value="${kw}" class="form-control me-2 w-auto"
-                               placeholder="Tìm kiếm...">
-                        <button type="submit" class="btn btn-primary w-auto">
+                    <!-- Search and Filter Form -->
+                    <form th:action="@{/rooms}" method="get" class="d-flex align-items-center">
+                        <input type="text" name="kw" th:value="${param.kw}" class="form-control me-2" 
+                               style="width: 200px;" placeholder="Tìm kiếm...">
+
+                        <select name="status" class="form-select me-2" style="width: 180px;">
+                            <option value="">Tất cả trạng thái</option>
+                            <option th:each="status : ${T(com.team.hotelmanagementapp.pojo.Room.Status).values()}" 
+                                    th:value="${status.name()}" 
+                                    th:text="${status.description}"
+                                    th:selected="${param.status == status.name()}"></option>
+                        </select>
+
+                        <button type="submit" class="btn btn-primary">
                             <i class="fas fa-search"></i>
                         </button>
                     </form>
                 </div>
 
+                <!-- Quick Stats -->
+                <div class="row row-cols-2 row-cols-md-5 g-2 mb-3">
+                    <div class="col">
+                        <div class="card bg-success text-white text-center p-1">
+                            <div class="card-body py-0 pt-1">
+                                <h6 class="mb-1">Phòng trống</h6>
+                                <h5 th:text="${availableCount ?: 0}">0</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card bg-primary text-white text-center p-1">
+                            <div class="card-body py-0 pt-1">
+                                <h6 class="mb-1">Đang ở</h6>
+                                <h5 th:text="${occupiedCount ?: 0}">0</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card bg-warning text-white text-center p-1">
+                            <div class="card-body py-0 pt-1">
+                                <h6 class="mb-1">Đã đặt</h6>
+                                <h5 th:text="${bookedCount ?: 0}">0</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card bg-danger text-white text-center p-1">
+                            <div class="card-body py-0 pt-1">
+                                <h6 class="mb-1">Bảo trì</h6>
+                                <h5 th:text="${maintenanceCount ?: 0}">0</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card bg-info text-white text-center p-1">
+                            <div class="card-body py-0 pt-1">
+                                <h6 class="mb-1">Dọn dẹp</h6>
+                                <h5 th:text="${cleaningCount ?: 0}">0</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rooms Table -->
                 <div class="table-responsive">
                     <table class="table table-hover table-bordered text-center">
-                        <thead>
+                        <thead class="table-dark">
                             <tr>
                                 <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th>
-                                <th>Mã phòng</th>
                                 <th>Số phòng</th>
                                 <th>Loại phòng</th>
+                                <th>Kích thước</th>
                                 <th>Trạng thái</th>
+                                <th>Ngày tạo</th>
+                                <th>Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr th:each="r : ${rows}">
-                                <td><input type="checkbox" th:value="${r.id}"></td>
+                                <td><input type="checkbox" th:value="${r.id}" class="room-checkbox"></td>
                                 <td>
-                                    <a th:href="@{/rooms/edit/{id}(id=${r.id})}" th:text="${r.code}" 
-                                       class="text-decoration-none fw-bold text-primary"></a>
+                                    <a th:href="@{/rooms/{id}(id=${r.id})}"
+                                       class="text-decoration-none fw-bold text-primary"
+                                       th:text="${r.roomNumber}">101</a>
+                                    <br>
+                                    <small class="text-muted" th:text="${r.code}">ROOM-101</small>
                                 </td>
-                                <td th:text="${r.roomNumber}"></td>
-                                <td th:text="${r.roomType != null ? r.roomType.name : '-'}"></td>
                                 <td>
-                                    <span th:text="${r.status.description}" 
-                                          th:class="${r.status.badgeClass}"></span>
+                                    <a th:href="@{/room-types/edit/{id}(id=${r.id})}"
+                                       class="text-decoration-none fw-bold text-primary"
+                                       th:text="${r.roomType.name}">Suite</a></td>
+                                <td th:text="|${r.size ?: 0} m²|">25 m²</td>
+                                <td>
+                                    <span th:class="${r.status.badgeClass}" th:text="${r.status.description}">Trống</span>
+                                </td>
+                                <td th:text="${#temporals.format(r.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:30</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a th:href="@{/rooms/{id}(id=${r.id})}"
+                                           class="btn btn-sm btn-outline-primary" title="Xem chi tiết">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a th:href="@{/rooms/edit/{id}(id=${r.id})}"
+                                           class="btn btn-sm btn-outline-warning" title="Chỉnh sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-info dropdown-toggle"
+                                                data-bs-toggle="dropdown" title="Cập nhật trạng thái">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li th:each="newStatus : ${T(com.team.hotelmanagementapp.pojo.Room.Status).values()}">
+                                                <form th:action="@{/rooms/{id}/status(id=${r.id})}" method="post" class="d-inline">
+                                                    <input type="hidden" name="status" th:value="${newStatus.name()}">
+                                                    <button type="submit" class="dropdown-item"
+                                                            th:disabled="${r.status == newStatus}"
+                                                            th:text="${newStatus.description}">Trạng thái</button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </td>
                             </tr>
                             <tr th:if="${#lists.isEmpty(rows)}">
-                                <td colspan="4">Không có phòng nào.</td>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    <i class="fas fa-door-closed fa-3x mb-3"></i>
+                                    <br>Không có phòng nào được tìm thấy
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -69,51 +160,90 @@
                     Tổng số phòng: <span th:text="${totalRooms ?: 0}"></span>
                 </div>
 
-                <nav aria-label="Page navigation" 
-                     th:if="${pagination != null and pagination.total > 1}" 
+                <!-- Pagination -->
+                <nav aria-label="Page navigation"
+                     th:if="${pagination != null and pagination.total > 1}"
                      th:fragment="pagination">
                     <ul class="pagination justify-content-center">
                         <!-- Trang đầu -->
                         <li class="page-item" th:classappend="${pagination.current == 1} ? 'disabled'">
-                            <a class="page-link" th:href="@{/rooms(page=1, kw=${kw})}">
+                            <a class="page-link"
+                               th:href="@{/rooms(page=1, kw=${param.kw}, status=${param.status})}">
                                 <i class="fas fa-angle-double-left"></i> Đầu
                             </a>
                         </li>
 
                         <!-- Trang trước -->
                         <li class="page-item" th:classappend="${pagination.current == 1} ? 'disabled'">
-                            <a class="page-link" th:href="@{/rooms(page=${pagination.current - 1}, kw=${kw})}">
+                            <a class="page-link"
+                               th:href="@{/rooms(page=${pagination.current - 1}, kw=${param.kw}, status=${param.status})}">
                                 <i class="fas fa-angle-left"></i> Trước
                             </a>
                         </li>
 
                         <!-- Hiển thị tối đa 5 số trang -->
-                        <th:block th:with="start=${pagination.current - 2 > 1 ? pagination.current - 2 : 1}, 
+                        <th:block th:with="start=${pagination.current - 2 > 1 ? pagination.current - 2 : 1},
                                   end=${pagination.current + 2 < pagination.total ? pagination.current + 2 : pagination.total}">
-                            <li class="page-item" th:each="i : ${#numbers.sequence(start, end)}"
+                            <li class="page-item"
+                                th:each="i : ${#numbers.sequence(start, end)}"
                                 th:classappend="${i == pagination.current} ? 'active'">
-                                <a class="page-link" th:href="@{/rooms(page=${i}, kw=${kw})}" th:text="${i}"></a>
+                                <a class="page-link"
+                                   th:href="@{/rooms(page=${i}, kw=${param.kw}, status=${param.status})}"
+                                   th:text="${i}"></a>
                             </li>
                         </th:block>
 
                         <!-- Trang sau -->
                         <li class="page-item" th:classappend="${pagination.current == pagination.total} ? 'disabled'">
-                            <a class="page-link" th:href="@{/rooms(page=${pagination.current + 1}, kw=${kw})}">
+                            <a class="page-link"
+                               th:href="@{/rooms(page=${pagination.current + 1}, kw=${param.kw}, status=${param.status})}">
                                 Tiếp <i class="fas fa-angle-right"></i>
                             </a>
                         </li>
 
                         <!-- Trang cuối -->
                         <li class="page-item" th:classappend="${pagination.current == pagination.total} ? 'disabled'">
-                            <a class="page-link" th:href="@{/rooms(page=${pagination.total}, kw=${kw})}">
+                            <a class="page-link"
+                               th:href="@{/rooms(page=${pagination.total}, kw=${param.kw}, status=${param.status})}">
                                 Cuối <i class="fas fa-angle-double-right"></i>
                             </a>
                         </li>
                     </ul>
-                </nav>
+                </nav>   
             </div>
         </div>
     </div>
+
+    <script>
+        function deleteAll(url, itemType) {
+            const checkedBoxes = document.querySelectorAll('.room-checkbox:checked');
+            const ids = Array.from(checkedBoxes).map(cb => cb.value);
+
+            if (ids.length === 0) {
+                alert('Vui lòng chọn ít nhất một phòng để xóa');
+                return;
+            }
+
+            if (confirm(`Bạn có chắc chắn muốn xóa ${ids.length} ${itemType} đã chọn?`)) {
+                fetch(url, {
+                    method: 'DELETE',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(ids)
+                })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                location.reload();
+                            } else {
+                                showMessage('danger', 'Có lỗi xảy ra: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            showMessage('danger', 'Có lỗi xảy ra khi xóa');
+                        });
+            }
+        }
+    </script>
 </body>
 </html>
-

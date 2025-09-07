@@ -54,6 +54,15 @@ public class RoomRepositoryImpl implements RoomRepository {
         }
 
         if (params != null) {
+            String statusStr = params.get("status");
+            if (statusStr != null) {
+                try {
+                    Room.Status status = Room.Status.valueOf(statusStr.toUpperCase());
+                    predicates.add(b.equal(root.get("status"), status));
+                } catch (IllegalArgumentException ignored) {
+                }
+            }
+            
             String roomTypeId = params.get("roomTypeId");
             if (roomTypeId != null && !roomTypeId.isEmpty()) {
                 predicates.add(b.equal(root.get("roomType").get("id"), Integer.valueOf(roomTypeId)));
@@ -168,6 +177,15 @@ public class RoomRepositoryImpl implements RoomRepository {
         }
 
         if (params != null) {
+            String statusStr = params.get("status");
+            if (statusStr != null) {
+                try {
+                    Room.Status status = Room.Status.valueOf(statusStr.toUpperCase());
+                    predicates.add(b.equal(root.get("status"), status));
+                } catch (IllegalArgumentException ignored) {
+                }
+            }
+
             String roomTypeId = params.get("roomTypeId");
             if (roomTypeId != null && !roomTypeId.isEmpty()) {
                 predicates.add(b.equal(root.get("roomType").get("id"), Integer.valueOf(roomTypeId)));
@@ -210,5 +228,14 @@ public class RoomRepositoryImpl implements RoomRepository {
         q.select(b.count(root)).where(predicates.toArray(Predicate[]::new));
 
         return s.createQuery(q).getSingleResult();
+    }
+
+    @Override
+    public long countByStatus(Room.Status status) {
+        Session s = factory.getObject().getCurrentSession();
+        String hql = "SELECT COUNT(r) FROM Room r WHERE r.status = :status";
+        Query<Long> q = s.createQuery(hql, Long.class);
+        q.setParameter("status", status);
+        return q.getSingleResult();
     }
 }

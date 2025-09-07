@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title th:text="'Chi tiết Phòng ' + ${room.roomNumber} + ' - Quản lý khách sạn'">Chi tiết Phòng</title>
+    <th:block th:replace="base :: head"></th:block>
+</head>
+<body>
+    <div th:replace="base :: layout(~{::content})">
+        <div th:fragment="content">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="mb-1">
+                            <i class="fas fa-door-open"></i>
+                            Phòng <span class="text-primary" th:text="${room.roomNumber}">101</span>
+                        </h2>
+                        <span th:class="${room.status.badgeClass} + ' fs-6'" th:text="${room.status.description}">Phòng trống</span>
+                    </div>
+                    <div>
+                        <a th:href="@{/rooms/edit/{id}(id=${room.id})}" class="btn btn-warning me-2">
+                            <i class="fas fa-edit"></i> Chỉnh sửa
+                        </a>
+                        <a th:href="@{/rooms}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Left: Room Info -->
+                    <div class="col-md-8">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-bed"></i> Thông tin Phòng</h5>
+                            </div>
+                            <div class="card-body" th:object="${room}">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Số phòng:</strong> <span th:text="*{roomNumber}">101</span></p>
+                                        <p><strong>Loại phòng:</strong> <span th:text="*{roomType.name}">Standard</span></p>
+                                        <p><strong>Trạng thái:</strong> <span th:text="*{status.description}">Trống</span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Sức chứa:</strong> <span th:text="*{roomType.maxGuests} + ' khách'">4 khách</span></p>
+                                        <p><strong>Kích thước:</strong> <span th:text="*{size ?: 0} + ' m²'">25 m²</span></p>
+                                        <p><strong>Giá/đêm:</strong>
+                                            <span class="text-success fw-bold"
+                                                  th:text="*{#numbers.formatDecimal(roomType.pricePerNight, 0, 'COMMA', 0, 'POINT')} + 'đ'">500,000đ</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <p><strong>Mô tả:</strong></p>
+                                    <p th:text="*{roomType.description ?: 'Không có mô tả'}">Phòng tiêu chuẩn view đẹp</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Booking History of this Room -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-history"></i> Lịch sử Booking</h5>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-hover table-bordered text-center table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Mã Booking</th>
+                                            <th>Khách hàng</th>
+                                            <th>Nhận</th>
+                                            <th>Trả</th>
+                                            <th>Trạng thái</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="b : ${bookings}">
+                                            <td><a th:href="@{/bookings/{id}(id=${b.id})}" th:text="${b.code}"
+                                                   class="text-decoration-none fw-bold text-primary"></a></td>
+                                            <td th:text="${b.user.fullName}">Nguyễn Văn A</td>
+                                            <td th:text="${#temporals.format(b.checkInDate, 'dd/MM/yyyy')}">01/01/2024</td>
+                                            <td th:text="${#temporals.format(b.checkOutDate, 'dd/MM/yyyy')}">05/01/2024</td>
+                                            <td><span th:text="${b.status.description}" class="badge bg-info">Đã xác nhận</span></td>
+                                        </tr>
+                                        <tr th:if="${#lists.isEmpty(bookings)}">
+                                            <td colspan="5" class="text-center text-muted">Chưa có booking nào</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Feedback -->
+<!--                        <div class="card" th:if="${feedbacks != null and !#lists.isEmpty(feedbacks)}">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-star"></i> Đánh giá phòng</h5>
+                            </div>
+                            <div class="card-body">
+                                <div th:each="fb : ${feedbacks}" class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <strong th:text="${fb.user.fullName}">Nguyễn Văn B</strong>
+                                            <div class="text-warning">
+                                                <span th:each="i : ${#numbers.sequence(1, fb.rating)}">★</span>
+                                                <span th:each="i : ${#numbers.sequence(fb.rating+1, 5)}">☆</span>
+                                                <span class="text-muted ms-2" th:text="'(' + ${fb.rating} + '/5)'"></span>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted"
+                                               th:text="${#temporals.format(fb.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</small>
+                                    </div>
+                                    <p class="mt-2 mb-1" th:text="${fb.comment}">Phòng sạch và thoải mái</p>
+                                </div>
+                            </div>
+                        </div>-->
+                    </div>
+
+                    <!-- Right: Quick Info -->
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Tóm tắt Phòng</h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Loại phòng:</strong> <span th:text="${room.roomType.name}">Standard</span></p>
+                                <p><strong>Giá/đêm:</strong>
+                                    <span th:text="${#numbers.formatDecimal(room.roomType.pricePerNight, 0, 'COMMA', 0, 'POINT')} + 'đ'">500,000đ</span>
+                                </p>
+                                <p><strong>Trạng thái:</strong> <span th:text="${room.status.description}">Trống</span></p>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-tools"></i> Thao tác nhanh</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <a th:href="@{/rooms/edit/{id}(id=${room.id})}" class="btn btn-outline-warning btn-sm">
+                                        <i class="fas fa-edit"></i> Chỉnh sửa
+                                    </a>
+                                    <button type="button" class="btn btn-outline-success btn-sm" onclick="printRoomDetails()">
+                                        <i class="fas fa-print"></i> In thông tin
+                                    </button>
+                                    <a th:href="@{/rooms/{id}/details(id=${room.id})}" class="btn btn-outline-secondary btn-sm" target="_blank">
+                                        <i class="fas fa-external-link-alt"></i> Xem JSON
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-history"></i> Lịch sử Cập nhật</h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Ngày tạo:</strong> <span th:text="${#temporals.format(room.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</span></p>
+                                <p><strong>Cập nhật cuối:</strong> <span th:text="${#temporals.format(room.updatedAt, 'dd/MM/yyyy HH:mm')}">05/01/2024</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function printRoomDetails() {
+            window.print();
+        }
+    </script>
+</body>
+</html>

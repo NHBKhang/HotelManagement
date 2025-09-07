@@ -119,4 +119,9 @@ public class BookingServiceImpl implements BookingService {
     public List<Booking> findBookingsByRoomAndDateRange(int roomId, LocalDate checkIn, LocalDate checkOut) {
         return bookingRepository.findBookingsByRoomAndDateRange(roomId, checkIn, checkOut);
     }
+
+    @Override
+    public List<Booking> findRecentBookingsByRoom(Room room, int limit) {
+        return this.bookingRepository.findRecentBookingsByRoom(room, limit);
+    }
 }

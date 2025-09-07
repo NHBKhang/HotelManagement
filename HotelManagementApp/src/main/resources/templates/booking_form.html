@@ -50,10 +50,10 @@
                                     <!-- Hidden ID field for edit mode -->
                                     <input type="hidden" th:field="*{id}">
                                     
-                                    <!-- Booking Code (read-only for edit) -->
-                                    <div class="mb-3" th:if="${isEdit}">
-                                        <label class="form-label">Mã Booking</label>
-                                        <input type="text" class="form-control" th:field="*{code}" readonly>
+                                    <div class="mb-3" th:if="${booking.id != null}">
+                                        <label class="form-label fw-bold">Mã phòng</label>
+                                        <span th:text="*{code}" class="badge bg-primary fs-6 fw-bold"></span>
+                                        <input type="hidden" th:field="*{code}">
                                     </div>
 
                                     <!-- Customer Selection -->
@@ -78,7 +78,7 @@
 
                                     <!-- Date Range -->
                                     <div class="row">
-                                        <div class="col-md-6">
+                                        <div class="col-lg-6">
                                             <div class="mb-3">
                                                 <label for="checkInDate" class="form-label">Ngày nhận phòng <span class="text-danger">*</span></label>
                                                 <input type="date" id="checkInDate" th:value="*{#temporals.format(checkInDate, 'yyyy-MM-dd')}" name="checkInDate"
@@ -86,7 +86,7 @@
                                                 <div class="text-danger" th:if="${#fields.hasErrors('checkInDate')}" th:errors="*{checkInDate}"></div>
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
+                                        <div class="col-lg-6">
                                             <div class="mb-3">
                                                 <label for="checkOutDate" class="form-label">Ngày trả phòng <span class="text-danger">*</span></label>
                                                 <input type="date" id="checkOutDate" th:value="*{#temporals.format(checkOutDate, 'yyyy-MM-dd')}" name="checkOutDate"
