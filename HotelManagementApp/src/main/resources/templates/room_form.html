@@ -155,7 +155,7 @@
     <script th:inline="javascript">
         renderDynamicDropdown({
         containerId: 'room-type-dropdown',
-                apiUrl: [[@{/api/room - types}]],
+                apiUrl: [[@{/api/room-types}]],
                 buildOptionText: item => item.name,
                 value: {
                 id: [[${room.roomType.id}]],

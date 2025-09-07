@@ -48,7 +48,7 @@
                                 </div>
                                 <div class="card-body">
                                     <!-- Hidden ID field for edit mode -->
-                                    <input type="hidden" th:field="*{id}">
+                                    <input type="hidden" th:if="${booking.id != null}" th:field="*{id}">
                                     
                                     <div class="mb-3" th:if="${booking.id != null}">
                                         <label class="form-label fw-bold">Mã phòng</label>
@@ -116,12 +116,11 @@
 
                                     <!-- Status (only for edit mode) -->
                                     <div class="mb-3" th:if="${isEdit}">
-                                        <label for="status" class="form-label">Trạng thái</label>
+                                        <label for="status" class="form-label">Trạng thái</label> 
                                         <select id="status" th:field="*{status}" class="form-select">
-                                            <option th:each="status : ${bookingStatuses}" 
-                                                    th:value="${status.name()}" 
-                                                    th:text="${status.description}"
-                                                    th:selected="*{status == status}"></option>
+                                            <option th:each="status : ${bookingStatuses}"
+                                                    th:value="${status}"
+                                                    th:text="${status.description}"></option>
                                         </select>
                                         <div class="text-danger" th:if="${#fields.hasErrors('status')}" th:errors="*{status}"></div>
                                     </div>
@@ -351,26 +350,19 @@
         renderDynamicDropdown({
         containerId: 'room-dropdown',
                 apiUrl: [[@{/api/rooms}]],
-                buildOptionText: item => `${item.roomNumber} - ${item.roomType.name} (${item.roomType.pricePerNight} đ/đêm)`,
-                value: {
-                    id: [[${booking.room.id}]],
-                    roomNumber: [[${booking.room.roomNumber}]],
-                    roomType: {
-                        name: [[${booking.room.roomType.name}]],
-                        pricePerNight: [[${booking.room.roomType.pricePerNight}]]
-                    }
+                buildOptionText: item => {
+                    const typeName = item.roomType ? item.roomType.name : 'Không có loại';
+                    const price = item.roomType ? item.roomType.pricePerNight : 0;
+                    return `${item.roomNumber} - ${typeName} (${price} đ/đêm)`;
                 },
+                value: /*[[${booking.room}]]*/ null,
                 required: true,
         });
         renderDynamicDropdown({
         containerId: 'user-dropdown',
                 apiUrl: [[@{/api/users}]],
                 buildOptionText: item => `${item.fullName} (${item.email})`,
-                value: {
-                    id: [[${booking.user.id}]],
-                    fullName: [[${booking.user.fullName}]],
-                    email: [[${booking.user.email}]],
-                },
+                value: /*[[${booking.user}]]*/ null,
                 required: true,
         });
     </script>
