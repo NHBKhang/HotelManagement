@@ -46,7 +46,7 @@ const RoomPage = () => {
             const nights = Math.max(
                 (checkoutDate - checkinDate) / (1000 * 60 * 60 * 24), 0);
 
-            let total = (nights + 1) * room.roomType.pricePerNight;
+            let total = nights * room.roomType.pricePerNight;
 
             if (payload.services) {
                 payload.services.forEach(s => {
@@ -65,7 +65,8 @@ const RoomPage = () => {
 
     const roomType = room.roomType || {};
     const today = new Date().toISOString().split("T")[0];
-    const minCheckout = payload.checkin || today;
+    const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+    const minCheckout = tomorrow.toISOString().split("T")[0];
 
     const onBook = (e) => {
         e.preventDefault();
@@ -186,8 +187,8 @@ const RoomPage = () => {
                                         <div
                                             key={s.id}
                                             className={`flex items-center justify-between p-3 rounded-lg border transition-colors duration-200 ${selected
-                                                    ? "bg-indigo-50 dark:bg-slate-800 border-indigo-400"
-                                                    : "bg-gray-50 dark:bg-slate-900 border-gray-200 dark:border-slate-700 hover:border-indigo-300"}`}
+                                                ? "bg-indigo-50 dark:bg-slate-800 border-indigo-400"
+                                                : "bg-gray-50 dark:bg-slate-900 border-gray-200 dark:border-slate-700 hover:border-indigo-300"}`}
                                         >
                                             <label className="flex items-center gap-2 cursor-pointer">
                                                 <input

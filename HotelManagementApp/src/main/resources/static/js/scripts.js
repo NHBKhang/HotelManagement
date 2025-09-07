@@ -188,7 +188,7 @@ containerId,
         value = null,
         allowNull = false,
         required = false
-        }) {
+}) {
     let page = 1;
     let isLoading = false;
     let allLoaded = false;
@@ -213,8 +213,13 @@ containerId,
     }
 
     // Nếu có giá trị ban đầu thì hiển thị
-    if (value) {
-        tempBtn.innerText = buildOptionText(value);
+    if (value && value.id) {
+        try {
+            tempBtn.innerText = buildOptionText(value);
+        } catch (e) {
+            console.warn("buildOptionText error, dùng fallback:", e);
+            tempBtn.innerText = value.label || placeholder || "Chọn...";
+        }
         tempInput.value = value.id;
     } else {
         tempBtn.innerText = placeholder || (allowNull ? "-- Không chọn --" : "Chọn...");
