@@ -48,6 +48,23 @@ public class ServiceController {
         }
         return "services";
     }
+    
+    @GetMapping("/{id}")
+    public String serviceDetail(@PathVariable(value = "id") int id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Service service = serviceService.getById(id);
+            if (service == null) {
+                redirectAttributes.addFlashAttribute("error", "Không tìm thấy dịch vụ với ID: " + id);
+                return "redirect:/services";
+            }
+
+            model.addAttribute("service", service);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải thông tin dịch vụ!");
+            e.printStackTrace();
+        }
+        return "service_detail";
+    }
 
     @GetMapping("/add")
     public String showAddServiceForm(Model model) {

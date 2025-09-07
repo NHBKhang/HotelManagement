@@ -109,7 +109,7 @@
                                             <strong>Loại phòng:</strong> <span th:text="${room.roomType.name}"></span>
                                         </li>
                                         <li class="mb-2" th:if="${room.roomType != null}">
-                                            <strong>Giá phòng:</strong> <span th:text="|${#numbers.formatDecimal(room.roomType.pricePerNight, 0, 'COMMA', 0, 'POINT')} VND|"></span>
+                                            <strong>Giá phòng:</strong> <span th:text="|${#numbers.formatDecimal(room.roomType.pricePerNight, 0, 'COMMA', 0, 'POINT')} đ|"></span>
                                         </li>
                                         <li class="mb-2" th:if="${room.roomType != null}">
                                             <strong>Số khách tối đa:</strong> <span th:text="|${room.roomType.maxGuests} khách|"></span>
