@@ -3,6 +3,7 @@ package com.team.hotelmanagementapp.repositories;
 import java.util.List;
 import java.util.Map;
 import com.team.hotelmanagementapp.pojo.Booking;
+import java.time.LocalDate;
 
 public interface BookingRepository {
 

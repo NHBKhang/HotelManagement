@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function toggleSelectAll(tableId = null) {
     const selectAllCheckbox = document.getElementById("selectAll");
-    let checkboxes =  null;
+    let checkboxes = null;
     if (tableId) {
         checkboxes = document.querySelectorAll(`#${tableId} input[type='checkbox']`);
     } else {
@@ -78,7 +78,7 @@ function removeAvatar() {
 const time = 5000;
 
 setTimeout(function () {
-    document.querySelectorAll('.alert').forEach(alert => {
+    document.querySelectorAll('.alert.message').forEach(alert => {
         if (bootstrap && bootstrap.Alert) {
             let bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
             bsAlert.close();
@@ -185,8 +185,10 @@ containerId,
         buildOptionText = item => item.label,
         pageSize = 10,
         placeholder = '',
-        value = null
-}) {
+        value = null,
+        allowNull = false,
+        required = false
+        }) {
     let page = 1;
     let isLoading = false;
     let allLoaded = false;
@@ -194,18 +196,32 @@ containerId,
     const container = document.getElementById(containerId);
     container.style.flex = 1;
 
-    // Create temmp input dynamically to store selected value
+    // Hidden input để submit form
+    const tempInput = container.querySelector('input');
+    tempInput.type = 'hidden';
+    if (required)
+        tempInput.setAttribute("required", "required");
+
+    // Button hiển thị giá trị
     const tempBtn = document.createElement('button');
     tempBtn.classList.add('form-select');
     tempBtn.type = 'button';
     tempBtn.style.height = '37.6px';
     tempBtn.style.textAlign = 'left';
+    if (required) {
+        tempBtn.classList.add('required');
+    }
 
+    // Nếu có giá trị ban đầu thì hiển thị
+    if (value) {
+        tempBtn.innerText = buildOptionText(value);
+        tempInput.value = value.id;
+    } else {
+        tempBtn.innerText = placeholder || (allowNull ? "-- Không chọn --" : "Chọn...");
+        tempInput.value = "";
+    }
 
-    const tempInput = container.querySelector('input');
-    tempInput.type = 'hidden';
-
-    // Create search input element dynamically
+    // Search input
     const searchContainer = document.createElement('div');
     searchContainer.style.padding = '10px';
     searchContainer.style.position = 'sticky';
@@ -215,8 +231,7 @@ containerId,
     searchInput.type = 'text';
     searchInput.classList.add('form-control');
 
-
-    // Create dropdown container dynamically
+    // Dropdown container
     const dropdown = document.createElement('div');
     dropdown.classList.add('dropdown-menu');
     dropdown.style.maxHeight = '300px';
@@ -224,15 +239,23 @@ containerId,
     dropdown.style.overflowY = 'auto';
     dropdown.style.paddingTop = '0';
 
-    // Append the search input, dropdown, and val input to the container
     container.prepend(tempBtn);
     container.appendChild(dropdown);
-    if (value)
-        tempBtn.innerText = buildOptionText(value);
-    else
-        tempBtn.innerText = placeholder;
     dropdown.appendChild(searchContainer);
     searchContainer.appendChild(searchInput);
+
+    if (allowNull) {
+        const nullOption = document.createElement('div');
+        nullOption.classList.add('dropdown-item', 'text-muted');
+        nullOption.textContent = "-- Không chọn --";
+        nullOption.style.cursor = "pointer";
+        nullOption.onclick = () => {
+            tempInput.value = "";
+            tempBtn.innerText = placeholder || "-- Không chọn --";
+            dropdown.style.display = 'none';
+        };
+        dropdown.appendChild(nullOption);
+    }
 
     function loadData(reset = false, forceReset = false) {
         if ((isLoading || allLoaded) && !forceReset)
@@ -243,6 +266,19 @@ containerId,
             allLoaded = false;
             dropdown.innerHTML = '';
             dropdown.appendChild(searchContainer);
+
+            if (allowNull) { // thêm lại option null nếu reset
+                const nullOption = document.createElement('div');
+                nullOption.classList.add('dropdown-item', 'text-muted');
+                nullOption.textContent = "-- Không chọn --";
+                nullOption.style.cursor = "pointer";
+                nullOption.onclick = () => {
+                    tempInput.value = "";
+                    tempBtn.innerText = placeholder || "-- Không chọn --";
+                    dropdown.style.display = 'none';
+                };
+                dropdown.appendChild(nullOption);
+            }
         }
 
         isLoading = true;
@@ -295,7 +331,6 @@ containerId,
     tempBtn.addEventListener('click', function () {
         dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
         if (dropdown.style.display === 'block') {
-            keyword = '';
             loadData(true);
             dropdown.style.width = `${tempBtn.offsetWidth}px`;
             searchInput.style.width = `calc(${tempBtn.offsetWidth}px - 30px)`;
@@ -319,3 +354,4 @@ containerId,
         }
     });
 }
+

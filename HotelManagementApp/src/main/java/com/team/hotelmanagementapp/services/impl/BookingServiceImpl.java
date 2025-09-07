@@ -49,9 +49,9 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Booking createOrUpdate(Booking booking) {
-        if (booking.getId() != null) {
-            this.updateRoomStatus(booking);
-        }
+//        if (booking.getId() != null) {
+//            this.updateRoomStatus(booking);
+//        }
         return bookingRepository.createOrUpdate(booking);
     }
 
@@ -59,6 +59,7 @@ public class BookingServiceImpl implements BookingService {
     public void cancelBooking(int bookingId) {
         Booking b = this.getById(bookingId);
         b.setStatus(Booking.Status.CANCELLED);
+//        this.updateRoomStatus(b);
         this.createOrUpdate(b);
     }
 
@@ -73,9 +74,7 @@ public class BookingServiceImpl implements BookingService {
                 case CHECKED_OUT ->
                     room.setStatus(Room.Status.CLEANING);
                 case CANCELLED -> {
-                    if (booking.getStatus() != Booking.Status.CHECKED_OUT) {
-                        room.setStatus(Room.Status.AVAILABLE);
-                    }
+                    room.setStatus(Room.Status.AVAILABLE);
                 }
             }
             roomService.createOrUpdate(room);
@@ -96,7 +95,6 @@ public class BookingServiceImpl implements BookingService {
 //    public List<Booking> findByStatus(Booking.Status status) {
 //        return bookingRepository.findByStatus(status);
 //    }
-
     @Override
     public Booking createByIdAndUsername(int bookingId, String username, Payment.Method method) {
         Booking b = this.getById(bookingId);

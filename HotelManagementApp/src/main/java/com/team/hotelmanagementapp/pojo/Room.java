@@ -50,11 +50,11 @@ public class Room implements Serializable {
     private Integer id;
 
     @Basic(optional = false)
-    @Column(name = "code", nullable = false, unique = true)
+    @Column(name = "code", nullable = false)
     private String code;
 
     @Basic(optional = false)
-    @Column(name = "room_number")
+    @Column(name = "room_number", unique = true)
     private String roomNumber;
 
     @Basic(optional = false)

@@ -48,7 +48,8 @@
                         <tbody>
                             <tr th:each="r : ${rows}">
                                 <td><input type="checkbox" th:value="${r.id}"></td>
-                                <td><a th:href="@{/users/edit/{id}(id=${r.id})}" th:text="${r.username}"></a></td>
+                                <td><a th:href="@{/users/edit/{id}(id=${r.id})}" th:text="${r.username}"
+                                       class="text-decoration-none fw-bold text-primary"></a></td>
                                 <td th:text="${r.firstName}"></td>
                                 <td th:text="${r.lastName}"></td>
                                 <td th:text="${r.email}"></td>

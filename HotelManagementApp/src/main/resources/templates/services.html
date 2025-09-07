@@ -46,7 +46,8 @@
                         <tbody>
                             <tr th:each="r : ${rows}">
                                 <td><input type="checkbox" th:value="${r.id}"></td>
-                                <td><a th:href="@{/services/edit/{id}(id=${r.id})}" th:text="${r.code}"></a></td>
+                                <td><a th:href="@{/services/edit/{id}(id=${r.id})}" th:text="${r.code}"
+                                       class="text-decoration-none fw-bold text-primary"></a></td>
                                 <td th:text="${r.name}"></td>
                                 <td th:text="${#numbers.formatDecimal(r.price, 0, 'COMMA', 0, 'POINT')} + ' VND'"></td>
                             </tr>

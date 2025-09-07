@@ -46,7 +46,8 @@
                         <tbody>
                             <tr th:each="r : ${rows}">
                                 <td><input type="checkbox" th:value="${r.id}"></td>
-                                <td><a th:href="@{/room-types/edit/{id}(id=${r.id})}" th:text="${r.name}"></a></td>
+                                <td><a th:href="@{/room-types/edit/{id}(id=${r.id})}" th:text="${r.name}"
+                                       class="text-decoration-none fw-bold text-primary"></a></td>
                                 <td th:text="${#numbers.formatDecimal(r.pricePerNight, 0, 'COMMA', 0, 'POINT')} + ' VND'"></td>
                                 <td th:text="${r.maxGuests}"></td>
                             </tr>

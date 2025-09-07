@@ -3,7 +3,7 @@
 
     <head>
         <title
-            th:text="${type.id != null} ? 'Chi tiết Loại phòng - Quản lý khách sạn' : ('Thêm Loại phòng - Quản lý khách sạn')">
+            th:text="${type.id != null} ? 'Cập Nhật Loại phòng - Quản lý khách sạn' : ('Thêm Loại phòng - Quản lý khách sạn')">
         </title>
 
     <th:block th:replace="base :: head"></th:block>
@@ -15,7 +15,7 @@
             <div class="container">
                 <h2 class="text-center mb-3">
                     <span th:if="${type.id != null}">
-                        <i class="fa-solid fa-pen-to-square me-2"></i> Chi tiết Loại phòng
+                        <i class="fa-solid fa-pen-to-square me-2"></i> Cập Nhật Loại phòng
                     </span>
                     <span th:unless="${type.id != null}">
                         <i class="fa-solid fa-type-plus me-2"></i> Thêm Loại phòng

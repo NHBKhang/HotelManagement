@@ -48,39 +48,30 @@
                                 </div>
                                 <div class="card-body">
                                     <!-- Hidden ID field for edit mode -->
-                                    <input type="hidden" th:if="${isEdit}" th:field="*{id}">
+                                    <input type="hidden" th:field="*{id}">
                                     
                                     <!-- Booking Code (read-only for edit) -->
                                     <div class="mb-3" th:if="${isEdit}">
                                         <label class="form-label">Mã Booking</label>
-                                        <input type="text" class="form-control" th:value="*{code}" readonly>
+                                        <input type="text" class="form-control" th:field="*{code}" readonly>
                                     </div>
 
                                     <!-- Customer Selection -->
                                     <div class="mb-3">
                                         <label for="user" class="form-label">Khách hàng <span class="text-danger">*</span></label>
-                                        <select id="user" th:field="*{user.id}" class="form-select" required>
-                                            <option value="">-- Chọn khách hàng --</option>
-                                            <option th:each="user : ${users}" 
-                                                    th:value="${user.id}" 
-                                                    th:text="${user.firstName + ' ' + user.lastName + ' (' + user.email + ')'}">
-                                                Nguyễn Văn A (user@example.com)
-                                            </option>
-                                        </select>
+                                        <div id="user-dropdown">
+                                            <input id="user" th:field="*{user.id}" required/>
+                                        </div>
                                         <div class="text-danger" th:if="${#fields.hasErrors('user')}" th:errors="*{user}"></div>
                                     </div>
 
                                     <!-- Room Selection -->
                                     <div class="mb-3">
                                         <label for="room" class="form-label">Phòng <span class="text-danger">*</span></label>
-                                        <select id="room" th:field="*{room.id}" class="form-select" required>
-                                            <option value="">-- Chọn phòng --</option>
-                                            <option th:each="room : ${rooms}"
-                                                    th:value="${room.id}"
-                                                    th:text="${room.roomNumber + ' - ' + room.roomType.name + ' (' + room.roomType.pricePerNight + 'đ/đêm)'}">
-                                                Phòng 101 - Standard (500000đ/đêm)
-                                            </option>
-                                        </select>
+                                        <div id="room-dropdown">
+                                            <input id="room" th:field="*{room.id}" required/>
+                                        </div>
+                                        <p class="text-danger" th:if="${#fields.hasErrors('room')}" th:errors="*{room}"></p>
                                         <div class="text-danger" th:if="${#fields.hasErrors('room')}" th:errors="*{room}"></div>
                                         <div id="roomAvailabilityStatus" class="mt-2"></div>
                                     </div>
@@ -224,7 +215,7 @@
         function calculateDays() {
             const checkInDate = document.getElementById('checkInDate').value;
             const checkOutDate = document.getElementById('checkOutDate').value;
-            const roomSelect = document.getElementById('room');
+            const roomEl = document.querySelector('#room-dropdown button');
             
             const totalNightsElement = document.getElementById('totalNights');
             const pricePerNightElement = document.getElementById('pricePerNight');
@@ -239,11 +230,9 @@
                 if (daysDiff > 0) {
                     totalNightsElement.textContent = daysDiff + ' đêm';
                     
-                    // Extract price from room option text
-                    if (roomSelect.value) {
-                        const selectedOption = roomSelect.options[roomSelect.selectedIndex];
-                        const roomText = selectedOption.text;
-                        const priceMatch = roomText.match(/\(([\d.]+)đ\/đêm\)/);
+                    const roomText = roomEl.innerText;
+                    if (roomText) {
+                        const priceMatch = roomText.match(/\(([\d.,]+)\s*(?:VND|đ)\/đêm\)/i);
                         
                         if (priceMatch) {
                             const pricePerNight = parseInt(priceMatch[1]);
@@ -356,6 +345,33 @@
         // Initial availability check if all fields are filled
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(checkRoomAvailability, 500); // Small delay to ensure form is fully loaded
+        });
+    </script>
+    <script th:inline="javascript">
+        renderDynamicDropdown({
+        containerId: 'room-dropdown',
+                apiUrl: [[@{/api/rooms}]],
+                buildOptionText: item => `${item.roomNumber} - ${item.roomType.name} (${item.roomType.pricePerNight} đ/đêm)`,
+                value: {
+                    id: [[${booking.room.id}]],
+                    roomNumber: [[${booking.room.roomNumber}]],
+                    roomType: {
+                        name: [[${booking.room.roomType.name}]],
+                        pricePerNight: [[${booking.room.roomType.pricePerNight}]]
+                    }
+                },
+                required: true,
+        });
+        renderDynamicDropdown({
+        containerId: 'user-dropdown',
+                apiUrl: [[@{/api/users}]],
+                buildOptionText: item => `${item.fullName} (${item.email})`,
+                value: {
+                    id: [[${booking.user.id}]],
+                    fullName: [[${booking.user.fullName}]],
+                    email: [[${booking.user.email}]],
+                },
+                required: true,
         });
     </script>
 </body>
