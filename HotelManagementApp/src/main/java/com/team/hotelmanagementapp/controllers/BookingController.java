@@ -22,20 +22,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import com.team.hotelmanagementapp.dto.BookingDisplayDTO;
 import com.team.hotelmanagementapp.pojo.Booking;
 import com.team.hotelmanagementapp.services.BookingService;
+import com.team.hotelmanagementapp.services.FeedbackService;
 import com.team.hotelmanagementapp.services.RoomService;
 import com.team.hotelmanagementapp.services.UserService;
 import com.team.hotelmanagementapp.utils.Pagination;
 
 import jakarta.validation.Valid;
 
-/**
- * Web MVC Controller for Booking Management
- * Handles booking CRUD operations, status management, and calendar views
- */
 @Controller
 @ControllerAdvice
 @RequestMapping("/bookings")
@@ -49,25 +44,18 @@ public class BookingController {
     
     @Autowired
     private UserService userService;
-
-    /**
-     * Display all bookings with filtering and pagination
-     * GET /bookings
-     */
-    @GetMapping
     
+    @Autowired
+    private FeedbackService feedbackService;
+
+    @GetMapping
     public String bookings(Model model, @RequestParam Map<String, String> params,
             RedirectAttributes redirectAttributes) {
         try {
             long totalBookings = bookingService.countBookings(params);
             List<Booking> bookings = bookingService.find(params);
-            
-            // Convert to DTOs to avoid SpEL expression errors
-            List<BookingDisplayDTO> bookingDTOs = bookings.stream()
-                .map(BookingDisplayDTO::new)
-                .collect(Collectors.toList());
 
-            model.addAttribute("rows", bookingDTOs);
+            model.addAttribute("rows", bookings);
             model.addAttribute("totalBookings", totalBookings);
             model.addAttribute("pagination", new Pagination(totalBookings, params));
             model.addAttribute("bookingStatuses", Booking.Status.values());
@@ -94,13 +82,8 @@ public class BookingController {
         }
         return "bookings";
     }
-
-    /**
-     * Display specific booking details
-     * GET /bookings/{id}
-     */
-    @GetMapping("/{id}")
     
+    @GetMapping("/{id}")
     public String bookingDetail(@PathVariable(value = "id") int id, Model model, RedirectAttributes redirectAttributes) {
         try {
             Booking booking = bookingService.getById(id);
@@ -119,12 +102,7 @@ public class BookingController {
         return "booking_detail";
     }
 
-    /**
-     * Show new booking form
-     * GET /bookings/add
-     */
     @GetMapping("/add")
-    
     public String showAddForm(Model model) {
         model.addAttribute("booking", new Booking());
         model.addAttribute("rooms", roomService.findAll());
@@ -135,12 +113,7 @@ public class BookingController {
         return "booking_form";
     }
 
-    /**
-     * Show edit booking form
-     * GET /bookings/edit/{id}
-     */
     @GetMapping("/edit/{id}")
-    
     public String showEditForm(@PathVariable(value = "id") int id, Model model, RedirectAttributes redirectAttributes) {
         try {
             Booking booking = bookingService.getById(id);
@@ -154,6 +127,7 @@ public class BookingController {
             model.addAttribute("users", userService.find(Map.of()));
             model.addAttribute("bookingStatuses", Booking.Status.values());
             model.addAttribute("isEdit", true);
+            model.addAttribute("feedbacks", this.feedbackService.findByBooking(id, null));
             
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải form chỉnh sửa!");
@@ -162,18 +136,11 @@ public class BookingController {
         return "booking_form";
     }
 
-    /**
-     * Save booking (create or update)
-     * POST /bookings/save
-     */
     @PostMapping("/save")
-    
     public String saveBooking(@Valid @ModelAttribute Booking booking, 
             BindingResult bindingResult,
             Model model, 
             RedirectAttributes redirectAttributes) {
-        
-        // Validate business rules
         if (booking.getCheckInDate() != null && booking.getCheckOutDate() != null) {
             if (booking.getCheckInDate().isAfter(booking.getCheckOutDate())) {
                 bindingResult.rejectValue("checkOutDate", "error.booking",
@@ -209,13 +176,6 @@ public class BookingController {
         }
 
         try {
-            // Generate booking code for new bookings
-            if (booking.getId() == null) {
-                String code = "BK" + System.currentTimeMillis();
-                booking.setCode(code);
-                booking.setStatus(Booking.Status.PENDING);
-            }
-            
             Booking savedBooking = bookingService.createOrUpdate(booking);
             
             if (booking.getId() == null) {
@@ -235,12 +195,7 @@ public class BookingController {
         }
     }
 
-    /**
-     * Update booking status
-     * POST /bookings/{id}/status
-     */
     @PostMapping("/{id}/status")
-    
     public String updateStatus(@PathVariable(value = "id") int id,
             @RequestParam(value = "status") Booking.Status status,
             RedirectAttributes redirectAttributes) {
@@ -274,12 +229,7 @@ public class BookingController {
         return "redirect:/bookings/" + id;
     }
 
-    /**
-     * Cancel booking
-     * POST /bookings/{id}/cancel
-     */
     @PostMapping("/{id}/cancel")
-    
     public String cancelBooking(@PathVariable(value = "id") int id, RedirectAttributes redirectAttributes) {
         try {
             bookingService.cancelBooking(id);
@@ -294,12 +244,7 @@ public class BookingController {
         return "redirect:/bookings";
     }
 
-    /**
-     * Show booking calendar view
-     * GET /bookings/calendar
-     */
     @GetMapping("/calendar")
-    
     public String bookingCalendar(Model model, @RequestParam Map<String, String> params) {
         try {
             List<Booking> bookings = bookingService.find(params);
@@ -313,10 +258,6 @@ public class BookingController {
         return "booking_calendar";
     }
 
-    /**
-     * AJAX: Check room availability
-     * GET /bookings/check-availability
-     */
     @GetMapping("/check-availability")
     @ResponseBody
     public ResponseEntity<?> checkAvailability(
@@ -384,7 +325,7 @@ public class BookingController {
                 
             case CHECKED_OUT:
             case CANCELLED:
-                return false; // Final states
+                return false;
                 
             default:
                 return false;

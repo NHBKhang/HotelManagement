@@ -47,7 +47,10 @@
                         <tbody>
                             <tr th:each="r : ${rows}">
                                 <td><input type="checkbox" th:value="${r.id}"></td>
-                                <td><a th:href="@{/rooms/edit/{id}(id=${r.id})}" th:text="${r.code}"></a></td>
+                                <td>
+                                    <a th:href="@{/rooms/edit/{id}(id=${r.id})}" th:text="${r.code}" 
+                                       class="text-decoration-none fw-bold text-primary"></a>
+                                </td>
                                 <td th:text="${r.roomNumber}"></td>
                                 <td th:text="${r.roomType != null ? r.roomType.name : '-'}"></td>
                                 <td>

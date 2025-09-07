@@ -128,15 +128,15 @@
                         </div>
 
                         <!-- Feedback Section (if available) -->
-                        <div class="card" th:if="${booking.feedbacks != null and !#lists.isEmpty(booking.feedbacks)}">
+                        <div class="card" th:if="${feedbacks != null and !#lists.isEmpty(feedbacks)}">
                             <div class="card-header">
                                 <h5 class="mb-0"><i class="fas fa-star"></i> Đánh giá từ khách hàng</h5>
                             </div>
                             <div class="card-body">
-                                <div th:each="feedback : ${booking.feedbacks}" class="mb-3">
+                                <div th:each="feedback : ${feedbacks}" class="mb-3">
                                     <div class="d-flex justify-content-between">
                                         <div>
-                                            <strong th:text="${feedback.user.firstName + ' ' + feedback.user.lastName}">Nguyễn Văn A</strong>
+                                            <strong th:text="${feedback.user.fullName}">Nguyễn Văn A</strong>
                                             <div class="text-warning">
                                                 <span th:each="i : ${#numbers.sequence(1, feedback.rating)}">★</span>
                                                 <span th:each="i : ${#numbers.sequence(feedback.rating + 1, 5)}">☆</span>

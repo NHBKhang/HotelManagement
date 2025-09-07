@@ -3,7 +3,7 @@
 
     <head>
         <title
-            th:text="${room.id != null} ? 'Chi tiết Phòng - Quản lý khách sạn' : ('Thêm Phòng - Quản lý khách sạn')">
+            th:text="${room.id != null} ? 'Cập Nhật Phòng - Quản lý khách sạn' : ('Thêm Phòng - Quản lý khách sạn')">
         </title>
 
     <th:block th:replace="base :: head"></th:block>
@@ -15,7 +15,7 @@
             <div class="container">
                 <h2 class="text-center mb-3">
                     <span th:if="${room.id != null}">
-                        <i class="fa-solid fa-pen-to-square me-2"></i> Chi tiết Phòng
+                        <i class="fa-solid fa-pen-to-square me-2"></i> Cập Nhật Phòng
                     </span>
                     <span th:unless="${room.id != null}">
                         <i class="fa-solid fa-room-plus me-2"></i> Thêm Phòng
@@ -91,7 +91,8 @@
                 value: {
                 id: [[${room.roomType.id}]],
                         name: [[${room.roomType.name}]]
-                }
+                },
+                required: true,
         });
     </script>
 </body>

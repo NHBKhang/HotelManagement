@@ -48,26 +48,6 @@ public class Pagination<T> {
         return totalElements;
     }
     
-    // Add methods for template compatibility
-    public int getTotalPages() {
-        return total;
-    }
-    
-    public int getCurrentPage() {
-        return current;
-    }
-    
-    public List<Integer> getPageNumbers() {
-        List<Integer> pages = new ArrayList<>();
-        int start = Math.max(1, current - 2);
-        int end = Math.min(total, current + 2);
-        
-        for (int i = start; i <= end; i++) {
-            pages.add(i);
-        }
-        return pages;
-    }
-    
     public boolean hasPrevious() {
         return current > 1;
     }

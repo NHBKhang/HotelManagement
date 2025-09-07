@@ -30,7 +30,7 @@ public class BookingRepositoryImpl implements BookingRepository {
     @Override
     public List<Booking> findAll() {
         Session s = this.factory.getObject().getCurrentSession();
-        return s.createQuery("SELECT DISTINCT b FROM Booking b LEFT JOIN FETCH b.feedbacks", Booking.class).getResultList();
+        return s.createNamedQuery("Booking.findAll", Booking.class).getResultList();
     }
 
     @Override
@@ -90,6 +90,7 @@ public class BookingRepositoryImpl implements BookingRepository {
 
         if (booking.getId() == null) {
             booking.setCode(this.generateCode());
+            booking.setStatus(Booking.Status.PENDING);
             s.persist(booking);
         } else {
             booking = s.merge(booking);
@@ -177,7 +178,7 @@ public class BookingRepositoryImpl implements BookingRepository {
 
         // Check if there are any overlapping bookings
         String hql = "SELECT COUNT(b) FROM Booking b WHERE b.room.id = :roomId AND b.status IN (:activeStatuses) AND ((b.checkInDate < :checkOut AND b.checkOutDate > :checkIn))";
-        
+
         if (excludeBookingId != null) {
             hql += " AND b.id != :excludeBookingId";
         }
@@ -203,6 +204,7 @@ public class BookingRepositoryImpl implements BookingRepository {
         Long count = query.getSingleResult();
         return count == 0; // Room is available if no overlapping bookings
     }
+
     private String generateCode() {
         Session s = this.factory.getObject().getCurrentSession();
         Query q = s.createQuery("SELECT MAX(b.id) FROM Booking b", Integer.class);
