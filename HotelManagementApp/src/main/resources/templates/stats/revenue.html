@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Thống kê doanh thu - Hotel Management</title>
+    <th:block th:replace="base :: head"></th:block>
+</head>
+<body>
+    <div th:replace="base :: layout(~{::content})">
+        <div th:fragment="content">
+            <div class="container mt-4">
+                <h2 class="mb-4 text-center">Thống kê doanh thu</h2>
+
+                <!-- Bộ lọc thời gian -->
+                <form class="row mb-4 justify-content-center" method="get" th:action="@{/admin/reports/revenue}">
+                    <div class="col-auto">
+                        <input type="date" name="start" class="form-control" th:value="${start}">
+                    </div>
+                    <div class="col-auto">
+                        <input type="date" name="end" class="form-control" th:value="${end}">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-filter"></i> Lọc
+                        </button>
+                    </div>
+                </form>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <h5><i class="fa-solid fa-coins"></i> Tổng doanh thu</h5>
+                                <h3 th:text="${#numbers.formatDecimal(totalRevenue, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-info text-white">
+                            <div class="card-body text-center">
+                                <h5><i class="fa-solid fa-file-invoice-dollar"></i> Hóa đơn đã thanh toán</h5>
+                                <h3 th:text="${totalInvoices}">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body text-center">
+                                <h5><i class="fa-solid fa-chart-line"></i> Trung bình / hóa đơn</h5>
+                                <h3 th:text="${#numbers.formatDecimal(avgInvoice, 0, 'COMMA', 0, 'POINT')} + ' VND'">0 VND</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>    
+
+                <!-- Bảng doanh thu -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fa fa-table"></i> Doanh thu theo tháng
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered table-striped">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Tháng</th>
+                                    <th>Doanh thu (VND)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="entry : ${revenueByMonth}">
+                                    <td th:text="${entry.key}"></td>
+                                    <td th:text="${#numbers.formatDecimal(entry.value, 0, 'COMMA', 0, 'POINT')}"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Biểu đồ -->
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header"><i class="fa fa-bar-chart"></i> Biểu đồ cột - Doanh thu theo tháng</div>
+                            <div class="card-body">
+                                <canvas id="revenueBarChart" height="120"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header"><i class="fa fa-line-chart"></i> Biểu đồ đường - Xu hướng doanh thu</div>
+                            <div class="card-body">
+                                <canvas id="revenueLineChart" height="120"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const revenueByMonth = JSON.parse(/*[[${revenueByMonthJson}]]*/ '{}');
+
+        const labels = Object.keys(revenueByMonth).map(m => {
+            let [year, month] = m.split("-");
+            return "T" + month + "-" + year;
+        });
+        const data = Object.values(revenueByMonth).reverse();
+
+        // Bar chart
+        new Chart(document.getElementById('revenueBarChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                        label: 'Doanh thu (VND)',
+                        data: data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+            },
+            options: {responsive: true, scales: {y: {beginAtZero: true}}}
+        });
+
+        // Line chart
+        new Chart(document.getElementById('revenueLineChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                        label: 'Xu hướng doanh thu',
+                        data: data,
+                        borderColor: 'green',
+                        backgroundColor: 'rgba(0,128,0,0.2)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+            },
+            options: {responsive: true, scales: {y: {beginAtZero: true}}}
+        });
+        /*]]>*/
+    </script>
+</body>
+</html>

@@ -4,6 +4,11 @@ import com.team.hotelmanagementapp.pojo.Booking;
 import com.team.hotelmanagementapp.pojo.Service;
 import com.team.hotelmanagementapp.pojo.ServiceBooking;
 import com.team.hotelmanagementapp.repositories.ServiceBookingRepository;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -61,5 +66,35 @@ public class ServiceBookingRepositoryImpl implements ServiceBookingRepository {
         }
 
         return serviceBooking;
+    }
+
+    @Override
+    public long count(Map<String, String> params) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Long> q = b.createQuery(Long.class);
+        Root<ServiceBooking> root = q.from(ServiceBooking.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (params != null) {
+            if (params.containsKey("start") && !params.get("start").isEmpty()) {
+                LocalDate start = LocalDate.parse(params.get("start"));
+                predicates.add(b.greaterThanOrEqualTo(
+                        root.get("createdAt"), start.atStartOfDay()
+                ));
+            }
+
+            if (params.containsKey("end") && !params.get("end").isEmpty()) {
+                LocalDate end = LocalDate.parse(params.get("end"));
+                predicates.add(b.lessThanOrEqualTo(
+                        root.get("createdAt"), end.atTime(23, 59, 59)
+                ));
+            }
+        }
+
+        q.select(b.count(root)).where(predicates.toArray(Predicate[]::new));
+
+        return s.createQuery(q).getSingleResult();
     }
 }

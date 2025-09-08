@@ -10,10 +10,13 @@ import org.springframework.stereotype.Service;
 import com.team.hotelmanagementapp.pojo.Booking;
 import com.team.hotelmanagementapp.pojo.Payment;
 import com.team.hotelmanagementapp.pojo.Room;
+import com.team.hotelmanagementapp.pojo.RoomType;
 import com.team.hotelmanagementapp.repositories.BookingRepository;
 import com.team.hotelmanagementapp.services.BookingService;
 import com.team.hotelmanagementapp.services.RoomService;
 import com.team.hotelmanagementapp.services.UserService;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @Service
 public class BookingServiceImpl implements BookingService {
@@ -123,5 +126,20 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<Booking> findRecentBookingsByRoom(Room room, int limit) {
         return this.bookingRepository.findRecentBookingsByRoom(room, limit);
+    }
+
+    @Override
+    public List<Map<String, Object>> getTopBookedRoomsByUser(int id) {
+        List<Object[]> results = bookingRepository.getTopBookedRoomsByUser(id);
+        List<Map<String, Object>> topRooms = new ArrayList<>();
+
+        for (Object[] row : results) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("roomNumber", (String) row[0]);
+            m.put("roomType", (RoomType) row[1]);
+            m.put("count", ((Long) row[2]).intValue());
+            topRooms.add(m);
+        }
+        return topRooms;
     }
 }

@@ -34,4 +34,6 @@ public interface BookingService {
 
     Booking createByIdAndUsername(int bookingId, String username, Payment.Method method);
 
+    List<Map<String, Object>> getTopBookedRoomsByUser(int id);
+
 }

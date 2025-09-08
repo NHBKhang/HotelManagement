@@ -6,6 +6,8 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -99,12 +101,46 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
         Session s = factory.getObject().getCurrentSession();
 
         if (invoice.getId() == null) {
+            if (invoice.getIssueAt() == null) {
+                invoice.setIssueAt(LocalDateTime.now());
+            }
+            
             s.persist(invoice);
         } else {
             invoice = s.merge(invoice);
         }
 
         return invoice;
+    }
+
+    @Override
+    public long countInvoices(Map<String, String> params) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Long> q = b.createQuery(Long.class);
+        Root<Invoice> root = q.from(Invoice.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (params != null) {
+            if (params.containsKey("start") && !params.get("start").isEmpty()) {
+                LocalDate start = LocalDate.parse(params.get("start"));
+                predicates.add(b.greaterThanOrEqualTo(
+                        root.get("issueAt"), start.atStartOfDay()
+                ));
+            }
+
+            if (params.containsKey("end") && !params.get("end").isEmpty()) {
+                LocalDate end = LocalDate.parse(params.get("end"));
+                predicates.add(b.lessThanOrEqualTo(
+                        root.get("issueAt"), end.atTime(23, 59, 59)
+                ));
+            }
+        }
+
+        q.select(b.count(root)).where(predicates.toArray(Predicate[]::new));
+
+        return s.createQuery(q).getSingleResult();
     }
 
 }

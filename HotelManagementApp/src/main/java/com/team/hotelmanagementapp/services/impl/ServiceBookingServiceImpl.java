@@ -13,11 +13,11 @@ import org.springframework.stereotype.Service;
 public class ServiceBookingServiceImpl implements ServiceBookingService {
     
     @Autowired
-    private ServiceBookingRepository serviceBookingRepository;
+    private ServiceBookingRepository serviceBookingRepo;
 
     @Override
     public List<ServiceBooking> createMulti(Booking b, List<Map<String, Object>> services) {
-        return serviceBookingRepository.createMulti(b, services);
+        return serviceBookingRepo.createMulti(b, services);
     }
     
 }

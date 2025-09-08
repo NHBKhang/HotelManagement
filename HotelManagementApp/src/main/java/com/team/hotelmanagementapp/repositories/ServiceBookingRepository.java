@@ -10,5 +10,7 @@ public interface ServiceBookingRepository {
     List<ServiceBooking> createMulti(Booking b, List<Map<String, Object>> services);
 
     ServiceBooking createOrUpdate(ServiceBooking serviceBooking);
+
+    long count(Map<String, String> params);
     
 }

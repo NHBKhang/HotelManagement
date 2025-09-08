@@ -7,6 +7,8 @@ import java.util.Map;
 public interface UserRepository {
     
     List<User> find(Map<String, String> params);
+
+    List<User> findAll();
     
     long countUsers(Map<String, String> params);
 

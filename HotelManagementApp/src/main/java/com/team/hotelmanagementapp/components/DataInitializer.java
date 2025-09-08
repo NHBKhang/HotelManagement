@@ -109,7 +109,7 @@ public class DataInitializer {
             serviceRepository.createOrUpdate(new Service(null, "Internet Wifi", "Internet tốc độ cao 1 ngày", 50000.0, true, "ngày", false));
             Service s9 = serviceRepository.createOrUpdate(new Service(null, "Chỗ đậu xe", "Đậu xe an toàn 1 ngày", 30000.0, true, "ngày", true));
             serviceRepository.createOrUpdate(new Service(null, "Dịch vụ đưa đón", "Đưa đón bằng xe riêng", 400000.0, true, "lượt", false));
-            
+
             serviceBookingRepository.createOrUpdate(new ServiceBooking(null, bookingRepository.getById(1), s9, s1.getPrice() * 2, 2));
             serviceBookingRepository.createOrUpdate(new ServiceBooking(null, bookingRepository.getById(1), s1, s1.getPrice(), 1));
             serviceBookingRepository.createOrUpdate(new ServiceBooking(null, bookingRepository.getById(2), s2, s1.getPrice(), 1));
@@ -161,7 +161,7 @@ public class DataInitializer {
                 // Create feedback for first booking (completed)
                 if (bookings.size() >= 2) {
                     Booking completedBooking = bookings.get(1);
-                    completedBooking.setStatus(Booking.Status.CHECKED_OUT); // Simulate completion
+                    completedBooking.setStatus(Booking.Status.CONFIRMED); // Simulate completion
                     Booking booking = bookingRepository.createOrUpdate(completedBooking);
 
                     // Add multiple feedback for completed booking
@@ -229,6 +229,7 @@ public class DataInitializer {
             if (!bookings.isEmpty()) {
                 Booking booking1 = bookings.get(0);
                 Booking booking2 = bookings.get(1);
+                Booking booking3 = bookings.get(2);
 
                 // ===== Invoice 1 cho booking1 =====
                 Invoice invoice1 = new Invoice();
@@ -287,6 +288,30 @@ public class DataInitializer {
 
                 invoice2.setStatus(Invoice.Status.UNPAID); // vì chưa thanh toán đủ
                 invoiceRepository.createOrUpdate(invoice2);
+
+                // Invoice 3
+                Invoice pastInvoice = new Invoice();
+                pastInvoice.setBooking(booking3);
+                pastInvoice.setIssueAt(LocalDateTime.now().minusMonths(1));
+                pastInvoice.setInvoiceNumber("INV-" + (System.currentTimeMillis() - 10000));
+                pastInvoice.setSentToEmail(booking3.getUser().getEmail());
+                pastInvoice.setStatus(Invoice.Status.PAID);
+
+                double amount = booking3.getRoom().getRoomType().getPricePerNight();
+                pastInvoice.setTotalAmount(amount);
+
+                pastInvoice = invoiceRepository.createOrUpdate(pastInvoice);
+
+                Payment pastPayment = new Payment();
+                pastPayment.setCode(paymentRepository.generateCode());
+                pastPayment.setTransactionNo("TRANSFER987654");
+                pastPayment.setAmount(amount);
+                pastPayment.setMethod(Payment.Method.TRANSFER);
+                pastPayment.setStatus(Payment.Status.SUCCESS);
+                pastPayment.setDescription("Thanh toán tháng 8");
+                pastPayment.setInvoice(pastInvoice);
+
+                paymentRepository.createOrUpdate(pastPayment);
             }
         }
     }

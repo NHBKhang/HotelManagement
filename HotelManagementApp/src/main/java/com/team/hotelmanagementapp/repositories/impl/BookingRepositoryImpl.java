@@ -91,7 +91,10 @@ public class BookingRepositoryImpl implements BookingRepository {
 
         if (booking.getId() == null) {
             booking.setCode(this.generateCode());
-            booking.setStatus(Booking.Status.PENDING);
+            if (booking.getStatus() == null) {
+                booking.setStatus(Booking.Status.PENDING);
+            }
+
             s.persist(booking);
         } else {
             booking = s.merge(booking);
@@ -122,11 +125,27 @@ public class BookingRepositoryImpl implements BookingRepository {
             predicates.add(b.equal(root.get("user").get("username"), username));
         }
 
-        if (params != null && params.get("status") != null) {
-            try {
-                Booking.Status status = Booking.Status.valueOf(params.get("status").toUpperCase());
-                predicates.add(b.equal(root.get("status"), status));
-            } catch (IllegalArgumentException ignored) {
+        if (params != null) {
+            if (params.get("status") != null) {
+                try {
+                    Booking.Status status = Booking.Status.valueOf(params.get("status").toUpperCase());
+                    predicates.add(b.equal(root.get("status"), status));
+                } catch (IllegalArgumentException ignored) {
+                }
+            }
+
+            if (params.containsKey("start") && !params.get("start").isEmpty()) {
+                LocalDate start = LocalDate.parse(params.get("start"));
+                predicates.add(b.greaterThanOrEqualTo(
+                        root.get("createdAt"), start.atStartOfDay()
+                ));
+            }
+
+            if (params.containsKey("end") && !params.get("end").isEmpty()) {
+                LocalDate end = LocalDate.parse(params.get("end"));
+                predicates.add(b.lessThanOrEqualTo(
+                        root.get("createdAt"), end.atTime(23, 59, 59)
+                ));
             }
         }
 
@@ -222,5 +241,50 @@ public class BookingRepositoryImpl implements BookingRepository {
                 .setParameter("roomId", room.getId())
                 .setMaxResults(limit)
                 .getResultList();
+    }
+
+    @Override
+    public long countByStatus(Booking.Status status, LocalDate start, LocalDate end) {
+        Session session = factory.getObject().getCurrentSession();
+
+        StringBuilder hql = new StringBuilder("SELECT COUNT(b) FROM Booking b WHERE b.status = :status");
+
+        if (start != null) {
+            hql.append(" AND b.createdAt >= :start");
+        }
+        if (end != null) {
+            hql.append(" AND b.createdAt <= :end");
+        }
+
+        var query = session.createQuery(hql.toString(), Long.class);
+        query.setParameter("status", status);
+
+        if (start != null) {
+            query.setParameter("start", start.atStartOfDay());
+        }
+        if (end != null) {
+            query.setParameter("end", end.atTime(23, 59, 59));
+        }
+
+        Long result = query.uniqueResult();
+        return result != null ? result : 0L;
+    }
+
+    @Override
+    public List<Object[]> getTopBookedRoomsByUser(int id) {
+        Session session = factory.getObject().getCurrentSession();
+
+        String hql = """
+            SELECT r.roomNumber, r.roomType, COUNT(b.id)
+            FROM Booking b
+            JOIN b.room r
+            WHERE b.user.id = :userId
+            GROUP BY r.id, r.roomNumber, r.roomType
+            ORDER BY COUNT(b.id) DESC
+        """;
+
+        return session.createQuery(hql, Object[].class)
+                .setParameter("userId", id)
+                .list();
     }
 }

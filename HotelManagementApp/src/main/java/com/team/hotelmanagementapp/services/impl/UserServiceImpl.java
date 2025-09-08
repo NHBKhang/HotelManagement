@@ -31,6 +31,11 @@ public class UserServiceImpl implements UserService {
     private Cloudinary cloudinary;
 
     @Override
+    public List<User> findAll() {
+        return this.userRepo.findAll();
+    }
+
+    @Override
     public List<User> find(Map<String, String> params) {
         return this.userRepo.find(params);
     }

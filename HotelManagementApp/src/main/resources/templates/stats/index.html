@@ -1,0 +1,169 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Thống kê - Hotel Management</title>
+    <th:block th:replace="base :: head"></th:block>
+</head>
+<body>
+    <div th:replace="base :: layout(~{::content})">
+        <div th:fragment="content">
+            <div class="container-fluid mt-4">
+                <h2 class="mb-4 text-center"><i class="fa fa-chart-line me-2"></i> Bảng điều khiển báo cáo</h2>
+
+                <!-- Bộ lọc thời gian -->
+                <form class="row mb-4 justify-content-center">
+                    <div class="col-auto">
+                        <input type="date" name="start" th:value="${start}" class="form-control">
+                    </div>
+                    <div class="col-auto">
+                        <input type="date" name="end" th:value="${end}" class="form-control">
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-primary">Lọc</button>
+                    </div>
+                </form>
+
+                <!-- Chỉ số tổng quan -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="card stat-card text-white bg-success">
+                            <div class="card-body text-center">
+                                <h5>Tổng doanh thu</h5>
+                                <h3 th:text="${totalRevenue} + ' đ'">1,200,000 đ</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card text-white bg-info">
+                            <div class="card-body text-center">
+                                <h5>Tổng booking</h5>
+                                <h3 th:text="${totalBookings}">250</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card text-white bg-warning">
+                            <div class="card-body text-center">
+                                <h5>Dịch vụ đã đặt</h5>
+                                <h3 th:text="${totalServiceBookings}">560</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card text-white bg-danger">
+                            <div class="card-body text-center">
+                                <h5>Số phòng</h5>
+                                <h3 th:text="${totalRooms}">80</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Biểu đồ -->
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header"><i class="fa fa-chart-line me-2 text-success"></i> Doanh thu theo tháng</div>
+                            <div class="card-body">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-header"><i class="fa fa-calendar-check me-2 text-info"></i> Booking theo trạng thái</div>
+                            <div class="card-body">
+                                <canvas id="bookingPie"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-header"><i class="fa fa-user-plus me-2 text-primary"></i> Người dùng mới theo tháng</div>
+                            <div class="card-body">
+                                <canvas id="newUsersBar"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Link nhanh -->
+                <div class="row g-4 mt-4">
+                    <div class="col-md-3">
+                        <a th:href="@{/stats/revenue}" class="btn btn-outline-success w-100">Chi tiết doanh thu</a>
+                    </div>
+                    <div class="col-md-3">
+                        <a th:href="@{/stats/bookings}" class="btn btn-outline-info w-100">Chi tiết booking</a>
+                    </div>
+                    <div class="col-md-3">
+                        <a th:href="@{/stats/rooms}" class="btn btn-outline-warning w-100">Chi tiết phòng</a>
+                    </div>
+                    <div class="col-md-3">
+                        <a th:href="@{/stats/service}" class="btn btn-outline-danger w-100">Chi tiết dịch vụ</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        new Chart(document.getElementById("revenueChart"), {
+            type: 'line',
+            data: {
+                labels: /*[[${revenueStats.months}]]*/ '[]',
+                datasets: [{
+                        label: 'Doanh thu',
+                        data: /*[[${revenueStats.values}]]*/ '[]',
+                        borderColor: 'green',
+                        fill: true,
+                        backgroundColor: 'rgba(0,128,0,0.2)'
+                    }]
+            }
+        });
+
+        new Chart(document.getElementById("bookingPie"), {
+            type: 'pie',
+            data: {
+                labels: /*[[${bookingStatusStats.status}]]*/ '[]',
+                datasets: [{
+                        data: /*[[${bookingStatusStats.values}]]*/ '[]',
+                        backgroundColor: [
+                            "#28a745", // xanh lá
+                            "#ffc107", // vàng
+                            "#dc3545", // đỏ
+                            "#17a2b8", // xanh dương nhạt
+                            "#6f42c1", // tím
+                            "#fd7e14"  // cam
+                        ]
+                    }]
+            }
+        });
+
+        new Chart(document.getElementById("newUsersBar"), {
+            type: 'bar',
+            data: {
+                labels: /*[[${newUsersStats.months}]]*/ [],
+                datasets: [{
+                        label: 'Người dùng mới',
+                        data: /*[[${newUsersStats.values}]]*/ [],
+                        backgroundColor: "rgba(54, 162, 235, 0.7)",
+                        borderColor: "rgba(54, 162, 235, 1)",
+                        borderWidth: 1
+                    }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {stepSize: 1}
+                    }
+                }
+            }
+        });
+        /*]]>*/
+    </script>  
+</body>
+</html>
