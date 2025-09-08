@@ -2,6 +2,8 @@ package com.team.hotelmanagementapp.controllers;
 
 import com.team.hotelmanagementapp.pojo.Payment;
 import com.team.hotelmanagementapp.pojo.User;
+import com.team.hotelmanagementapp.services.BookingService;
+import com.team.hotelmanagementapp.services.FeedbackService;
 import com.team.hotelmanagementapp.services.PaymentService;
 import com.team.hotelmanagementapp.services.UserService;
 import com.team.hotelmanagementapp.utils.Pagination;
@@ -33,7 +35,9 @@ public class UserController {
     @Autowired
     private UserService userService;
     @Autowired
-    private PaymentService paymentService;
+    private FeedbackService feedbackService;
+    @Autowired
+    private BookingService bookingService;
 
     @GetMapping
     public String users(Model model, @RequestParam Map<String, String> params,
@@ -63,8 +67,10 @@ public class UserController {
             }
 
             model.addAttribute("user", user);
-//            model.addAttribute("bookings", this.bookingService.findRecentBookingsByRoom(room, 5));
-//            model.addAttribute("feedbacks", this.feedbackService.findByRoom(room));
+            model.addAttribute("bookings", bookingService.findByUsername(null, user.getUsername()));
+            model.addAttribute("feedbacks", feedbackService.findByUser(id, null));
+            System.out.println(bookingService.getTopBookedRoomsByUser(id));
+            model.addAttribute("topRooms", bookingService.getTopBookedRoomsByUser(id));
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải thông tin người dùng!");
             e.printStackTrace();

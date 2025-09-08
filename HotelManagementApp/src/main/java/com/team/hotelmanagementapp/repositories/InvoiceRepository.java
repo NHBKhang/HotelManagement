@@ -13,5 +13,7 @@ public interface InvoiceRepository {
     Invoice createOrUpdate(Invoice invoice);
 
     Invoice getById(int id);
+
+    long countInvoices(Map<String, String> params);
     
 }

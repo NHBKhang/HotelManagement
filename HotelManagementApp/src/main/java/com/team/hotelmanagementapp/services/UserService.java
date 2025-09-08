@@ -6,6 +6,8 @@ import java.util.Map;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface UserService extends UserDetailsService {
+
+    List<User> findAll();
     
     List<User> find(Map<String, String> params);
     

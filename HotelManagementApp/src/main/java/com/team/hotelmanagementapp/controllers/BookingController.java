@@ -92,7 +92,7 @@ public class BookingController {
 
             model.addAttribute("booking", booking);
             model.addAttribute("bookingStatuses", Booking.Status.values());
-
+            model.addAttribute("feedbacks", feedbackService.findByBooking(id, null));
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải thông tin booking!");
             e.printStackTrace();

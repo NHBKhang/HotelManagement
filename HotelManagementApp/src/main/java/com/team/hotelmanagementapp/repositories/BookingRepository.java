@@ -27,6 +27,10 @@ public interface BookingRepository {
     List<Booking> find(Map<String, String> params);
 
     long countBookings(Map<String, String> params);
+    
+    long countByStatus(Booking.Status status, LocalDate start, LocalDate end);
 
     List<Booking> findRecentBookingsByRoom(Room room, int limit);
+
+    List<Object[]> getTopBookedRoomsByUser(int id);
 }

@@ -8,6 +8,7 @@ import com.team.hotelmanagementapp.services.BookingService;
 import com.team.hotelmanagementapp.services.InvoiceService;
 import com.team.hotelmanagementapp.services.PaymentService;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -75,7 +76,7 @@ public class PaymentServiceImpl implements PaymentService {
                     Invoice invoice = new Invoice(
                             booking, "INV-" + System.currentTimeMillis(), 
                             booking.getUser().getEmail(), 
-                            amount, Invoice.Status.PAID);
+                            amount, Invoice.Status.PAID, LocalDateTime.now());
 
                     payment.setInvoice(invoiceService.createOrUpdate(invoice));
                 }

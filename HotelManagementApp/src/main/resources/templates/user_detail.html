@@ -50,65 +50,83 @@
                             </div>
                         </div>
 
-                        <!--                        <div class="card mb-4">
-                                                    <div class="card-header">
-                                                        <h5 class="mb-0"><i class="fas fa-history"></i> Lịch sử Booking</h5>
-                                                    </div>
-                                                    <div class="card-body">
-                                                        <table class="table table-hover table-bordered text-center table-sm">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th>Mã Booking</th>
-                                                                    <th>Khách hàng</th>
-                                                                    <th>Nhận</th>
-                                                                    <th>Trả</th>
-                                                                    <th>Trạng thái</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                <tr th:each="b : ${bookings}">
-                                                                    <td><a th:href="@{/bookings/{id}(id=${b.id})}" th:text="${b.code}"
-                                                                           class="text-decoration-none fw-bold text-primary"></a></td>
-                                                                    <td th:text="${b.user.fullName}">Nguyễn Văn A</td>
-                                                                    <td th:text="${#temporals.format(b.checkInDate, 'dd/MM/yyyy')}">01/01/2024</td>
-                                                                    <td th:text="${#temporals.format(b.checkOutDate, 'dd/MM/yyyy')}">05/01/2024</td>
-                                                                    <td><span th:text="${b.status.description}" class="badge bg-info">Đã xác nhận</span></td>
-                                                                </tr>
-                                                                <tr th:if="${#lists.isEmpty(bookings)}">
-                                                                    <td colspan="5" class="text-center text-muted">Chưa có booking nào</td>
-                                                                </tr>
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                </div>-->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-history"></i> Lịch sử Booking</h5>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-hover table-bordered text-center table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Mã Booking</th>
+                                            <th>Khách hàng</th>
+                                            <th>Nhận</th>
+                                            <th>Trả</th>
+                                            <th>Trạng thái</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="b : ${bookings}">
+                                            <td><a th:href="@{/bookings/{id}(id=${b.id})}" th:text="${b.code}"
+                                                   class="text-decoration-none fw-bold text-primary"></a></td>
+                                            <td th:text="${b.user.fullName}">Nguyễn Văn A</td>
+                                            <td th:text="${#temporals.format(b.checkInDate, 'dd/MM/yyyy')}">01/01/2024</td>
+                                            <td th:text="${#temporals.format(b.checkOutDate, 'dd/MM/yyyy')}">05/01/2024</td>
+                                            <td><span th:text="${b.status.description}" th:class="${b.status.badgeClass}">Đã xác nhận</span></td>
+                                        </tr>
+                                        <tr th:if="${#lists.isEmpty(bookings)}">
+                                            <td colspan="5" class="text-center text-muted">Chưa có booking nào</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
 
                         <!-- Feedback -->
-                        <!--                        <div class="card" th:if="${feedbacks != null and !#lists.isEmpty(feedbacks)}">
-                                                    <div class="card-header">
-                                                        <h5 class="mb-0"><i class="fas fa-star"></i> Đánh giá phòng</h5>
-                                                    </div>
-                                                    <div class="card-body">
-                                                        <div th:each="fb : ${feedbacks}" class="mb-3">
-                                                            <div class="d-flex justify-content-between">
-                                                                <div>
-                                                                    <strong th:text="${fb.user.fullName}">Nguyễn Văn B</strong>
-                                                                    <div class="text-warning">
-                                                                        <span th:each="i : ${#numbers.sequence(1, fb.rating)}">★</span>
-                                                                        <span th:each="i : ${#numbers.sequence(fb.rating+1, 5)}">☆</span>
-                                                                        <span class="text-muted ms-2" th:text="'(' + ${fb.rating} + '/5)'"></span>
-                                                                    </div>
-                                                                </div>
-                                                                <small class="text-muted"
-                                                                       th:text="${#temporals.format(fb.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</small>
-                                                            </div>
-                                                            <p class="mt-2 mb-1" th:text="${fb.comment}">Phòng sạch và thoải mái</p>
-                                                        </div>
-                                                    </div>
-                                                </div>-->
+                        <div class="card" th:if="${feedbacks != null and !#lists.isEmpty(feedbacks)}">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-star"></i> Đánh giá phòng</h5>
+                            </div>
+                            <div class="card-body">
+                                <div th:each="fb : ${feedbacks}" class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <strong th:text="${fb.user.fullName}">Nguyễn Văn B</strong>
+                                            <div class="text-warning">
+                                                <span th:each="i : ${#numbers.sequence(1, fb.rating)}">★</span>
+                                                <span th:each="i : ${#numbers.sequence(fb.rating+1, 5)}">☆</span>
+                                                <span class="text-muted ms-2" th:text="'(' + ${fb.rating} + '/5)'"></span>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted"
+                                               th:text="${#temporals.format(fb.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</small>
+                                    </div>
+                                    <p class="mt-2 mb-1" th:text="${fb.comment}">Phòng sạch và thoải mái</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Right: Quick Info -->
                     <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-bed"></i> Phòng đã đặt</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                                        th:each="r : ${topRooms}">
+                                        <span th:text="|Phòng ${r.roomNumber} - ${r.roomType.name}|">-</span>
+                                        <span class="badge bg-primary rounded-pill" th:text="${r.count}">3</span>
+                                    </li>
+                                    <li class="list-group-item text-muted text-center" th:if="${#lists.isEmpty(topRooms)}">
+                                        Chưa có dữ liệu
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        
                         <div class="card mb-4">
                             <div class="card-header">
                                 <h5 class="mb-0"><i class="fas fa-tools"></i> Thao tác nhanh</h5>

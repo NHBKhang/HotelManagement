@@ -14,12 +14,10 @@ import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "invoice")
@@ -63,7 +61,6 @@ public class Invoice implements Serializable {
     private List<Payment> payments = new ArrayList<>();
 
     @Column(name = "issue_at")
-    @CreationTimestamp
     private LocalDateTime issueAt;
 
     @Column(name = "invoice_number")
@@ -89,12 +86,13 @@ public class Invoice implements Serializable {
         this.status = status;
     }
 
-    public Invoice(Booking booking, String invoiceNumber, String sentToEmail, Double totalAmount, Status status) {
+    public Invoice(Booking booking, String invoiceNumber, String sentToEmail, Double totalAmount, Status status, LocalDateTime issueAt) {
         this.booking = booking;
         this.invoiceNumber = invoiceNumber;
         this.sentToEmail = sentToEmail;
         this.totalAmount = totalAmount;
         this.status = status;
+        this.issueAt = issueAt;
     }
 
     public Integer getId() {
