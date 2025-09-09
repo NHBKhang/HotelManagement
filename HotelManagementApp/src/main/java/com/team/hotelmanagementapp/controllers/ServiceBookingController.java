@@ -75,7 +75,7 @@ public class ServiceBookingController {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải danh sách đặt dịch vụ!");
             e.printStackTrace();
         }
-        return "service_bookings";
+        return "serviceBooking/service_bookings";
     }
     
     @GetMapping("/{id}")
@@ -92,7 +92,7 @@ public class ServiceBookingController {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải thông tin đặt dịch vụ!");
             e.printStackTrace();
         }
-        return "service_booking_detail";
+        return "serviceBooking/service_booking_detail";
     }
 
     @GetMapping("/add")
@@ -102,7 +102,7 @@ public class ServiceBookingController {
         model.addAttribute("services", serviceService.find(Map.of()));
         model.addAttribute("isEdit", false);
         
-        return "service_booking_form";
+        return "serviceBooking/service_booking_form";
     }
 
     @GetMapping("/edit/{id}")
@@ -123,7 +123,7 @@ public class ServiceBookingController {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải form chỉnh sửa!");
             e.printStackTrace();
         }
-        return "service_booking_form";
+        return "serviceBooking/service_booking_form";
     }
 
     @PostMapping("/save")
@@ -147,7 +147,7 @@ public class ServiceBookingController {
             model.addAttribute("bookings", bookingService.findAll());
             model.addAttribute("services", serviceService.find(Map.of()));
             model.addAttribute("isEdit", serviceBooking.getId() != null);
-            return "service_booking_form";
+            return "serviceBooking/service_booking_form";
         }
 
         try {
@@ -196,35 +196,5 @@ public class ServiceBookingController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Có lỗi xảy ra: " + e.getMessage()));
         }
-    }
-
-    @GetMapping("/by-booking/{bookingId}")
-    public String serviceBookingsByBooking(@PathVariable(value = "bookingId") int bookingId, 
-            Model model, @RequestParam Map<String, String> params,
-            RedirectAttributes redirectAttributes) {
-        try {
-            List<ServiceBooking> serviceBookings = serviceBookingService.findByBooking(bookingId, params);
-            
-            model.addAttribute("rows", serviceBookings);
-            model.addAttribute("bookingId", bookingId);
-            model.addAttribute("booking", bookingService.getById(bookingId));
-            
-            // Calculate statistics for this booking
-            double totalRevenue = serviceBookings.stream()
-                    .mapToDouble(sb -> sb.getTotalPrice() != null ? sb.getTotalPrice() : 0.0)
-                    .sum();
-            int totalQuantity = serviceBookings.stream()
-                    .mapToInt(sb -> sb.getQuantity() != null ? sb.getQuantity() : 0)
-                    .sum();
-            
-            model.addAttribute("totalRevenue", totalRevenue);
-            model.addAttribute("totalQuantity", totalQuantity);
-            model.addAttribute("totalServiceBookings", serviceBookings.size());
-            
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải danh sách đặt dịch vụ!");
-            e.printStackTrace();
-        }
-        return "service_bookings_by_booking";
     }
 }
