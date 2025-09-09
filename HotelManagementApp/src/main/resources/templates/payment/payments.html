@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Quản lý Giao dịch - Quản lý khách sạn</title>
+    <th:block th:replace="base :: head"></th:block>
+</head>
+<body>
+    <div th:replace="base :: layout(~{::content})">
+        <div th:fragment="content">
+            <div class="container">
+                <h2 class="text-center mb-3"><i class="fa-solid fa-credit-card"></i> Lịch sử giao dịch</h2>
+
+                <div class="d-flex justify-content-end align-items-center mb-1">
+                    <form th:action="@{/payments}" method="get" class="mb-1 d-flex">
+                        <input type="text" name="kw" th:value="${param.kw}" class="form-control me-2" 
+                               style="width: 200px;" placeholder="Tìm kiếm...">
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered text-center">
+                        <thead class="table-dark">
+                            <tr>
+                                <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th>
+                                <th>Mã GD</th>
+                                <th>Mã Booking</th>
+                                <th>Số tiền</th>
+                                <th>Phương thức</th>
+                                <th>Thời gian</th>
+                                <th>Người đặt</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="r: ${rows}">
+                                <td><input type="checkbox" th:value="${r.id}"></td>
+                                <td>
+                                    <a th:href="@{/payments/{id}(id=${r.id})}" th:text="${r.code}"
+                                       class="text-decoration-none fw-bold text-primary"></a>
+                                </td>
+                                <td>
+                                    <a th:href="@{/bookings/{id}(id=${r.invoice.booking.id})}" th:text="${r.invoice.booking.code}"
+                                       class="text-decoration-none fw-bold text-primary"></a>
+                                </td>
+                                <td th:text="${#numbers.formatDecimal(r.amount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                                <td th:text="${r.method}"></td>
+                                <td th:text="${#temporals.format(r.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                                <td th:text="${r.invoice.booking.user.fullName}"></td>
+                                <td>
+                                    <span th:text="${r.status.label}" 
+                                          th:class="${r.status.badgeClass}"></span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a th:href="@{/payments/{id}(id=${r.id})}"
+                                           class="btn btn-sm btn-outline-primary" title="Xem chi tiết">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-info dropdown-toggle"
+                                                data-bs-toggle="dropdown" title="Cập nhật trạng thái">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li th:each="newStatus : ${T(com.team.hotelmanagementapp.pojo.Payment.Status).values()}">
+                                                <form th:action="@{/payments/{id}/status(id=${r.id})}" method="post" class="d-inline">
+                                                    <input type="hidden" name="status" th:value="${newStatus.name()}">
+                                                    <button type="submit" class="dropdown-item"
+                                                            th:disabled="${r.status == newStatus}"
+                                                            th:text="${newStatus.label}">Trạng thái</button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(rows)}">
+                                <td colspan="7">Không có giao dịch nào.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-end fw-bold mb-1">
+                    Tổng số giao dịch: <span th:text="${totalPayments}"></span>
+                </div>
+
+
+                <nav aria-label="Page navigation"
+                     th:if="${pagination != null and pagination.total > 1}"
+                     th:fragment="pagination">
+                    <ul class="pagination justify-content-center">
+                        <!-- Trang đầu -->
+                        <li class="page-item" th:classappend="${pagination.current == 1} ? 'disabled'">
+                            <a class="page-link"
+                               th:href="@{/payments(page=1, kw=${param.kw}, status=${param.status})}">
+                                <i class="fas fa-angle-double-left"></i> Đầu
+                            </a>
+                        </li>
+
+                        <!-- Trang trước -->
+                        <li class="page-item" th:classappend="${pagination.current == 1} ? 'disabled'">
+                            <a class="page-link"
+                               th:href="@{/payments(page=${pagination.current - 1}, kw=${param.kw}, status=${param.status})}">
+                                <i class="fas fa-angle-left"></i> Trước
+                            </a>
+                        </li>
+
+                        <!-- Hiển thị tối đa 5 số trang -->
+                        <th:block th:with="start=${pagination.current - 2 > 1 ? pagination.current - 2 : 1},
+                                  end=${pagination.current + 2 < pagination.total ? pagination.current + 2 : pagination.total}">
+                            <li class="page-item"
+                                th:each="i : ${#numbers.sequence(start, end)}"
+                                th:classappend="${i == pagination.current} ? 'active'">
+                                <a class="page-link"
+                                   th:href="@{/payments(page=${i}, kw=${param.kw}, status=${param.status})}"
+                                   th:text="${i}"></a>
+                            </li>
+                        </th:block>
+
+                        <!-- Trang sau -->
+                        <li class="page-item" th:classappend="${pagination.current == pagination.total} ? 'disabled'">
+                            <a class="page-link"
+                               th:href="@{/payments(page=${pagination.current + 1}, kw=${param.kw}, status=${param.status})}">
+                                Tiếp <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+
+                        <!-- Trang cuối -->
+                        <li class="page-item" th:classappend="${pagination.current == pagination.total} ? 'disabled'">
+                            <a class="page-link"
+                               th:href="@{/payments(page=${pagination.total}, kw=${param.kw}, status=${param.status})}">
+                                Cuối <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>   
+            </div>
+        </div>
+    </div>
+</body>
+</html>

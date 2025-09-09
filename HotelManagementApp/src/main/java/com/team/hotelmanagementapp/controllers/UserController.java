@@ -54,7 +54,7 @@ public class UserController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải danh sách khách hàng!");
         }
-        return "users";
+        return "user/users";
     }
     
     @GetMapping("/{id}")
@@ -75,13 +75,13 @@ public class UserController {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải thông tin người dùng!");
             e.printStackTrace();
         }
-        return "user_detail";
+        return "user/user_detail";
     }
 
     @GetMapping("/add")
     public String showAddUserForm(Model model) {
         model.addAttribute("user", new User());
-        return "user_form";
+        return "user/user_form";
     }
 
     @PostMapping("/save")
@@ -120,7 +120,7 @@ public class UserController {
     public String showEditUserForm(@PathVariable(value = "id") int id, Model model) {
         User user = userService.getById(id);
         model.addAttribute("user", user);
-        return "user_form";
+        return "user/user_form";
     }
 
     @DeleteMapping(value = "/delete/{id}", produces = "application/json")

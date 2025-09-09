@@ -13,11 +13,13 @@ import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "invoice")
@@ -74,6 +76,13 @@ public class Invoice implements Serializable {
 
     @Basic(optional = false)
     private Status status;
+
+    @Column(name = "updated_at")
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
+    
+    @Transient
+    private Double balance;
 
     public Invoice() {
     }
@@ -189,4 +198,25 @@ public class Invoice implements Serializable {
         this.totalAmount = totalAmount;
     }
 
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    @Transient
+    public User getUser() {
+        return booking != null
+                ? booking.getUser() : null;
+    }
+
+    public Double getBalance() {
+        return balance;
+    }
+
+    public void setBalance(Double balance) {
+        this.balance = balance;
+    }
 }

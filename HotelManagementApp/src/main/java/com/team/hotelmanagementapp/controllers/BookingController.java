@@ -58,10 +58,8 @@ public class BookingController {
             model.addAttribute("pagination", new Pagination(totalBookings, params));
             model.addAttribute("bookingStatuses", Booking.Status.values());
             
-            // Add current date for filtering
             model.addAttribute("currentDate", LocalDate.now());
             
-            // Calculate statistics to avoid complex SpEL expressions
             long pendingCount = bookings.stream().filter(b -> b.getStatus() == Booking.Status.PENDING).count();
             long confirmedCount = bookings.stream().filter(b -> b.getStatus() == Booking.Status.CONFIRMED).count();
             long checkedInCount = bookings.stream().filter(b -> b.getStatus() == Booking.Status.CHECKED_IN).count();
@@ -78,7 +76,7 @@ public class BookingController {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải danh sách booking!");
             e.printStackTrace();
         }
-        return "bookings";
+        return "booking/bookings";
     }
     
     @GetMapping("/{id}")
@@ -97,7 +95,7 @@ public class BookingController {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải thông tin booking!");
             e.printStackTrace();
         }
-        return "booking_detail";
+        return "booking/booking_detail";
     }
 
     @GetMapping("/add")
@@ -108,7 +106,7 @@ public class BookingController {
         model.addAttribute("bookingStatuses", Booking.Status.values());
         model.addAttribute("isEdit", false);
         
-        return "booking_form";
+        return "booking/booking_form";
     }
 
     @GetMapping("/edit/{id}")
@@ -131,7 +129,7 @@ public class BookingController {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải form chỉnh sửa!");
             e.printStackTrace();
         }
-        return "booking_form";
+        return "booking/booking_form";
     }
 
     @PostMapping("/save")
@@ -170,7 +168,7 @@ public class BookingController {
             model.addAttribute("users", userService.find(Map.of()));
             model.addAttribute("bookingStatuses", Booking.Status.values());
             model.addAttribute("isEdit", booking.getId() != null);
-            return "booking_form";
+            return "booking/booking_form";
         }
 
         try {
@@ -253,7 +251,7 @@ public class BookingController {
             model.addAttribute("error", "Có lỗi xảy ra khi tải lịch booking!");
             e.printStackTrace();
         }
-        return "booking_calendar";
+        return "booking/booking_calendar";
     }
 
     @GetMapping("/check-availability")

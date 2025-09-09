@@ -72,6 +72,28 @@ public class DataInitializer {
 
             userService.createOrUpdate(admin);
             userService.createOrUpdate(customer);
+
+            userService.createOrUpdate(new User("accountant", "accountant", "accountant@gmail.com", User.Role.ACCOUNTANT, "Lê Thị", "Thơm", "0122336455"));
+            userService.createOrUpdate(new User("receiptionist", "receiptionist", "receiptionist@gmail.com", User.Role.RECEPTIONIST, "Phan Đình", "Dũng", "01763242544"));
+            userService.createOrUpdate(new User("housekeeper", "housekeeper", "housekeeper@gmail.com", User.Role.HOUSEKEEPING, "Johny", "Đặng", "0755434442777"));
+            userService.createOrUpdate(
+                    new User("customer1", "customer1", "customer1@gmail.com", User.Role.CUSTOMER, "Trần", "Anh", "0911111111")
+            );
+            userService.createOrUpdate(
+                    new User("customer2", "customer2", "customer2@gmail.com", User.Role.CUSTOMER, "Lê", "Bình", "0922222222")
+            );
+            userService.createOrUpdate(
+                    new User("customer3", "customer3", "customer3@gmail.com", User.Role.CUSTOMER, "Phạm", "Cường", "0933333333")
+            );
+            userService.createOrUpdate(
+                    new User("customer4", "customer4", "customer4@gmail.com", User.Role.CUSTOMER, "Ngô", "Dương", "0944444444")
+            );
+            userService.createOrUpdate(
+                    new User("customer5", "customer5", "customer5@gmail.com", User.Role.CUSTOMER, "Hoàng", "Hưng", "0955555555")
+            );
+            userService.createOrUpdate(
+                    new User("customer6", "customer6", "customer6@gmail.com", User.Role.CUSTOMER, "Dương", "Minh", "0966666666")
+            );
         } else {
             admin = userService.getByUsername("admin");
             customer = userService.getByUsername("customer");

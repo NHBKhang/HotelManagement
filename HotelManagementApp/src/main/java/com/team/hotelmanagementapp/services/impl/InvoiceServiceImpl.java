@@ -1,6 +1,7 @@
 package com.team.hotelmanagementapp.services.impl;
 
 import com.team.hotelmanagementapp.pojo.Invoice;
+import com.team.hotelmanagementapp.pojo.Payment;
 import com.team.hotelmanagementapp.repositories.InvoiceRepository;
 import com.team.hotelmanagementapp.services.InvoiceService;
 import java.util.HashMap;
@@ -21,7 +22,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public List<Invoice> find( Map<String, String> params) {
+    public List<Invoice> find(Map<String, String> params) {
         return this.invoiceRepository.find(params);
     }
 
@@ -48,7 +49,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         if (invoice.getStatus() == null) {
             invoice.setStatus(Invoice.Status.UNPAID);
         }
-        
+
         return this.invoiceRepository.createOrUpdate(invoice);
     }
 
@@ -56,5 +57,10 @@ public class InvoiceServiceImpl implements InvoiceService {
     public Invoice getById(int id) {
         return this.invoiceRepository.getById(id);
     }
-    
+
+    @Override
+    public long count(Map<String, String> params) {
+        return this.invoiceRepository.count(params);
+    }
+
 }

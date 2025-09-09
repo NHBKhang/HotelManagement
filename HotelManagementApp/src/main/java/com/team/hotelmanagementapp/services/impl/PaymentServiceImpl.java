@@ -10,6 +10,7 @@ import com.team.hotelmanagementapp.services.PaymentService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -33,7 +34,16 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public List<Payment> findByUserId(int id, Map<String, String> params) {
-        return this.paymentRepository.findByUserId(id, params);
+        if (params == null) {
+            params = new HashMap<>();
+        }
+        params.put("userId", String.valueOf(id));
+        return this.paymentRepository.find(params);
+    }
+
+    @Override
+    public List<Payment> find(Map<String, String> params) {
+        return this.paymentRepository.find(params);
     }
 
     @Override
@@ -105,6 +115,15 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public long countByUserId(int id, Map<String, String> params) {
-        return this.paymentRepository.countByUserId(id, params);
+        if (params == null) {
+            params = new HashMap<>();
+        }
+        params.put("userId", String.valueOf(id));
+        return this.paymentRepository.count(params);
+    }
+
+    @Override
+    public long count(Map<String, String> params) {
+        return this.paymentRepository.count(params);
     }
 }

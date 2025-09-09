@@ -15,5 +15,7 @@ public interface InvoiceRepository {
     Invoice getById(int id);
 
     long countInvoices(Map<String, String> params);
+
+    long count(Map<String, String> params);
     
 }

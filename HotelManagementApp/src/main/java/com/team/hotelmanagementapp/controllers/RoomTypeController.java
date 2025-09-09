@@ -46,13 +46,13 @@ public class RoomTypeController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải danh sách loại phòng!");
         }
-        return "room_types";
+        return "room/room_types";
     }
 
     @GetMapping("/add")
     public String showAddRoomTypeForm(Model model) {
         model.addAttribute("type", new RoomType());
-        return "room_types_form";
+        return "room/room_types_form";
     }
 
     @PostMapping("/save")
@@ -91,7 +91,7 @@ public class RoomTypeController {
     public String showEditRoomTypeForm(@PathVariable(value = "id") int id, Model model) {
         RoomType type = typeService.getById(id);
         model.addAttribute("type", type);
-        return "room_type_form";
+        return "room/room_type_form";
     }
 
     @DeleteMapping(value = "/delete/{id}", produces = "application/json")
