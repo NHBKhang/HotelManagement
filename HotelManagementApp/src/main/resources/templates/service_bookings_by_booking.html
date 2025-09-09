@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Dịch vụ của Booking - Quản lý khách sạn</title>
+    <th:block th:replace="base :: head"></th:block>
+</head>
+
+<body>
+    <div th:replace="base :: layout(~{::content})">
+        <div th:fragment="content">
+            <div class="container">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>
+                        <i class="fas fa-concierge-bell"></i> 
+                        Dịch vụ của Booking #<span th:text="${booking.code}">BK001</span>
+                    </h2>
+                    <div>
+                        <a th:href="@{/bookings/{id}(id=${booking.id})}" class="btn btn-info me-2">
+                            <i class="fas fa-eye"></i> Xem Booking
+                        </a>
+                        <a th:href="@{/service-bookings}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Booking Summary -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-calendar-check"></i> Thông tin Booking</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <i class="fas fa-user-circle fa-3x text-muted mb-2"></i>
+                                    <h6 class="fw-bold" th:text="${booking.user.fullName}">Nguyễn Văn A</h6>
+                                    <small class="text-muted" th:text="${booking.user.email}">email@example.com</small>
+                                </div>
+                            </div>
+                            <div class="col-md-9">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <table class="table table-borderless table-sm">
+                                            <tr>
+                                                <td class="fw-bold">Mã Booking:</td>
+                                                <td th:text="${booking.code}">BK001</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Phòng:</td>
+                                                <td>
+                                                    <span class="badge bg-primary" th:text="${booking.room.code}">P101</span>
+                                                    <span th:text="${booking.room.roomType.name}">Deluxe</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Số người:</td>
+                                                <td>
+                                                    <i class="fas fa-users text-primary"></i>
+                                                    <span th:text="${booking.totalGuests ?: 1}">2</span> người
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <table class="table table-borderless table-sm">
+                                            <tr>
+                                                <td class="fw-bold">Check-in:</td>
+                                                <td th:text="${#temporals.format(booking.checkInDate, 'dd/MM/yyyy')}">01/01/2024</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Check-out:</td>
+                                                <td th:text="${#temporals.format(booking.checkOutDate, 'dd/MM/yyyy')}">03/01/2024</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Trạng thái:</td>
+                                                <td>
+                                                    <span class="badge" 
+                                                          th:classappend="${booking.status == 'CONFIRMED'} ? 'bg-success' : 
+                                                                          (${booking.status == 'CHECKED_IN'} ? 'bg-primary' : 
+                                                                          (${booking.status == 'CHECKED_OUT'} ? 'bg-secondary' : 'bg-warning'))"
+                                                          th:text="${booking.status == 'CONFIRMED'} ? 'Đã xác nhận' : 
+                                                                   (${booking.status == 'CHECKED_IN'} ? 'Đã check-in' : 
+                                                                   (${booking.status == 'CHECKED_OUT'} ? 'Đã check-out' : ${booking.status}))">
+                                                        Đã xác nhận
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Bookings Actions -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <a th:href="@{/service-bookings/add(bookingId=${booking.id})}" class="btn btn-success me-2">
+                            <i class="fas fa-plus"></i> Thêm Dịch vụ
+                        </a>
+                        <button th:onclick="|deleteAll('@{/service-bookings/bulk-delete}', 'đặt dịch vụ')|" 
+                                id="deleteButton" class="btn btn-danger" disabled>
+                            <i class="fas fa-trash-alt"></i> Xóa đã chọn
+                        </button>
+                    </div>
+
+                    <!-- Statistics -->
+                    <div class="d-flex align-items-center">
+                        <div class="badge bg-info me-2">
+                            <i class="fas fa-list"></i> Tổng: <span th:text="${#lists.size(serviceBookings)}">0</span>
+                        </div>
+                        <div class="badge bg-success me-2">
+                            <i class="fas fa-sort-numeric-up"></i> SL: <span th:text="${totalQuantity ?: 0}">0</span>
+                        </div>
+                        <div class="badge bg-warning">
+                            <i class="fas fa-money-bill"></i> <span th:text="${#numbers.formatDecimal(totalAmount ?: 0, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Bookings Table -->
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-concierge-bell"></i> Danh sách Dịch vụ đã đặt</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered text-center mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th>
+                                        <th>ID</th>
+                                        <th>Dịch vụ</th>
+                                        <th>Mô tả</th>
+                                        <th>Số lượng</th>
+                                        <th>Đơn giá</th>
+                                        <th>Tổng tiền</th>
+                                        <th>Ngày đặt</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="sb : ${serviceBookings}">
+                                        <td><input type="checkbox" th:value="${sb.id}" class="service-booking-checkbox"></td>
+                                        <td>
+                                            <a th:href="@{/service-bookings/{id}(id=${sb.id})}"
+                                               class="text-decoration-none fw-bold text-primary"
+                                               th:text="${sb.id}">1</a>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <strong th:text="${sb.service.name}">Breakfast Buffet</strong>
+                                                <br>
+                                                <small class="text-muted" th:text="${sb.service.unit ?: 'Đơn vị'}">Suất</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <small th:text="${sb.service.description ?: 'Không có mô tả'}" class="text-muted">Mô tả dịch vụ</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary fs-6" th:text="${sb.quantity ?: 1}">1</span>
+                                        </td>
+                                        <td th:text="${#numbers.formatDecimal(sb.service.price ?: 0, 0, 'COMMA', 0, 'POINT')} + 'đ'">50,000đ</td>
+                                        <td>
+                                            <span class="fw-bold text-success" 
+                                                  th:text="${#numbers.formatDecimal(sb.totalPrice ?: 0, 0, 'COMMA', 0, 'POINT')} + 'đ'">50,000đ</span>
+                                        </td>
+                                        <td th:text="${#temporals.format(sb.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:30</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a th:href="@{/service-bookings/{id}(id=${sb.id})}"
+                                                   class="btn btn-sm btn-outline-primary" title="Xem chi tiết">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a th:href="@{/service-bookings/edit/{id}(id=${sb.id})}"
+                                                   class="btn btn-sm btn-outline-warning" title="Chỉnh sửa">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                        th:onclick="|deleteServiceBooking(${sb.id})|" title="Xóa">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(serviceBookings)}">
+                                        <td colspan="9" class="text-center text-muted py-5">
+                                            <i class="fas fa-concierge-bell fa-3x mb-3"></i>
+                                            <br>Booking này chưa có dịch vụ nào được đặt
+                                            <br>
+                                            <a th:href="@{/service-bookings/add(bookingId=${booking.id})}" class="btn btn-success mt-3">
+                                                <i class="fas fa-plus"></i> Thêm dịch vụ đầu tiên
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div class="row mt-4">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0"><i class="fas fa-chart-bar"></i> Thống kê chi tiết</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-md-3">
+                                        <div class="border-end">
+                                            <h4 class="text-primary" th:text="${#lists.size(serviceBookings)}">0</h4>
+                                            <small class="text-muted">Dịch vụ đã đặt</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="border-end">
+                                            <h4 class="text-success" th:text="${totalQuantity ?: 0}">0</h4>
+                                            <small class="text-muted">Tổng số lượng</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="border-end">
+                                            <h4 class="text-warning" th:text="${#numbers.formatDecimal(totalAmount ?: 0, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</h4>
+                                            <small class="text-muted">Tổng tiền dịch vụ</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h4 class="text-info" th:text="${#lists.size(serviceBookings) > 0 ? #numbers.formatDecimal((totalAmount ?: 0) / #lists.size(serviceBookings), 0, 'COMMA', 0, 'POINT') + 'đ' : '0đ'}">0đ</h4>
+                                        <small class="text-muted">Trung bình/dịch vụ</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header bg-dark text-white">
+                                <h6 class="mb-0"><i class="fas fa-calculator"></i> Tổng cộng</h6>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-borderless mb-0">
+                                    <tr>
+                                        <td>Tiền phòng:</td>
+                                        <td class="text-end" th:text="${#numbers.formatDecimal(booking.totalPrice ?: 0, 0, 'COMMA', 0, 'POINT')} + 'đ'">1,000,000đ</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tiền dịch vụ:</td>
+                                        <td class="text-end" th:text="${#numbers.formatDecimal(totalAmount ?: 0, 0, 'COMMA', 0, 'POINT')} + 'đ'">50,000đ</td>
+                                    </tr>
+                                    <tr class="border-top">
+                                        <td class="fw-bold">Tổng cộng:</td>
+                                        <td class="text-end fw-bold fs-5 text-success" th:text="${#numbers.formatDecimal((booking.totalPrice ?: 0) + (totalAmount ?: 0), 0, 'COMMA', 0, 'POINT')} + 'đ'">1,050,000đ</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function deleteAll(url, itemType) {
+            const checkedBoxes = document.querySelectorAll('.service-booking-checkbox:checked');
+            const ids = Array.from(checkedBoxes).map(cb => cb.value);
+
+            if (ids.length === 0) {
+                alert('Vui lòng chọn ít nhất một ' + itemType + ' để xóa');
+                return;
+            }
+
+            if (confirm(`Bạn có chắc chắn muốn xóa ${ids.length} ${itemType} đã chọn?`)) {
+                fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(ids)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        showMessage('danger', 'Có lỗi xảy ra: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showMessage('danger', 'Có lỗi xảy ra khi xóa');
+                });
+            }
+        }
+
+        function deleteServiceBooking(id) {
+            if (confirm('Bạn có chắc chắn muốn xóa đặt dịch vụ này?')) {
+                fetch(`/HotelManagementApp/service-bookings/delete/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        showMessage('danger', 'Có lỗi xảy ra: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showMessage('danger', 'Có lỗi xảy ra khi xóa');
+                });
+            }
+        }
+    </script>
+</body>
+</html>
