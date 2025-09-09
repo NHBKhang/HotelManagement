@@ -1,6 +1,7 @@
 package com.team.hotelmanagementapp.repositories.impl;
 
 import com.team.hotelmanagementapp.pojo.Invoice;
+import com.team.hotelmanagementapp.pojo.Payment;
 import com.team.hotelmanagementapp.repositories.InvoiceRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -92,8 +93,21 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
     @Override
     public Invoice getById(int id) {
         Session s = this.factory.getObject().getCurrentSession();
-        return s.find(Invoice.class, id);
+        Invoice invoice = s.find(Invoice.class, id);
 
+        if (invoice != null) {
+            double paid = invoice.getPayments() != null
+                    ? invoice.getPayments().stream()
+                            .filter(p -> p.getStatus() == Payment.Status.SUCCESS)
+                            .mapToDouble(Payment::getAmount).sum()
+                    : 0.0;
+
+            double total = invoice.getTotalAmount() != null ? invoice.getTotalAmount() : 0.0;
+
+            invoice.setBalance(total - paid);
+        }
+
+        return invoice;
     }
 
     @Override
@@ -104,7 +118,9 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
             if (invoice.getIssueAt() == null) {
                 invoice.setIssueAt(LocalDateTime.now());
             }
-            
+            if (invoice.getInvoiceNumber() == null) {
+                invoice.setInvoiceNumber(this.generateCode());
+            }
             s.persist(invoice);
         } else {
             invoice = s.merge(invoice);
@@ -139,6 +155,52 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
         }
 
         q.select(b.count(root)).where(predicates.toArray(Predicate[]::new));
+
+        return s.createQuery(q).getSingleResult();
+    }
+
+    private String generateCode() {
+        return "INV-" + System.currentTimeMillis() + 1;
+    }
+
+    @Override
+    public long count(Map<String, String> params) {
+        Session s = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Long> q = b.createQuery(Long.class);
+        Root<Invoice> root = q.from(Invoice.class);
+        q.select(b.count(root));
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (params != null) {
+            String kw = params.get("kw");
+            if (kw != null && !kw.isEmpty()) {
+                predicates.add(b.like(root.get("code"), "%" + kw + "%"));
+            }
+
+            String userIdStr = params.get("userId");
+            if (userIdStr != null && !userIdStr.isEmpty()) {
+                try {
+                    int userId = Integer.parseInt(userIdStr);
+                    predicates.add(b.equal(root.get("user").get("id"), userId));
+                } catch (NumberFormatException ex) {
+                }
+            }
+
+            String bookingIdStr = params.get("bookingId");
+            if (bookingIdStr != null && !bookingIdStr.isEmpty()) {
+                try {
+                    int bookingId = Integer.parseInt(bookingIdStr);
+                    predicates.add(b.equal(root.get("booking").get("id"), bookingId));
+                } catch (NumberFormatException ex) {
+                }
+            }
+        }
+
+        if (!predicates.isEmpty()) {
+            q.where(predicates.toArray(Predicate[]::new));
+        }
 
         return s.createQuery(q).getSingleResult();
     }

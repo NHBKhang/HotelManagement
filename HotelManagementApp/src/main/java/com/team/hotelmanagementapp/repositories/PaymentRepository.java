@@ -8,13 +8,13 @@ public interface PaymentRepository {
     
     List<Payment> findAll();
 
-    List<Payment> findByUserId(int id, Map<String, String> params);
+    List<Payment> find(Map<String, String> params);
 
     Payment createOrUpdate(Payment payment);
 
     Payment getById(int id);
 
-    long countByUserId(int id, Map<String, String> params);
+    long count(Map<String, String> params);
 
     String generateCode();
 

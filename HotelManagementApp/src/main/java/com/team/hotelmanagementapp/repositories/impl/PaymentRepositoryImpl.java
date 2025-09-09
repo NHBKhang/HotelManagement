@@ -34,7 +34,7 @@ public class PaymentRepositoryImpl implements PaymentRepository {
     }
 
     @Override
-    public List<Payment> findByUserId(int id, Map<String, String> params) {
+    public List<Payment> find(Map<String, String> params) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<Payment> q = b.createQuery(Payment.class);
@@ -42,16 +42,19 @@ public class PaymentRepositoryImpl implements PaymentRepository {
 
         List<Predicate> predicates = new ArrayList<>();
 
-        Join<Payment, Invoice> invoiceJoin = root.join("invoice");
-        Join<Invoice, Booking> bookingJoin = invoiceJoin.join("booking");
-        Join<Booking, User> userJoin = bookingJoin.join("user");
-
-        predicates.add(b.equal(userJoin.get("id"), id));
-
         if (params != null) {
             String kw = params.get("kw");
             if (kw != null && !kw.isEmpty()) {
                 predicates.add(b.like(root.get("code"), "%" + kw + "%"));
+            }
+
+            String userId = params.get("userId");
+            if (userId != null && !userId.isEmpty()) {
+                Join<Payment, Invoice> invoiceJoin = root.join("invoice");
+                Join<Invoice, Booking> bookingJoin = invoiceJoin.join("booking");
+                Join<Booking, User> userJoin = bookingJoin.join("user");
+
+                predicates.add(b.equal(userJoin.get("id"), Integer.valueOf(userId)));
             }
         }
 
@@ -59,7 +62,8 @@ public class PaymentRepositoryImpl implements PaymentRepository {
             q.where(predicates.toArray(Predicate[]::new));
         }
 
-        q.select(root).orderBy(b.desc(root.get("createdAt")));
+        q.select(root)
+                .orderBy(b.desc(root.get("createdAt")));
 
         Query<Payment> query = s.createQuery(q);
 
@@ -100,7 +104,7 @@ public class PaymentRepositoryImpl implements PaymentRepository {
     }
 
     @Override
-    public long countByUserId(int id, Map<String, String> params) {
+    public long count(Map<String, String> params) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<Long> q = b.createQuery(Long.class);
@@ -109,18 +113,20 @@ public class PaymentRepositoryImpl implements PaymentRepository {
 
         List<Predicate> predicates = new ArrayList<>();
 
-        Join<Payment, Invoice> invoiceJoin = root.join("invoice");
-        Join<Invoice, Booking> bookingJoin = invoiceJoin.join("booking");
-        Join<Booking, User> userJoin = bookingJoin.join("user");
-
-        predicates.add(b.equal(userJoin.get("id"), id));
-
         if (params != null) {
             String kw = params.get("kw");
-
             if (kw != null && !kw.isEmpty()) {
                 Predicate codePredicate = b.like(root.get("code"), "%" + kw + "%");
                 predicates.add(b.or(codePredicate));
+            }
+
+            String userId = params.get("userId");
+            if (userId != null && !userId.isEmpty()) {
+                Join<Payment, Invoice> invoiceJoin = root.join("invoice");
+                Join<Invoice, Booking> bookingJoin = invoiceJoin.join("booking");
+                Join<Booking, User> userJoin = bookingJoin.join("user");
+
+                predicates.add(b.equal(userJoin.get("id"), Integer.valueOf(userId)));
             }
 
             if (!predicates.isEmpty()) {

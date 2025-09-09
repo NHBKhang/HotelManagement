@@ -46,7 +46,7 @@ public class ServiceController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải danh sách dịch vụ!");
         }
-        return "services";
+        return "service/services";
     }
     
     @GetMapping("/{id}")
@@ -63,13 +63,13 @@ public class ServiceController {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải thông tin dịch vụ!");
             e.printStackTrace();
         }
-        return "service_detail";
+        return "service/service_detail";
     }
 
     @GetMapping("/add")
     public String showAddServiceForm(Model model) {
         model.addAttribute("service", new Service());
-        return "service_form";
+        return "service/service_form";
     }
 
     @PostMapping("/save")
@@ -108,7 +108,7 @@ public class ServiceController {
     public String showEditServiceForm(@PathVariable(value = "id") int id, Model model) {
         Service service = serviceService.getById(id);
         model.addAttribute("service", service);
-        return "service_form";
+        return "service/service_form";
     }
 
     @DeleteMapping(value = "/delete/{id}", produces = "application/json")

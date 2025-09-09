@@ -61,7 +61,7 @@ public class RoomController {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải danh sách phòng!");
             return "redirect:/rooms";
         }
-        return "rooms";
+        return "room/rooms";
     }
     
     @GetMapping("/{id}")
@@ -80,13 +80,13 @@ public class RoomController {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải thông tin phòng!");
             e.printStackTrace();
         }
-        return "room_detail";
+        return "room/room_detail";
     }
 
     @GetMapping("/add")
     public String showAddRoomForm(Model model) {
         model.addAttribute("room", new Room());
-        return "room_form";
+        return "room/room_form";
     }
 
     @PostMapping("/save")
@@ -126,7 +126,7 @@ public class RoomController {
     public String showEditRoomForm(@PathVariable(value = "id") int id, Model model) {
         Room room = roomService.getById(id);
         model.addAttribute("room", room);
-        return "room_form";
+        return "room/room_form";
     }
 
     @DeleteMapping(value = "/delete/{id}", produces = "application/json")

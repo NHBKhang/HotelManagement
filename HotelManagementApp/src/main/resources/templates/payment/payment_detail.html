@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title th:text="'Chi tiết Giao dịch ' + ${payment.code} + ' - Quản lý khách sạn'">Chi tiết Giao dịch</title>
+    <th:block th:replace="base :: head"></th:block>
+</head>
+<body>
+    <div th:replace="base :: layout(~{::content})">
+        <div th:fragment="content">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="mb-1">
+                            <i class="fas fa-door-open"></i>
+                            Giao dịch <span class="text-primary" th:text="${payment.code}">-</span>
+                        </h2>
+                        <span th:class="${payment.status.badgeClass} + ' fs-6'" th:text="${payment.status.label}"></span>
+                    </div>
+                    <div>
+                        <a th:href="@{/payments}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-credit-card"></i> Thông tin Giao dịch</h5>
+                            </div>
+                            <div class="card-body" th:object="${payment}">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Mã booking:</strong> <span> 
+                                                <a th:text="*{invoice.booking.code}"
+                                                   th:href="@{/bookings/{id}(id=${payment.invoice.booking.id})}"
+                                                   class="text-decoration-none text-primary"></a></span>
+                                        </p>
+                                        <p><strong>Phương thức:</strong> <span th:text="*{method}">-</span></p>
+                                        <p th:if="*{transactionNo}"><strong>Mã giao dịch:</strong> <span th:text="*{transactionNo}"></span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Số tiền:</strong>
+                                            <span class="text-success fw-bold"
+                                                  th:text="*{#numbers.formatDecimal(amount, 0, 'COMMA', 0, 'POINT')} + 'đ'">500,000đ</span>
+                                        </p>
+                                        <p><strong>Trạng thái:</strong> <span th:text="*{status.label}">-</span></p>
+                                        <p th:if="*{bankCode}"><strong>Mã ngân hàng:</strong> <span th:text="*{bankCode}"></span></p>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <p><strong>Mô tả:</strong></p>
+                                    <p th:text="*{description ?: 'Không có mô tả'}"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-user"></i> Thông tin Khách hàng</h5>
+                            </div>
+                            <div class="card-body" th:object="${payment.user}">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Họ tên:</strong> <span th:text="*{firstName + ' ' + lastName}">Nguyễn Văn A</span></p>
+                                        <p><strong>Email:</strong> <span th:text="*{email}">user@example.com</span></p>
+                                        <p><strong>Số điện thoại:</strong> <span th:text="*{phone ?: 'Chưa cung cấp'}">0123456789</span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Tên người dùng: </strong> <span th:text="*{username}">user123</span></p>
+                                        <p><strong>Ngày tham gia:</strong> <span th:text="*{createdAt != null ? #temporals.format(createdAt, 'dd/MM/yyyy') : 'N/A'}">05/09/2025</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Quick Info -->
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-tools"></i> Thao tác nhanh</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <a th:href="@{/payments/edit/{id}(id=${payment.id})}" class="btn btn-outline-warning btn-sm">
+                                        <i class="fas fa-edit"></i> Chỉnh sửa
+                                    </a>
+                                    <button type="button" class="btn btn-outline-success btn-sm" onclick="printPaymentDetails()">
+                                        <i class="fas fa-print"></i> In thông tin
+                                    </button>
+                                    <a th:href="@{/payments/{id}/details(id=${payment.id})}" class="btn btn-outline-secondary btn-sm" target="_blank">
+                                        <i class="fas fa-external-link-alt"></i> Xem JSON
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-history"></i> Lịch sử Cập nhật</h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Ngày tạo:</strong> <span th:text="${#temporals.format(payment.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</span></p>
+                                <p><strong>Cập nhật cuối:</strong> <span th:text="${#temporals.format(payment.updatedAt, 'dd/MM/yyyy HH:mm')}">05/01/2024</span></p>
+                                <p><strong>Trạng thái:</strong> <span th:class="${payment.status.badgeClass}" 
+                                                                      th:text="${payment.status.label}"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function printPaymentDetails() {
+            window.print();
+        }
+    </script>
+</body>
+</html>
+
