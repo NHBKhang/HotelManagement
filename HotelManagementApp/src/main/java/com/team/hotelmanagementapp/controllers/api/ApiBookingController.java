@@ -73,6 +73,16 @@ public class ApiBookingController {
     @Autowired
     private ServiceBookingService serviceBookingService;
 
+    @GetMapping
+    public ResponseEntity<?> list(@RequestParam Map<String, String> params) {
+        try {
+            return ResponseEntity.ok().body(new Pagination<>(
+                    bookingService.find(params), bookingService.countBookings(params), params));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Có lỗi xảy ra khi tải danh sách người dùng!");
+        }
+    }
+
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Map<String, ?> bodyData,
             HttpServletRequest request) {

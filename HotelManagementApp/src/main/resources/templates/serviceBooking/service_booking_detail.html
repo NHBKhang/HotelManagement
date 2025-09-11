@@ -112,7 +112,7 @@
                                                 <td>
                                                     <a th:href="@{/bookings/{id}(id=${serviceBooking.booking.id})}"
                                                        class="text-decoration-none fw-bold text-info"
-                                                       th:text="${serviceBooking.booking.code}">BK001</a>
+                                                       th:text="${serviceBooking.code}">BK001</a>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -237,15 +237,18 @@
                             </div>
                             <div class="card-body">
                                 <div class="d-grid gap-2">
-                                    <a th:href="@{/service-bookings/edit/{id}(id=${serviceBooking.id})}" class="btn btn-warning">
+                                    <a th:href="@{/service-bookings/edit/{id}(id=${serviceBooking.id})}" class="btn btn-outline-warning btn-sm">
                                         <i class="fas fa-edit"></i> Chỉnh sửa
                                     </a>
-                                    <button type="button" class="btn btn-danger" 
+                                    <button type="button" class="btn btn-outline-danger btn-sm" 
                                             th:onclick="|deleteServiceBooking(${serviceBooking.id})|">
                                         <i class="fas fa-trash"></i> Xóa
                                     </button>
-                                    <a href="javascript:window.print()" class="btn btn-secondary">
-                                        <i class="fas fa-print"></i> In chi tiết
+                                    <a href="javascript:window.print()" class="btn btn-outline-success btn-sm">
+                                        <i class="fas fa-print"></i> In thông tin
+                                    </a>
+                                    <a th:href="@{/service-bookings/{id}/details(id=${serviceBooking.id})}" class="btn btn-outline-secondary btn-sm" target="_blank">
+                                        <i class="fas fa-external-link-alt"></i> Xem JSON
                                     </a>
                                 </div>
                             </div>

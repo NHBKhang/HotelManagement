@@ -37,12 +37,6 @@ public class ServiceBookingRepositoryImpl implements ServiceBookingRepository {
     }
 
     @Override
-    public ServiceBooking getById(int id) {
-        Session s = this.factory.getObject().getCurrentSession();
-        return s.get(ServiceBooking.class, id);
-    }
-
-    @Override
     public List<ServiceBooking> find(Map<String, String> params) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
@@ -141,9 +135,15 @@ public class ServiceBookingRepositoryImpl implements ServiceBookingRepository {
     }
 
     @Override
+    public ServiceBooking getById(int id) {
+        Session s = this.factory.getObject().getCurrentSession();
+        return s.find(ServiceBooking.class, id);
+    }
+
+    @Override
     public void delete(int id) {
         Session s = this.factory.getObject().getCurrentSession();
-        ServiceBooking serviceBooking = s.get(ServiceBooking.class, id);
+        ServiceBooking serviceBooking = this.getById(id);
         if (serviceBooking != null) {
             s.remove(serviceBooking);
         }
@@ -151,12 +151,18 @@ public class ServiceBookingRepositoryImpl implements ServiceBookingRepository {
 
     @Override
     public void delete(List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return;
+        }
+
         Session s = this.factory.getObject().getCurrentSession();
-        for (Integer id : ids) {
-            ServiceBooking serviceBooking = s.get(ServiceBooking.class, id);
-            if (serviceBooking != null) {
-                s.remove(serviceBooking);
-            }
+        String hql = "DELETE FROM ServiceBooking s WHERE s.id IN (:ids)";
+        int affected = s.createMutationQuery(hql)
+                .setParameterList("ids", ids)
+                .executeUpdate();
+
+        if (affected != ids.size()) {
+            throw new RuntimeException("Không thể xóa hết tất cả!");
         }
     }
 
@@ -195,7 +201,9 @@ public class ServiceBookingRepositoryImpl implements ServiceBookingRepository {
         Session s = this.factory.getObject().getCurrentSession();
 
         if (serviceBooking.getId() == null) {
-            System.out.println(serviceBooking.toString());
+            if (serviceBooking.getCode() == null) {
+                serviceBooking.setCode(this.generateCode());
+            }
             s.persist(serviceBooking);
         } else {
             serviceBooking = s.merge(serviceBooking);
@@ -232,5 +240,14 @@ public class ServiceBookingRepositoryImpl implements ServiceBookingRepository {
         q.select(b.count(root)).where(predicates.toArray(Predicate[]::new));
 
         return s.createQuery(q).getSingleResult();
+    }
+
+    private String generateCode() {
+        Session s = this.factory.getObject().getCurrentSession();
+        Query q = s.createQuery("SELECT MAX(s.id) FROM ServiceBooking s", Integer.class);
+        Integer maxId = (Integer) q.getSingleResult();
+
+        int nextId = (maxId != null) ? maxId + 1 : 1;
+        return "DDV" + String.format("%03d", nextId);
     }
 }

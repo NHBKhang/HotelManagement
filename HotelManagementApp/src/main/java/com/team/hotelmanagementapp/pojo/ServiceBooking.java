@@ -28,6 +28,10 @@ public class ServiceBooking implements Serializable {
     @Basic(optional = false)
     private Integer id;
 
+    @Basic(optional = false)
+    @Column(name = "code", nullable = false, unique = true)
+    private String code;
+
     @ManyToOne
     @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
@@ -142,6 +146,14 @@ public class ServiceBooking implements Serializable {
     @Override
     public String toString() {
         return "ServiceBooking{" + "booking=" + booking + ", service=" + service + ", totalPrice=" + totalPrice + '}';
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
     
 }

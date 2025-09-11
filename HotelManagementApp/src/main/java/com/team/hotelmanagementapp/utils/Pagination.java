@@ -1,6 +1,5 @@
 package com.team.hotelmanagementapp.utils;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +11,8 @@ public class Pagination<T> {
     private final int current;
     private final int total;
     private final long totalElements;
+    private final boolean hasNext;
+    private final boolean hasPrevious;
 
     public Pagination(List<T> results, long totalElements, Map<String, String> params) {
         int size = safeParseInt(params.getOrDefault("pageSize", "10"), 10);
@@ -22,6 +23,8 @@ public class Pagination<T> {
         this.current = current;
         this.totalElements = totalElements;
         this.total = (int) Math.ceil((double) totalElements / size);
+        this.hasNext = current < total;
+        this.hasPrevious = current > 1;
     }
 
     public Pagination(long totalElements, Map<String, String> params) {
@@ -47,13 +50,13 @@ public class Pagination<T> {
     public long getTotalElements() {
         return totalElements;
     }
-    
-    public boolean hasPrevious() {
-        return current > 1;
+
+    public boolean isHasNext() {
+        return hasNext;
     }
-    
-    public boolean hasNext() {
-        return current < total;
+
+    public boolean isHasPrevious() {
+        return hasPrevious;
     }
 
     private int safeParseInt(String value, int defaultValue) {

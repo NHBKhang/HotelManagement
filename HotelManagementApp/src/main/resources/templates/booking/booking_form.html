@@ -71,7 +71,6 @@
                                         <div id="room-dropdown">
                                             <input id="room" th:field="*{room.id}" required/>
                                         </div>
-                                        <p class="text-danger" th:if="${#fields.hasErrors('room')}" th:errors="*{room}"></p>
                                         <div class="text-danger" th:if="${#fields.hasErrors('room')}" th:errors="*{room}"></div>
                                         <div id="roomAvailabilityStatus" class="mt-2"></div>
                                     </div>
