@@ -188,7 +188,7 @@ containerId,
         value = null,
         allowNull = false,
         required = false
-}) {
+        }) {
     let page = 1;
     let isLoading = false;
     let allLoaded = false;
@@ -288,6 +288,12 @@ containerId,
 
         isLoading = true;
 
+        // Spinner hiển thị khi loading
+        const spinner = document.createElement('div');
+        spinner.classList.add('dropdown-item', 'text-center', 'text-muted');
+        spinner.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Đang tải...`;
+        dropdown.appendChild(spinner);
+
         const queryString = new URLSearchParams({
             page: page,
             size: pageSize,
@@ -298,6 +304,8 @@ containerId,
         fetch(`${apiUrl}?${queryString}`)
                 .then(res => res.json())
                 .then(data => {
+                    spinner.remove();
+            
                     if (!data.results || data.results.length === 0) {
                         if (reset) {
                             dropdown.replaceChildren(searchContainer);
@@ -321,7 +329,7 @@ containerId,
                         dropdown.appendChild(div);
                     });
 
-                    if (!data.pagination || !data.pagination.more) {
+                    if (!data || !data.hasNext) {
                         allLoaded = true;
                     } else {
                         page++;

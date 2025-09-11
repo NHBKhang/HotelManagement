@@ -78,7 +78,9 @@ public class ServiceRepositoryImpl implements ServiceRepository {
         Session s = factory.getObject().getCurrentSession();
 
         if (service.getId() == null) {
-            service.setCode(this.generateCode());
+            if (service.getCode() == null) {
+                service.setCode(this.generateCode());
+            }
             s.persist(service);
         } else {
             service = s.merge(service);

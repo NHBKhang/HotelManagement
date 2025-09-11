@@ -91,7 +91,7 @@
                         <thead class="table-dark">
                             <tr>
                                 <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th>
-                                <th>ID</th>
+                                <th>Mã</th>
                                 <th>Mã Booking</th>
                                 <th>Khách hàng</th>
                                 <th>Dịch vụ</th>
@@ -108,7 +108,7 @@
                                 <td>
                                     <a th:href="@{/service-bookings/{id}(id=${r.id})}"
                                        class="text-decoration-none fw-bold text-primary"
-                                       th:text="${r.id}">1</a>
+                                       th:text="${r.code}"></a>
                                 </td>
                                 <td>
                                     <a th:href="@{/bookings/{id}(id=${r.booking.id})}"

@@ -1,227 +1,159 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head>
-    <title th:text="${serviceBooking.id != null ? 'Chỉnh sửa Đặt dịch vụ' : 'Thêm Đặt dịch vụ'} + ' - Quản lý khách sạn'">Thêm Đặt dịch vụ - Quản lý khách sạn</title>
+    <head>
+        <title th:text="${serviceBooking.id != null} ? 'Chỉnh sửa Đặt dịch vụ - Quản lý khách sạn' : 'Thêm Đặt dịch vụ - Quản lý khách sạn'">
+            Quản lý khách sạn
+        </title>
     <th:block th:replace="base :: head"></th:block>
+    <style>
+        .quantity-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .quantity-btn:hover {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        #unitDisplay {
+            font-size: 14px;
+            background: #f8f9fa;
+            font-weight: 500;
+        }
+    </style>
 </head>
 
 <body>
     <div th:replace="base :: layout(~{::content})">
         <div th:fragment="content">
             <div class="container">
-                <!-- Header -->
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2>
-                        <i class="fas fa-concierge-bell"></i>
-                        <span th:text="${serviceBooking.id != null ? 'Chỉnh sửa Đặt dịch vụ #' + serviceBooking.id : 'Thêm Đặt dịch vụ mới'}">Thêm Đặt dịch vụ mới</span>
-                    </h2>
-                    <a th:href="@{/service-bookings}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Quay lại
-                    </a>
-                </div>
+                <h2 class="text-center mb-3">
+                    <span th:if="${serviceBooking.id != null}">
+                        <i class="fa-solid fa-pen-to-square me-2"></i> Chỉnh sửa Đặt dịch vụ
+                    </span>
+                    <span th:unless="${serviceBooking.id != null}">
+                        <i class="fa-solid fa-plus-circle me-2"></i> Thêm Đặt dịch vụ
+                    </span>
+                </h2>
 
-                <!-- Form -->
-                <form th:action="@{/service-bookings/save}"
-                      th:object="${serviceBooking}"
-                      method="post" id="serviceBookingForm">
+                <form th:action="@{/service-bookings/save}" th:object="${serviceBooking}" method="post" 
+                      id="serviceBookingForm" class="styled-form">
+                    <input type="hidden" th:if="${serviceBooking.id != null}" th:field="*{id}">
+                    <input type="hidden" th:if="${serviceBooking.id != null}" th:field="*{code}">
+
+                    <div class="my-2 d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fa-solid fa-save me-1"></i>
+                            <span th:text="${serviceBooking.id != null} ? 'Cập nhật' : 'Lưu'"></span>
+                        </button>
+
+                        <a th:href="@{/service-bookings}" class="btn btn-secondary">
+                            <i class="fa-solid fa-circle-left me-1"></i> Trở về
+                        </a>
+                    </div>
+
                     <div class="row">
-                        <!-- Main Form -->
-                        <input type="hidden" th:if="${serviceBooking.id != null}" th:field="*{id}">
                         <div class="col-md-8">
                             <div class="card">
-                                <div class="card-header bg-primary text-white">
-                                    <h5 class="mb-0"><i class="fas fa-edit"></i> Thông tin Đặt dịch vụ</h5>
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Thông tin Đặt dịch vụ</h5>
                                 </div>
-                                <div class="card-body">
-                                    <!-- Booking Selection -->
+                                <div class="p-4 border rounded shadow-sm bg-light">
+                                    <div class="mb-3" th:if="${serviceBooking.id != null}">
+                                        <label class="form-label fw-bold">Mã</label>
+                                        <span id="code"
+                                              th:text="*{code}" 
+                                              class="badge bg-primary fs-5 fw-bold">
+                                        </span>
+                                    </div>
                                     <div class="mb-3">
-                                        <label for="bookingId" class="form-label">
-                                            <i class="fas fa-calendar-check text-info"></i> Booking <span class="text-danger">*</span>
-                                        </label>
-                                        <select class="form-select" id="bookingId" name="booking.id" required
-                                                onchange="loadBookingInfo()">
-                                            <option value="">-- Chọn Booking --</option>
-                                            <option th:each="booking : ${bookings}"
-                                                    th:value="${booking.id}"
-                                                    th:text="${booking.code + ' - ' + booking.user.fullName + ' (' + #temporals.format(booking.checkInDate, 'dd/MM/yyyy') + ' - ' + #temporals.format(booking.checkOutDate, 'dd/MM/yyyy') + ')'}"
-                                                    th:selected="${serviceBooking.booking != null and serviceBooking.booking.id == booking.id}"
-                                                    th:data-user-name="${booking.user.fullName}"
-                                                    th:data-user-email="${booking.user.email}"
-                                                    th:data-room-number="${booking.room.roomNumber}"
-                                                    th:data-room-type="${booking.room.roomType.name}"
-                                                    th:data-check-in="${#temporals.format(booking.checkInDate, 'dd/MM/yyyy')}"
-                                                    th:data-check-out="${#temporals.format(booking.checkOutDate, 'dd/MM/yyyy')}"
-                                                    th:data-guests="${booking.guests}">
-                                                BK001 - Nguyễn Văn A (01/01/2024 - 03/01/2024)
-                                            </option>
-                                        </select>
-                                        <div class="invalid-feedback">Vui lòng chọn booking</div>
+                                        <label class="form-label">Booking <span class="text-danger">*</span></label>
+                                        <div id="booking-dropdown">
+                                            <input id="booking" th:field="*{booking.id}" required/>
+                                        </div>
+                                        <div class="text-danger" th:if="${#fields.hasErrors('booking')}" th:errors="*{booking}"></div>
                                     </div>
 
-                                    <!-- Service Selection -->
                                     <div class="mb-3">
-                                        <label for="serviceId" class="form-label">
-                                            <i class="fas fa-concierge-bell text-warning"></i> Dịch vụ <span class="text-danger">*</span>
-                                        </label>
-                                        <select class="form-select" id="serviceId" name="service.id" required
-                                                onchange="updateServiceInfo()">
-                                            <option value="">-- Chọn Dịch vụ --</option>
-                                            <option th:each="service : ${services}"
-                                                    th:value="${service.id}"
-                                                    th:text="${service.name + ' - ' + #numbers.formatDecimal(service.price, 0, 'COMMA', 0, 'POINT') + 'đ/' + service.unit}"
-                                                    th:selected="${serviceBooking.service != null and serviceBooking.service.id == service.id}"
-                                                    th:data-price="${service.price}"
-                                                    th:data-unit="${service.unit}"
-                                                    th:data-description="${service.description}">
-                                                Breakfast Buffet - 50,000đ/Suất
-                                            </option>
-                                        </select>
-                                        <div class="invalid-feedback">Vui lòng chọn dịch vụ</div>
+                                        <label class="form-label">Dịch vụ <span class="text-danger">*</span></label>
+                                        <div id="service-dropdown">
+                                            <input id="service" th:field="*{service.id}" required/>
+                                        </div>
+                                        <div class="text-danger" th:if="${#fields.hasErrors('service')}" th:errors="*{service}"></div>
                                     </div>
 
-                                    <!-- Quantity -->
                                     <div class="mb-3">
-                                        <label for="quantity" class="form-label">
-                                            <i class="fas fa-sort-numeric-up text-success"></i> Số lượng <span class="text-danger">*</span>
-                                        </label>
+                                        <label class="form-label">Số lượng <span class="text-danger">*</span></label>
                                         <div class="input-group">
-                                            <button type="button" class="btn btn-outline-secondary" onclick="changeQuantity(-1)">
+                                            <button type="button" class="btn btn-outline-secondary quantity-btn me-2" onclick="changeQuantity( - 1)">
                                                 <i class="fas fa-minus"></i>
                                             </button>
-                                            <input type="number" class="form-control text-center" id="quantity" name="quantity" 
-                                                   th:value="${serviceBooking.quantity ?: 1}" min="1" max="100" required 
-                                                   oninput="calculateTotal()">
-                                            <button type="button" class="btn btn-outline-secondary" onclick="changeQuantity(1)">
+                                            <input type="number" class="form-control text-center" id="quantity" name="quantity"
+                                                   th:value="${serviceBooking.quantity ?: 1}" min="1" max="100" required oninput="calculateTotal()">
+                                            <button type="button" class="btn btn-outline-secondary quantity-btn ms-2" onclick="changeQuantity(1)">
                                                 <i class="fas fa-plus"></i>
                                             </button>
                                             <span class="input-group-text" id="unitDisplay">Đơn vị</span>
                                         </div>
-                                        <div class="invalid-feedback">Số lượng phải từ 1 đến 100</div>
                                     </div>
 
-                                    <!-- Price Display -->
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label class="form-label">
-                                                    <i class="fas fa-tag text-info"></i> Đơn giá
-                                                </label>
-                                                <div class="form-control bg-light" id="unitPriceDisplay">0đ</div>
-                                            </div>
+                                            <label class="form-label">Đơn giá</label>
+                                            <div class="form-control bg-light" id="unitPriceDisplay">0đ</div>
                                         </div>
                                         <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label class="form-label">
-                                                    <i class="fas fa-calculator text-success"></i> Tổng tiền
-                                                </label>
-                                                <div class="form-control bg-success text-white fw-bold fs-5" id="totalPriceDisplay">0đ</div>
-                                                <input type="hidden" id="totalPrice" name="totalPrice" th:value="${serviceBooking.totalPrice ?: 0}">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Action Buttons -->
-                                    <div class="d-flex justify-content-between">
-                                        <div>
-                                            <button type="submit" class="btn btn-primary btn-lg">
-                                                <i class="fas fa-save"></i>
-                                                <span th:text="${serviceBooking.id != null ? 'Cập nhật' : 'Thêm mới'}">Thêm mới</span>
-                                            </button>
-                                            <button type="reset" class="btn btn-secondary ms-2" onclick="resetForm()">
-                                                <i class="fas fa-undo"></i> Đặt lại
-                                            </button>
-                                        </div>
-                                        <div>
-                                            <a th:href="@{/service-bookings}" class="btn btn-outline-secondary">
-                                                <i class="fas fa-times"></i> Hủy
-                                            </a>
+                                            <label class="form-label">Tổng tiền</label>
+                                            <div class="form-control bg-success text-white fw-bold fs-5" id="totalPriceDisplay">0đ</div>
+                                            <input type="hidden" id="totalPrice" name="totalPrice" th:value="${serviceBooking.totalPrice ?: 0}">
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Sidebar -->
                         <div class="col-md-4">
-                            <!-- Booking Info -->
                             <div class="card mb-3" id="bookingInfoCard" style="display: none;">
                                 <div class="card-header bg-info text-white">
                                     <h6 class="mb-0"><i class="fas fa-info-circle"></i> Thông tin Booking</h6>
                                 </div>
-                                <div class="card-body">
-                                    <table class="table table-borderless table-sm">
-                                        <tr>
-                                            <td class="fw-bold">Khách hàng:</td>
-                                            <td id="customerName">-</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Email:</td>
-                                            <td id="customerEmail">-</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Phòng:</td>
-                                            <td id="roomInfo">-</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Check-in:</td>
-                                            <td id="checkInDate">-</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Check-out:</td>
-                                            <td id="checkOutDate">-</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Số người:</td>
-                                            <td id="guests">-</td>
-                                        </tr>
-                                    </table>
+                                <div class="card-body small">
+                                    <p><strong>Khách hàng:</strong> <span id="customerName">-</span></p>
+                                    <p><strong>Email:</strong> <span id="customerEmail">-</span></p>
+                                    <p><strong>Phòng:</strong> <span id="roomInfo">-</span></p>
+                                    <p><strong>Check-in:</strong> <span id="checkInDate">-</span></p>
+                                    <p><strong>Check-out:</strong> <span id="checkOutDate">-</span></p>
+                                    <p><strong>Số người:</strong> <span id="guests">-</span></p>
                                 </div>
                             </div>
 
-                            <!-- Service Info -->
                             <div class="card mb-3" id="serviceInfoCard" style="display: none;">
                                 <div class="card-header bg-warning text-white">
                                     <h6 class="mb-0"><i class="fas fa-concierge-bell"></i> Thông tin Dịch vụ</h6>
                                 </div>
-                                <div class="card-body">
-                                    <table class="table table-borderless table-sm">
-                                        <tr>
-                                            <td class="fw-bold">Mô tả:</td>
-                                            <td id="serviceDescription">-</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Đơn vị:</td>
-                                            <td id="serviceUnit">-</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Giá:</td>
-                                            <td id="servicePrice" class="fw-bold text-success">-</td>
-                                        </tr>
-                                    </table>
+                                <div class="card-body small">
+                                    <p><strong>Mô tả:</strong> <span id="serviceDescription">-</span></p>
+                                    <p><strong>Đơn vị:</strong> <span id="serviceUnit">-</span></p>
+                                    <p><strong>Giá:</strong> <span id="servicePrice" class="fw-bold text-success">-</span></p>
                                 </div>
                             </div>
 
-                            <!-- Total Summary -->
                             <div class="card">
                                 <div class="card-header bg-success text-white">
                                     <h6 class="mb-0"><i class="fas fa-calculator"></i> Tổng kết</h6>
                                 </div>
                                 <div class="card-body">
-                                    <table class="table table-borderless">
-                                        <tr>
-                                            <td>Số lượng:</td>
-                                            <td class="text-end fw-bold" id="summaryQuantity">0</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Đơn giá:</td>
-                                            <td class="text-end" id="summaryUnitPrice">0đ</td>
-                                        </tr>
-                                        <tr class="border-top">
-                                            <td class="fw-bold">Tổng tiền:</td>
-                                            <td class="text-end fw-bold fs-5 text-success" id="summaryTotal">0đ</td>
-                                        </tr>
-                                    </table>
+                                    <p><strong>Số lượng:</strong> <span id="summaryQuantity">0</span></p>
+                                    <p><strong>Đơn giá:</strong> <span id="summaryUnitPrice">0đ</span></p>
+                                    <p class="border-top pt-2 fw-bold fs-5 text-success">Tổng: <span id="summaryTotal">0đ</span></p>
                                 </div>
                             </div>
                         </div>
@@ -233,110 +165,90 @@
 
     <script>
         let currentServicePrice = 0;
-
         function loadBookingInfo() {
-            const select = document.getElementById('bookingId');
-            const option = select.options[select.selectedIndex];
-            const bookingInfoCard = document.getElementById('bookingInfoCard');
-
-            if (option.value) {
-                document.getElementById('customerName').textContent = option.dataset.userName;
-                document.getElementById('customerEmail').textContent = option.dataset.userEmail;
-                document.getElementById('roomInfo').textContent = option.dataset.roomNumber + ' - ' + option.dataset.roomType;
-                document.getElementById('checkInDate').textContent = option.dataset.checkIn;
-                document.getElementById('checkOutDate').textContent = option.dataset.checkOut;
-                document.getElementById('guests').textContent = option.dataset.guests + ' người';
-                bookingInfoCard.style.display = 'block';
-            } else {
-                bookingInfoCard.style.display = 'none';
-            }
+        const option = document.querySelector('#bookingId option:checked');
+        const card = document.getElementById('bookingInfoCard');
+        if (option && option.value) {
+        document.getElementById('customerName').textContent = option.dataset.userName;
+        document.getElementById('customerEmail').textContent = option.dataset.userEmail;
+        document.getElementById('roomInfo').textContent = option.dataset.roomNumber + ' - ' + option.dataset.roomType;
+        document.getElementById('checkInDate').textContent = option.dataset.checkIn;
+        document.getElementById('checkOutDate').textContent = option.dataset.checkOut;
+        document.getElementById('guests').textContent = option.dataset.guests + ' người';
+        card.style.display = 'block';
+        } else
+                card.style.display = 'none';
         }
 
         function updateServiceInfo() {
-            const select = document.getElementById('serviceId');
-            const option = select.options[select.selectedIndex];
-            const serviceInfoCard = document.getElementById('serviceInfoCard');
-
-            if (option.value) {
-                currentServicePrice = parseFloat(option.dataset.price || 0);
-                const unit = option.dataset.unit || 'Đơn vị';
-                const description = option.dataset.description || 'Không có mô tả';
-
-                document.getElementById('serviceDescription').textContent = description;
-                document.getElementById('serviceUnit').textContent = unit;
-                document.getElementById('servicePrice').textContent = formatCurrency(currentServicePrice);
-                document.getElementById('unitDisplay').textContent = unit;
-                document.getElementById('unitPriceDisplay').textContent = formatCurrency(currentServicePrice);
-
-                serviceInfoCard.style.display = 'block';
-                calculateTotal();
-            } else {
-                serviceInfoCard.style.display = 'none';
-                currentServicePrice = 0;
-                document.getElementById('unitDisplay').textContent = 'Đơn vị';
-                document.getElementById('unitPriceDisplay').textContent = '0đ';
-                calculateTotal();
-            }
+        const option = document.querySelector('#serviceId option:checked');
+        const card = document.getElementById('serviceInfoCard');
+        if (option && option.value) {
+        currentServicePrice = parseFloat(option.dataset.price || 0);
+        const unit = option.dataset.unit || 'Đơn vị';
+        document.getElementById('serviceDescription').textContent = option.dataset.description || '-';
+        document.getElementById('serviceUnit').textContent = unit;
+        document.getElementById('servicePrice').textContent = formatCurrency(currentServicePrice);
+        document.getElementById('unitDisplay').textContent = unit;
+        document.getElementById('unitPriceDisplay').textContent = formatCurrency(currentServicePrice);
+        card.style.display = 'block';
+        calculateTotal();
+        } else {
+        card.style.display = 'none';
+        currentServicePrice = 0;
+        document.getElementById('unitDisplay').textContent = 'Đơn vị';
+        document.getElementById('unitPriceDisplay').textContent = '0đ';
+        calculateTotal();
+        }
         }
 
         function changeQuantity(delta) {
-            const quantityInput = document.getElementById('quantity');
-            let newValue = parseInt(quantityInput.value || 1) + delta;
-            newValue = Math.max(1, Math.min(100, newValue));
-            quantityInput.value = newValue;
-            calculateTotal();
+        const input = document.getElementById('quantity');
+        let value = parseInt(input.value || 1) + delta;
+        value = Math.max(1, Math.min(100, value));
+        input.value = value;
+        calculateTotal();
         }
 
         function calculateTotal() {
-            const quantity = parseInt(document.getElementById('quantity').value || 1);
-            const total = quantity * currentServicePrice;
-
-            document.getElementById('totalPrice').value = total;
-            document.getElementById('totalPriceDisplay').textContent = formatCurrency(total);
-            document.getElementById('summaryQuantity').textContent = quantity;
-            document.getElementById('summaryUnitPrice').textContent = formatCurrency(currentServicePrice);
-            document.getElementById('summaryTotal').textContent = formatCurrency(total);
+        const quantity = parseInt(document.getElementById('quantity').value || 1);
+        const total = quantity * currentServicePrice;
+        document.getElementById('totalPrice').value = total;
+        document.getElementById('totalPriceDisplay').textContent = formatCurrency(total);
+        document.getElementById('summaryQuantity').textContent = quantity;
+        document.getElementById('summaryUnitPrice').textContent = formatCurrency(currentServicePrice);
+        document.getElementById('summaryTotal').textContent = formatCurrency(total);
         }
 
         function formatCurrency(amount) {
-            return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
+        return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
         }
 
-        function resetForm() {
-            document.getElementById('serviceBookingForm').reset();
-            document.getElementById('bookingInfoCard').style.display = 'none';
-            document.getElementById('serviceInfoCard').style.display = 'none';
-            currentServicePrice = 0;
-            calculateTotal();
-        }
-
-        // Initialize form
-        document.addEventListener('DOMContentLoaded', function() {
-            // Load existing data if editing
-            const bookingSelect = document.getElementById('bookingId');
-            const serviceSelect = document.getElementById('serviceId');
-
-            if (bookingSelect.value) {
+        document.addEventListener('DOMContentLoaded', () => {
+        if (document.getElementById('bookingId').value)
                 loadBookingInfo();
-            }
-
-            if (serviceSelect.value) {
+        if (document.getElementById('serviceId').value)
                 updateServiceInfo();
-            }
-
-            // Form validation
-            document.getElementById('serviceBookingForm').addEventListener('submit', function(e) {
-                const bookingId = document.getElementById('bookingId').value;
-                const serviceId = document.getElementById('serviceId').value;
-                const quantity = document.getElementById('quantity').value;
-
-                if (!bookingId || !serviceId || !quantity || quantity < 1) {
-                    e.preventDefault();
-                    alert('Vui lòng điền đầy đủ thông tin bắt buộc');
-                }
-            });
-
-            calculateTotal();
+        calculateTotal();
+        });
+    </script>
+    <script th:inline="javascript">
+        renderDynamicDropdown({
+        containerId: 'booking-dropdown',
+                apiUrl: [[@{/api/bookings}]],
+                buildOptionText: item => {
+                const date = `${new Date(item.checkInDate).toLocaleDateString('vi-VN')} - ${new Date(item.checkOutDate).toLocaleDateString('vi-VN')}`;
+                return `${item.code} - ${item.user.fullName} (${date})`;
+                },
+                value: /*[[${serviceBooking.booking}]]*/ null,
+                required: true,
+        });
+        renderDynamicDropdown({
+        containerId: 'service-dropdown',
+                apiUrl: [[@{/api/services}]],
+                buildOptionText: item => `${item.name} - ${item.price}đ/${item.unit}`,
+                value: /*[[${serviceBooking.service}]]*/ null,
+                required: true,
         });
     </script>
 </body>

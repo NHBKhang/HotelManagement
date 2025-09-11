@@ -87,7 +87,6 @@ public class PaymentRepositoryImpl implements PaymentRepository {
     public Payment getById(int id) {
         Session s = this.factory.getObject().getCurrentSession();
         return s.find(Payment.class, id);
-
     }
 
     @Override
