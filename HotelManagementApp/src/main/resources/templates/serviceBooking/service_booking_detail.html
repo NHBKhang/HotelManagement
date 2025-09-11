@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Chi tiết Đặt dịch vụ - Quản lý khách sạn</title>
+    <th:block th:replace="base :: head"></th:block>
+</head>
+
+<body>
+    <div th:replace="base :: layout(~{::content})">
+        <div th:fragment="content">
+            <div class="container">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-concierge-bell"></i> Chi tiết Đặt dịch vụ #<span th:text="${serviceBooking.id}"></span></h2>
+                    <div>
+                        <a th:href="@{/service-bookings}" class="btn btn-secondary me-2">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                        <a th:href="@{/service-bookings/edit/{id}(id=${serviceBooking.id})}" class="btn btn-warning me-2">
+                            <i class="fas fa-edit"></i> Chỉnh sửa
+                        </a>
+                        <button type="button" class="btn btn-danger" 
+                                th:onclick="|deleteServiceBooking(${serviceBooking.id})|">
+                            <i class="fas fa-trash"></i> Xóa
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Service Booking Information -->
+                    <div class="col-md-8">
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Thông tin Đặt dịch vụ</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <table class="table table-borderless">
+                                            <tr>
+                                                <td class="fw-bold">ID:</td>
+                                                <td th:text="${serviceBooking.id}">1</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Mã Booking:</td>
+                                                <td>
+                                                    <a th:href="@{/bookings/{id}(id=${serviceBooking.booking.id})}"
+                                                       class="text-decoration-none fw-bold text-info"
+                                                       th:text="${serviceBooking.booking.code}">BK001</a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Dịch vụ:</td>
+                                                <td>
+                                                    <div>
+                                                        <strong th:text="${serviceBooking.service.name}">Breakfast Buffet</strong>
+                                                        <br>
+                                                        <small class="text-muted" th:text="${serviceBooking.service.description}">Mô tả dịch vụ</small>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Số lượng:</td>
+                                                <td>
+                                                    <span class="badge bg-secondary fs-6" th:text="${serviceBooking.quantity ?: 1}">1</span>
+                                                    <span class="text-muted" th:text="${serviceBooking.service.unit ?: 'Đơn vị'}">Suất</span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <table class="table table-borderless">
+                                            <tr>
+                                                <td class="fw-bold">Đơn giá:</td>
+                                                <td th:text="${#numbers.formatDecimal(serviceBooking.service.price ?: 0, 0, 'COMMA', 0, 'POINT')} + 'đ'">50,000đ</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Tổng tiền:</td>
+                                                <td>
+                                                    <span class="fs-5 fw-bold text-success" 
+                                                          th:text="${#numbers.formatDecimal(serviceBooking.totalPrice ?: 0, 0, 'COMMA', 0, 'POINT')} + 'đ'">50,000đ</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Ngày đặt:</td>
+                                                <td th:text="${#temporals.format(serviceBooking.createdAt, 'dd/MM/yyyy HH:mm:ss')}">01/01/2024 10:30:00</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Trạng thái:</td>
+                                                <td>
+                                                    <span class="badge bg-success">Đã đặt</span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Booking Information -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0"><i class="fas fa-calendar-check"></i> Thông tin Booking</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <table class="table table-borderless">
+                                            <tr>
+                                                <td class="fw-bold">Mã Booking:</td>
+                                                <td>
+                                                    <a th:href="@{/bookings/{id}(id=${serviceBooking.booking.id})}"
+                                                       class="text-decoration-none fw-bold text-info"
+                                                       th:text="${serviceBooking.booking.code}">BK001</a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Phòng:</td>
+                                                <td>
+                                                    <span class="badge bg-primary" th:text="${serviceBooking.booking.room.code}">P101</span>
+                                                    <span th:text="${serviceBooking.booking.room.roomType.name}">Deluxe</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Check-in:</td>
+                                                <td th:text="${#temporals.format(serviceBooking.booking.checkInDate, 'dd/MM/yyyy')}">01/01/2024</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Check-out:</td>
+                                                <td th:text="${#temporals.format(serviceBooking.booking.checkOutDate, 'dd/MM/yyyy')}">03/01/2024</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <table class="table table-borderless">
+                                            <tr>
+                                                <td class="fw-bold">Số người:</td>
+                                                <td>
+                                                    <i class="fas fa-users text-primary"></i>
+                                                    <span th:text="${serviceBooking.booking.guests ?: 1}">2</span> người
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Tổng tiền phòng:</td>
+                                                <td th:text="${#numbers.formatDecimal(serviceBooking.booking.room.roomType.pricePerNight * T(java.time.temporal.ChronoUnit).DAYS.between(serviceBooking.booking.checkInDate, serviceBooking.booking.checkOutDate), 0, 'COMMA', 0, 'POINT')} + 'đ'">1,000,000đ</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Trạng thái:</td>
+                                                <td>
+                                                    <span class="badge" 
+                                                          th:classappend="${serviceBooking.booking.status.badgeClass}"
+                                                          th:text="${serviceBooking.booking.status.description}">
+                                                        Đã xác nhận
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customer Information -->
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="fas fa-user"></i> Thông tin Khách hàng</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center mb-3">
+                                    <i class="fas fa-user-circle fa-4x text-muted"></i>
+                                    <h5 class="mt-2" th:text="${serviceBooking.booking.user.fullName}">Nguyễn Văn A</h5>
+                                </div>
+                                <table class="table table-borderless table-sm">
+                                    <tr>
+                                        <td class="fw-bold"><i class="fas fa-envelope text-primary"></i></td>
+                                        <td th:text="${serviceBooking.booking.user.email}">email@example.com</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold"><i class="fas fa-phone text-success"></i></td>
+                                        <td th:text="${serviceBooking.booking.user.phone ?: 'Chưa cập nhật'}">0123456789</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold"><i class="fas fa-calendar text-info"></i></td>
+                                        <td th:text="${#temporals.format(serviceBooking.booking.user.createdAt, 'dd/MM/yyyy')}">01/01/2024</td>
+                                    </tr>
+                                </table>
+                                <div class="d-grid">
+                                    <a th:href="@{/users/{id}(id=${serviceBooking.booking.user.id})}" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-user"></i> Xem hồ sơ khách hàng
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Service Information -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-warning text-white">
+                                <h5 class="mb-0"><i class="fas fa-concierge-bell"></i> Chi tiết Dịch vụ</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center mb-3">
+                                    <i class="fas fa-concierge-bell fa-3x text-warning"></i>
+                                    <h5 class="mt-2" th:text="${serviceBooking.service.name}">Breakfast Buffet</h5>
+                                </div>
+                                <table class="table table-borderless table-sm">
+                                    <tr>
+                                        <td class="fw-bold">Mô tả:</td>
+                                        <td th:text="${serviceBooking.service.description ?: 'Không có mô tả'}">Buffet sáng phong phú</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Đơn vị:</td>
+                                        <td th:text="${serviceBooking.service.unit ?: 'Đơn vị'}">Suất</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Giá:</td>
+                                        <td class="fw-bold text-success" th:text="${#numbers.formatDecimal(serviceBooking.service.price ?: 0, 0, 'COMMA', 0, 'POINT')} + 'đ'">50,000đ</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Trạng thái:</td>
+                                        <td>
+                                            <span class="badge bg-success" th:if="${serviceBooking.service.active}">Đang hoạt động</span>
+                                            <span class="badge bg-danger" th:unless="${serviceBooking.service.active}">Ngừng hoạt động</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="card">
+                            <div class="card-header bg-dark text-white">
+                                <h5 class="mb-0"><i class="fas fa-tools"></i> Thao tác</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <a th:href="@{/service-bookings/edit/{id}(id=${serviceBooking.id})}" class="btn btn-warning">
+                                        <i class="fas fa-edit"></i> Chỉnh sửa
+                                    </a>
+                                    <button type="button" class="btn btn-danger" 
+                                            th:onclick="|deleteServiceBooking(${serviceBooking.id})|">
+                                        <i class="fas fa-trash"></i> Xóa
+                                    </button>
+                                    <a href="javascript:window.print()" class="btn btn-secondary">
+                                        <i class="fas fa-print"></i> In chi tiết
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function deleteServiceBooking(id) {
+            if (confirm('Bạn có chắc chắn muốn xóa đặt dịch vụ này?')) {
+                fetch(`/HotelManagementApp/service-bookings/delete/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = '/HotelManagementApp/service-bookings';
+                    } else {
+                        showMessage('danger', 'Có lỗi xảy ra: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showMessage('danger', 'Có lỗi xảy ra khi xóa');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

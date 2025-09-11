@@ -20,10 +20,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import com.team.hotelmanagementapp.pojo.Booking;
+import com.team.hotelmanagementapp.pojo.ServiceBooking;
 import com.team.hotelmanagementapp.services.BookingService;
 import com.team.hotelmanagementapp.services.FeedbackService;
 import com.team.hotelmanagementapp.services.RoomService;
+import com.team.hotelmanagementapp.services.ServiceBookingService;
 import com.team.hotelmanagementapp.services.UserService;
 import com.team.hotelmanagementapp.utils.Pagination;
 
@@ -45,6 +48,9 @@ public class BookingController {
     
     @Autowired
     private FeedbackService feedbackService;
+    
+    @Autowired
+    private ServiceBookingService serviceBookingService;
 
     @GetMapping
     public String bookings(Model model, @RequestParam Map<String, String> params,
@@ -88,9 +94,24 @@ public class BookingController {
                 return "redirect:/bookings";
             }
 
+            // Get service bookings for this booking
+            List<ServiceBooking> serviceBookings = serviceBookingService.findByBooking(id, Map.of());
+            
+            // Calculate service bookings statistics
+            double totalServiceAmount = serviceBookings.stream()
+                .mapToDouble(sb -> sb.getTotalPrice() != null ? sb.getTotalPrice().doubleValue() : 0.0)
+                .sum();
+            
+            int totalServiceQuantity = serviceBookings.stream()
+                .mapToInt(sb -> sb.getQuantity() != null ? sb.getQuantity() : 0)
+                .sum();
+
             model.addAttribute("booking", booking);
             model.addAttribute("bookingStatuses", Booking.Status.values());
             model.addAttribute("feedbacks", feedbackService.findByBooking(id, null));
+            model.addAttribute("serviceBookings", serviceBookings);
+            model.addAttribute("totalServiceAmount", totalServiceAmount);
+            model.addAttribute("totalServiceQuantity", totalServiceQuantity);
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải thông tin booking!");
             e.printStackTrace();
