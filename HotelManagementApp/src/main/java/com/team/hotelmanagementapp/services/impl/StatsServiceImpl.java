@@ -1,13 +1,5 @@
 package com.team.hotelmanagementapp.services.impl;
 
-import com.team.hotelmanagementapp.pojo.Booking;
-import com.team.hotelmanagementapp.pojo.Invoice;
-import com.team.hotelmanagementapp.repositories.BookingRepository;
-import com.team.hotelmanagementapp.repositories.InvoiceRepository;
-import com.team.hotelmanagementapp.repositories.RoomRepository;
-import com.team.hotelmanagementapp.repositories.ServiceBookingRepository;
-import com.team.hotelmanagementapp.repositories.UserRepository;
-import com.team.hotelmanagementapp.services.StatsService;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
@@ -17,8 +9,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.team.hotelmanagementapp.pojo.Booking;
+import com.team.hotelmanagementapp.pojo.Invoice;
+import com.team.hotelmanagementapp.pojo.Room;
+import com.team.hotelmanagementapp.pojo.ServiceBooking;
+import com.team.hotelmanagementapp.repositories.BookingRepository;
+import com.team.hotelmanagementapp.repositories.InvoiceRepository;
+import com.team.hotelmanagementapp.repositories.RoomRepository;
+import com.team.hotelmanagementapp.repositories.ServiceBookingRepository;
+import com.team.hotelmanagementapp.repositories.ServiceRepository;
+import com.team.hotelmanagementapp.repositories.UserRepository;
+import com.team.hotelmanagementapp.services.StatsService;
 
 @Service
 public class StatsServiceImpl implements StatsService {
@@ -37,6 +42,9 @@ public class StatsServiceImpl implements StatsService {
 
     @Autowired
     private UserRepository userRepo;
+
+    @Autowired
+    private ServiceRepository serviceRepo;
 
     private Stream<Invoice> getPaidInvoices() {
         return invoiceRepo.findAll().stream()
@@ -145,6 +153,10 @@ public class StatsServiceImpl implements StatsService {
         long checkOut = bookingRepo.countByStatus(Booking.Status.CHECKED_OUT, start, end);
         long processing = bookingRepo.countByStatus(Booking.Status.PROCESSING, start, end);
 
+        data.put("confirmedCount", confirmed);
+        data.put("checkedInCount", checkIn);
+        data.put("checkedOutCount", checkOut);
+        data.put("cancelledCount", cancelled);
         data.put("status", Arrays.asList(
                 Booking.Status.CONFIRMED.getDescription(),
                 Booking.Status.PENDING.getDescription(),
@@ -184,5 +196,53 @@ public class StatsServiceImpl implements StatsService {
         data.put("months", months);
         data.put("values", values);
         return data;
+    }
+
+    @Override
+    public List<Booking> getRecentBookings(int limit) {
+        Map<String, String> params = new HashMap<>();
+        params.put("limit", String.valueOf(limit));
+        params.put("orderBy", "createdAt");
+        params.put("orderDirection", "DESC");
+        return bookingRepo.find(params);
+    }
+
+    @Override
+    public Map<String, Long> getRoomsByStatus() {
+        Map<String, Long> statusCounts = new HashMap<>();
+        
+        statusCounts.put("available", roomRepo.countByStatus(Room.Status.AVAILABLE));
+        statusCounts.put("booked", roomRepo.countByStatus(Room.Status.BOOKED));
+        statusCounts.put("occupied", roomRepo.countByStatus(Room.Status.OCCUPIED));
+        statusCounts.put("cleaning", roomRepo.countByStatus(Room.Status.CLEANING));
+        statusCounts.put("maintenance", roomRepo.countByStatus(Room.Status.MAINTENANCE));
+        
+        return statusCounts;
+    }
+
+    @Override
+    public List<com.team.hotelmanagementapp.pojo.Service> getAllServices() {
+        return serviceRepo.find(new HashMap<>());
+    }
+
+    @Override
+    public List<ServiceBooking> getRecentServiceBookings(int limit) {
+        Map<String, String> params = new HashMap<>();
+        params.put("limit", String.valueOf(limit));
+        params.put("orderBy", "createdAt");
+        params.put("orderDirection", "DESC");
+        return serviceBookingRepo.find(params);
+    }
+
+    @Override
+    public double getTotalServiceRevenue(LocalDate start, LocalDate end) {
+        Map<String, String> params = new HashMap<>();
+        params.put("start", String.valueOf(start));
+        params.put("end", String.valueOf(end));
+        
+        List<ServiceBooking> serviceBookings = serviceBookingRepo.find(params);
+        return serviceBookings.stream()
+                .mapToDouble(sb -> sb.getTotalPrice() != null ? sb.getTotalPrice() : 0.0)
+                .sum();
     }
 }
