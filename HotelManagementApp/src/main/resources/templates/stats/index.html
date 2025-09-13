@@ -11,18 +11,32 @@
             <div class="container-fluid mt-4">
                 <h2 class="mb-4 text-center"><i class="fa fa-chart-line me-2"></i> Bảng điều khiển báo cáo</h2>
 
-                <!-- Bộ lọc thời gian -->
-                <form class="row mb-4 justify-content-center">
-                    <div class="col-auto">
-                        <input type="date" name="start" th:value="${start}" class="form-control">
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form method="get" class="row g-3 align-items-end">
+                                    <div class="col-md-4">
+                                        <label for="start" class="form-label">Từ ngày</label>
+                                        <input type="date" class="form-control" id="start" name="start" th:value="${start}">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="end" class="form-label">Đến ngày</label>
+                                        <input type="date" class="form-control" id="end" name="end" th:value="${end}">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-filter"></i> Lọc
+                                        </button>
+                                        <a th:href="@{/stats/bookings}" class="btn btn-outline-secondary ms-2">
+                                            <i class="fas fa-refresh"></i> Reset
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-auto">
-                        <input type="date" name="end" th:value="${end}" class="form-control">
-                    </div>
-                    <div class="col-auto">
-                        <button class="btn btn-primary">Lọc</button>
-                    </div>
-                </form>
+                </div>
 
                 <!-- Chỉ số tổng quan -->
                 <div class="row g-3 mb-4">

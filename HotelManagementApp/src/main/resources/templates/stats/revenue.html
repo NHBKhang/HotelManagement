@@ -8,22 +8,42 @@
     <div th:replace="base :: layout(~{::content})">
         <div th:fragment="content">
             <div class="container mt-4">
-                <h2 class="mb-4 text-center">Thống kê doanh thu</h2>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-dollar-sign"></i> Thống kê doanh thu</h2>
+                    <div>
+                        <a th:href="@{/stats}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại Dashboard
+                        </a>
+                    </div>
+                </div>
 
                 <!-- Bộ lọc thời gian -->
-                <form class="row mb-4 justify-content-center" method="get" th:action="@{/admin/reports/revenue}">
-                    <div class="col-auto">
-                        <input type="date" name="start" class="form-control" th:value="${start}">
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form method="get" class="row g-3 align-items-end">
+                                    <div class="col-md-4">
+                                        <label for="start" class="form-label">Từ ngày</label>
+                                        <input type="date" class="form-control" id="start" name="start" th:value="${start}">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="end" class="form-label">Đến ngày</label>
+                                        <input type="date" class="form-control" id="end" name="end" th:value="${end}">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-filter"></i> Lọc
+                                        </button>
+                                        <a th:href="@{/stats/bookings}" class="btn btn-outline-secondary ms-2">
+                                            <i class="fas fa-refresh"></i> Reset
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-auto">
-                        <input type="date" name="end" class="form-control" th:value="${end}">
-                    </div>
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fa fa-filter"></i> Lọc
-                        </button>
-                    </div>
-                </form>
+                </div>
 
                 <div class="row g-3 mb-4">
                     <div class="col-md-4">
