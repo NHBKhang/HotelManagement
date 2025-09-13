@@ -55,12 +55,12 @@ function toggleDeleteBtnDisable() {
     deleteButton.disabled = checkedBoxes.length === 0;
 }
 
-function previewImage(event) {
+function previewImage(event, elementId = 'imagePreview') {
     const file = event.target.files[0];
     const reader = new FileReader();
 
     reader.onload = function (e) {
-        const imgElement = document.getElementById("avatarPreview");
+        const imgElement = document.getElementById(elementId);
         imgElement.src = e.target.result;
     };
 

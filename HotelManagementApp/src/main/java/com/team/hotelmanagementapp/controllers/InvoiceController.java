@@ -1,7 +1,9 @@
 package com.team.hotelmanagementapp.controllers;
 
 import com.team.hotelmanagementapp.pojo.Invoice;
+import com.team.hotelmanagementapp.pojo.Payment;
 import com.team.hotelmanagementapp.services.InvoiceService;
+import com.team.hotelmanagementapp.services.PaymentService;
 import com.team.hotelmanagementapp.utils.Pagination;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +24,8 @@ public class InvoiceController {
 
     @Autowired
     private InvoiceService invoiceService;
+    @Autowired
+    private PaymentService paymentService;
 
     @GetMapping
     public String invoices(Model model, @RequestParam Map<String, String> params,
@@ -49,8 +53,10 @@ public class InvoiceController {
                 redirectAttributes.addFlashAttribute("error", "Không tìm thấy hóa đơn với ID: " + id);
                 return "redirect:/invoices";
             }
+            List<Payment> payments = paymentService.findByInvoice(id, null);
 
             model.addAttribute("invoice", invoice);
+            model.addAttribute("payments", payments);
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tải thông tin!");
             e.printStackTrace();

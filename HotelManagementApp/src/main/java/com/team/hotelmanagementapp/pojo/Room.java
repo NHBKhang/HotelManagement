@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.web.multipart.MultipartFile;
 
 @Entity
 @Table(name = "room")
@@ -71,6 +72,9 @@ public class Room implements Serializable {
     private String image;
     
     private Double size;
+
+    @Transient
+    private MultipartFile file;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -213,6 +217,14 @@ public class Room implements Serializable {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public MultipartFile getFile() {
+        return file;
+    }
+
+    public void setFile(MultipartFile file) {
+        this.file = file;
     }
 
 }

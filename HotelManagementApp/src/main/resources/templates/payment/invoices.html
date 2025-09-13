@@ -59,20 +59,6 @@
                                            class="btn btn-sm btn-outline-primary" title="Xem chi tiết">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <button type="button" class="btn btn-sm btn-outline-info dropdown-toggle"
-                                                data-bs-toggle="dropdown" title="Cập nhật trạng thái">
-                                            <i class="fas fa-sync-alt"></i>
-                                        </button>
-                                        <ul class="dropdown-menu">
-                                            <li th:each="newStatus : ${T(com.team.hotelmanagementapp.pojo.Invoice.Status).values()}">
-                                                <form th:action="@{/invoices/{id}/status(id=${r.id})}" method="post" class="d-inline">
-                                                    <input type="hidden" name="status" th:value="${newStatus.name()}">
-                                                    <button type="submit" class="dropdown-item"
-                                                            th:disabled="${r.status == newStatus}"
-                                                            th:text="${newStatus.label}">Trạng thái</button>
-                                                </form>
-                                            </li>
-                                        </ul>
                                     </div>
                                 </td>
                             </tr>

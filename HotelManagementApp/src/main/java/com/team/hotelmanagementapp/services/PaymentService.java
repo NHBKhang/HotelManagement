@@ -9,6 +9,8 @@ public interface PaymentService {
     List<Payment> findAll();
 
     List<Payment> findByUserId(int id, Map<String, String> params);
+    
+    List<Payment> findByInvoice(int id, Map<String, String> params);
 
     List<Payment> find(Map<String, String> params);
 
