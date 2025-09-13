@@ -4,6 +4,7 @@ import com.team.hotelmanagementapp.pojo.Booking;
 import com.team.hotelmanagementapp.pojo.Invoice;
 import com.team.hotelmanagementapp.pojo.Payment;
 import com.team.hotelmanagementapp.pojo.User;
+import com.team.hotelmanagementapp.repositories.InvoiceRepository;
 import com.team.hotelmanagementapp.repositories.PaymentRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -13,6 +14,7 @@ import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,8 @@ public class PaymentRepositoryImpl implements PaymentRepository {
 
     @Autowired
     private LocalSessionFactoryBean factory;
+    @Autowired
+    private InvoiceRepository invoiceRepository;
 
     @Override
     public List<Payment> findAll() {
@@ -55,6 +59,13 @@ public class PaymentRepositoryImpl implements PaymentRepository {
                 Join<Booking, User> userJoin = bookingJoin.join("user");
 
                 predicates.add(b.equal(userJoin.get("id"), Integer.valueOf(userId)));
+            }
+
+            String invoiceId = params.get("invoiceId");
+            if (invoiceId != null && !invoiceId.isEmpty()) {
+                Join<Payment, Invoice> invoiceJoin = root.join("invoice");
+
+                predicates.add(b.equal(invoiceJoin.get("id"), Integer.valueOf(invoiceId)));
             }
         }
 
@@ -99,6 +110,18 @@ public class PaymentRepositoryImpl implements PaymentRepository {
             payment = s.merge(payment);
         }
 
+        Invoice invoice = invoiceRepository.getById(payment.getInvoice().getId());
+        if (invoice != null) {
+            if (invoice.getBalance() < 0.01 && invoice.getBalance() >= 0) {
+                invoice.setStatus(Invoice.Status.PAID);
+            } else if (invoice.getBalance() > 0.01 && invoice.getBalance() <= invoice.getTotalAmount()) {
+                invoice.setStatus(Invoice.Status.PARTIALLY_PAID);
+            } else {
+                invoice.setStatus(Invoice.Status.UNPAID);
+            }
+            s.merge(invoice);
+        }
+
         return payment;
     }
 
@@ -126,6 +149,13 @@ public class PaymentRepositoryImpl implements PaymentRepository {
                 Join<Booking, User> userJoin = bookingJoin.join("user");
 
                 predicates.add(b.equal(userJoin.get("id"), Integer.valueOf(userId)));
+            }
+
+            String invoiceId = params.get("invoiceId");
+            if (invoiceId != null && !invoiceId.isEmpty()) {
+                Join<Payment, Invoice> invoiceJoin = root.join("invoice");
+
+                predicates.add(b.equal(invoiceJoin.get("id"), Integer.valueOf(invoiceId)));
             }
 
             if (!predicates.isEmpty()) {

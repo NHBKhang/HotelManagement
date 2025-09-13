@@ -11,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -56,5 +57,59 @@ public class PaymentController {
             e.printStackTrace();
         }
         return "payment/payment_detail";
+    }
+    
+    @PostMapping("/{id}/status")
+    public String updateStatus(@PathVariable(value = "id") int id,
+            @RequestParam(value = "status") Payment.Status status,
+            RedirectAttributes redirectAttributes) {
+        try {
+            Payment payment = paymentService.getById(id);
+            if (payment == null) {
+                redirectAttributes.addFlashAttribute("error", "Không tìm thấy giao dịch với ID: " + id);
+                return "redirect:/payments";
+            }
+            
+            if (!isValidStatusTransition(payment.getStatus(), status)) {
+                redirectAttributes.addFlashAttribute("error", 
+                    "Không thể chuyển trạng thái từ " + payment.getStatus().getLabel() + 
+                    " sang " + status.getLabel());
+                return "redirect:/payments/" + id;
+            }
+            
+            payment.setStatus(status);
+            paymentService.createOrUpdate(payment);
+            
+            redirectAttributes.addFlashAttribute("success", 
+                "Cập nhật trạng thái giao dịch thành công!");
+            
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", 
+                "Có lỗi xảy ra khi cập nhật trạng thái: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return "redirect:/payments/" + id;
+    }
+
+    private boolean isValidStatusTransition(Payment.Status currentStatus, Payment.Status newStatus) {
+        if (currentStatus == newStatus) {
+            return true;
+        }
+        
+        return switch (currentStatus) {
+            case PENDING -> 
+                newStatus == Payment.Status.SUCCESS || 
+                newStatus == Payment.Status.CANCELLED ||
+                newStatus == Payment.Status.FAILED ||
+                newStatus == Payment.Status.REFUNDED;
+            case CANCELLED, FAILED -> 
+                newStatus == Payment.Status.SUCCESS || 
+                newStatus == Payment.Status.PENDING;
+            case SUCCESS -> 
+                newStatus == Payment.Status.PENDING;
+            case REFUNDED -> false;
+            default -> false;
+        };
     }
 }

@@ -63,7 +63,7 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> 
 
                         <div class="card mb-4">
                             <div class="card-header">
@@ -83,6 +83,50 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-credit-card"></i> Giao dịch</h5>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-hover table-bordered text-center table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th>
+                                            <th>Mã GD</th>
+                                            <th>Mã Booking</th>
+                                            <th>Số tiền</th>
+                                            <th>Phương thức</th>
+                                            <th>Thời gian</th>
+                                            <th>Trạng thái</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="r: ${payments}">
+                                            <td><input type="checkbox" th:value="${r.id}"></td>
+                                            <td>
+                                                <a th:href="@{/payments/{id}(id=${r.id})}" th:text="${r.code}"
+                                                   class="text-decoration-none fw-bold text-primary"></a>
+                                            </td>
+                                            <td>
+                                                <a th:href="@{/bookings/{id}(id=${r.invoice.booking.id})}" th:text="${r.invoice.booking.code}"
+                                                   class="text-decoration-none fw-bold text-primary"></a>
+                                            </td>
+                                            <td th:text="${#numbers.formatDecimal(r.amount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                                            <td th:text="${r.method}"></td>
+                                            <td th:text="${#temporals.format(r.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                                            <td>
+                                                <span th:text="${r.status.label}" 
+                                                      th:class="${r.status.badgeClass}"></span>
+                                            </td>
+                                        </tr>
+                                        <tr th:if="${#lists.isEmpty(payments)}">
+                                            <td colspan="7">Không có giao dịch nào.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Right: Quick Info -->
@@ -96,6 +140,9 @@
                                     <a th:href="@{/invoices/edit/{id}(id=${invoice.id})}" class="btn btn-outline-warning btn-sm">
                                         <i class="fas fa-edit"></i> Chỉnh sửa
                                     </a>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="exportInvoice()">
+                                        <i class="fas fa-download"></i> Xuất hóa đơn
+                                    </button>
                                     <button type="button" class="btn btn-outline-success btn-sm" onclick="printInvoiceDetails()">
                                         <i class="fas fa-print"></i> In thông tin
                                     </button>

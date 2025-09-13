@@ -68,7 +68,7 @@
                                         <div class="col-lg-4"> 
                                             <div class="vertical text-center"> 
                                                 <img th:src="${user.avatar != null ? user.avatar : '/HotelManagementApp/img/default_avatar.svg'}" class="border shadow-sm mb-2" width="149" height="149" alt="avatar" id="avatarPreview"> 
-                                                <input id="avatarInput" type="file" class="form-control" th:field="*{file}" accept="image/*" onchange="previewImage(event)" style="display: none;"/> 
+                                                <input id="avatarInput" type="file" class="form-control" th:field="*{file}" accept="image/*" onchange="previewImage(event, 'avatarPreview')" style="display: none;"/> 
                                                 <div class="d-flex justify-content-center gap-2">
                                                     <!-- Upload -->
                                                     <button type="button" class="btn btn-outline-primary btn-sm"

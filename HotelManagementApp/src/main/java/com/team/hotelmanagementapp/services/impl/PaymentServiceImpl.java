@@ -42,6 +42,15 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    public List<Payment> findByInvoice(int id, Map<String, String> params) {
+        if (params == null) {
+            params = new HashMap<>();
+        }
+        params.put("invoiceId", String.valueOf(id));
+        return this.paymentRepository.find(params);
+    }
+
+    @Override
     public List<Payment> find(Map<String, String> params) {
         return this.paymentRepository.find(params);
     }

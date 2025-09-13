@@ -11,12 +11,25 @@
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
                         <h2 class="mb-1">
-                            <i class="fas fa-door-open"></i>
+                            <i class="fas fa-credit-card"></i>
                             Giao dịch <span class="text-primary" th:text="${payment.code}">-</span>
                         </h2>
                         <span th:class="${payment.status.badgeClass} + ' fs-6'" th:text="${payment.status.label}"></span>
                     </div>
-                    <div>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-info dropdown-toggle text-white me-2" data-bs-toggle="dropdown">
+                            <i class="fas fa-sync-alt"></i> Cập nhật trạng thái
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li th:each="status : ${T(com.team.hotelmanagementapp.pojo.Payment.Status).values()}">
+                                <form th:action="@{/payments/{id}/status(id=${payment.id})}" method="post" class="d-inline">
+                                    <input type="hidden" name="status" th:value="${status.name()}">
+                                    <button type="submit" class="dropdown-item"
+                                            th:disabled="${payment.status == status}"
+                                            th:text="${status.label}">Trạng thái</button>
+                                </form>
+                            </li>
+                        </ul>
                         <a th:href="@{/payments}" class="btn btn-secondary">
                             <i class="fas fa-arrow-left"></i> Quay lại
                         </a>
