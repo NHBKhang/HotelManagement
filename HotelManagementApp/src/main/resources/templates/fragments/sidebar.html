@@ -1,5 +1,6 @@
 <div id="sidebar" class="text-white p-3" th:fragment="sidebar"
-     style="width: 250px; min-height: 100vh; transition: all 0.3s;">
+     style="width: 250px; min-height: 100vh; transition: all 0.3s;"
+     xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
     <!-- Logo + Toggle -->
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -15,22 +16,22 @@
     <!-- Menu -->
     <ul class="nav nav-pills flex-column mb-auto">
 
-        <!-- Trang chủ -->
-        <li>
+        <!-- Trang chủ - Available for ADMIN, MANAGER, ACCOUNTANT -->
+        <li sec:authorize="hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')">
             <a th:href="@{/}" class="nav-link text-white">
                 <i class="fas fa-home me-2"></i> <span>Trang chủ</span>
             </a>
         </li>
 
-        <!-- Quản lý khách hàng -->
-        <li>
+        <!-- Quản lý khách hàng - ADMIN, MANAGER only -->
+        <li sec:authorize="hasAnyRole('ADMIN', 'MANAGER')">
             <a th:href="@{/users}" class="nav-link text-white">
                 <i class="fas fa-user-friends me-2"></i> <span>Khách hàng</span>
             </a>
         </li>
 
-        <!-- Quản lý phòng -->
-        <li>
+        <!-- Quản lý phòng - ADMIN, MANAGER only -->
+        <li sec:authorize="hasAnyRole('ADMIN', 'MANAGER')">
             <a class="nav-link text-white dropdown-toggle" data-bs-toggle="collapse" href="#roomMenu">
                 <i class="fas fa-bed me-2"></i> <span>Phòng</span>
             </a>
@@ -40,8 +41,8 @@
             </div>
         </li>
 
-        <!-- Đặt phòng -->
-        <li>
+        <!-- Đặt phòng - ADMIN, MANAGER only -->
+        <li sec:authorize="hasAnyRole('ADMIN', 'MANAGER')">
             <a class="nav-link text-white dropdown-toggle" data-bs-toggle="collapse" href="#bookingMenu">
                 <i class="fas fa-calendar-check me-2"></i> <span>Đặt phòng</span>
             </a>
@@ -52,8 +53,8 @@
             </div>
         </li>
 
-        <!-- Dịch vụ -->
-        <li>
+        <!-- Dịch vụ - ADMIN, MANAGER only -->
+        <li sec:authorize="hasAnyRole('ADMIN', 'MANAGER')">
             <a class="nav-link text-white dropdown-toggle" data-bs-toggle="collapse" href="#serviceMenu">
                 <i class="fas fa-concierge-bell me-2"></i> <span>Dịch vụ</span>
             </a>
@@ -63,8 +64,8 @@
             </div>
         </li>
 
-        <!-- Hóa đơn & Thanh toán -->
-        <li>
+        <!-- Hóa đơn & Thanh toán - ADMIN, MANAGER, ACCOUNTANT -->
+        <li sec:authorize="hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')">
             <a class="nav-link text-white dropdown-toggle" data-bs-toggle="collapse" href="#billingMenu">
                 <i class="fas fa-file-invoice-dollar me-2"></i> <span>Hóa đơn & Thanh toán</span>
             </a>
@@ -74,8 +75,8 @@
             </div>
         </li>
 
-        <!-- Báo cáo -->
-        <li>
+        <!-- Báo cáo - ADMIN, MANAGER, ACCOUNTANT -->
+        <li sec:authorize="hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')">
             <a class="nav-link text-white dropdown-toggle" data-bs-toggle="collapse" href="#reportMenu">
                 <i class="fas fa-chart-line me-2"></i> <span>Báo cáo</span>
             </a>
@@ -86,8 +87,8 @@
             </div>
         </li>
 
-        <!-- Cài đặt -->
-        <li>
+        <!-- Cài đặt - Available for all authenticated users -->
+        <li sec:authorize="isAuthenticated()">
             <a th:href="@{/settings}" class="nav-link text-white">
                 <i class="fas fa-cog me-2"></i> <span>Cài đặt</span>
             </a>

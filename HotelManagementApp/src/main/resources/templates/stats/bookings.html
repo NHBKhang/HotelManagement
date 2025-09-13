@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Thống kê Booking - Quản lý khách sạn</title>
+    <th:block th:replace="base :: head"></th:block>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <div th:replace="base :: layout(~{::content})">
+        <div th:fragment="content">
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-calendar-check"></i> Thống kê Booking</h2>
+                    <div>
+                        <a th:href="@{/stats}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại Dashboard
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Date Filter -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form method="get" class="row g-3 align-items-end">
+                                    <div class="col-md-4">
+                                        <label for="start" class="form-label">Từ ngày</label>
+                                        <input type="date" class="form-control" id="start" name="start" th:value="${start}">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="end" class="form-label">Đến ngày</label>
+                                        <input type="date" class="form-control" id="end" name="end" th:value="${end}">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-filter"></i> Lọc
+                                        </button>
+                                        <a th:href="@{/stats/bookings}" class="btn btn-outline-secondary ms-2">
+                                            <i class="fas fa-refresh"></i> Reset
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body text-center">
+                                <h2 th:text="${totalBookings ?: 0}">0</h2>
+                                <p class="mb-0">Tổng Booking</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <h2 th:text="${bookingStatusStats.confirmedCount ?: 0}">0</h2>
+                                <p class="mb-0">Đã xác nhận</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body text-center">
+                                <h2 th:text="${bookingStatusStats.checkedInCount ?: 0}">0</h2>
+                                <p class="mb-0">Đã check-in</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-secondary text-white">
+                            <div class="card-body text-center">
+                                <h2 th:text="${bookingStatusStats.checkedOutCount ?: 0}">0</h2>
+                                <p class="mb-0">Đã check-out</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Booking Status Chart -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Phân bổ trạng thái Booking</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="bookingStatusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Bookings -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-clock"></i> Booking gần đây</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Mã</th>
+                                                <th>Khách hàng</th>
+                                                <th>Phòng</th>
+                                                <th>Trạng thái</th>
+                                                <th>Ngày tạo</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="booking : ${recentBookings}">
+                                                <td>
+                                                    <a th:href="@{/bookings/{id}(id=${booking.id})}"
+                                                       th:text="${booking.code}" class="text-decoration-none">BK001</a>
+                                                </td>
+                                                <td th:text="${booking.user.fullName}">Nguyễn Văn A</td>
+                                                <td th:text="${booking.room.code}">P101</td>
+                                                <td>
+                                                    <span class="badge"
+                                                          th:classappend="${booking.status.badgeClass}"
+                                                          th:text="${booking.status.description}">Đã xác nhận</span>
+                                                </td>
+                                                <td th:text="${#temporals.format(booking.createdAt, 'dd/MM/yyyy')}">01/01/2024</td>
+                                            </tr>
+                                            <tr th:if="${#lists.isEmpty(recentBookings)}">
+                                                <td colspan="5" class="text-center text-muted">Không có booking nào</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div sec:authorize="hasAnyRole('ADMIN', 'MANAGER')" class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-tools"></i> Thao tác nhanh</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <a th:href="@{/bookings}" class="btn btn-outline-primary w-100">
+                                            <i class="fas fa-list"></i> Xem tất cả Booking
+                                        </a>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <a th:href="@{/bookings/add}" class="btn btn-outline-success w-100">
+                                            <i class="fas fa-plus"></i> Thêm Booking mới
+                                        </a>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <a th:href="@{/bookings/calendar}" class="btn btn-outline-info w-100">
+                                            <i class="fas fa-calendar"></i> Lịch Booking
+                                        </a>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button onclick="exportBookingData()" class="btn btn-outline-warning w-100">
+                                            <i class="fas fa-download"></i> Xuất báo cáo
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        // Booking Status Chart
+        const bookingStatusData = /*[[${bookingStatusStats}]]*/ {};
+        console.log(bookingStatusData)
+        if (bookingStatusData && Object.keys(bookingStatusData).length > 0) {
+            const statusLabels = [];
+            const statusValues = [];
+            const statusColors = [];
+            
+            if (bookingStatusData.confirmedCount > 0) {
+                statusLabels.push('Đã xác nhận');
+                statusValues.push(bookingStatusData.confirmedCount);
+                statusColors.push('#28a745');
+            }
+            if (bookingStatusData.checkedInCount > 0) {
+                statusLabels.push('Đã check-in');
+                statusValues.push(bookingStatusData.checkedInCount);
+                statusColors.push('#007bff');
+            }
+            if (bookingStatusData.checkedOutCount > 0) {
+                statusLabels.push('Đã check-out');
+                statusValues.push(bookingStatusData.checkedOutCount);
+                statusColors.push('#6c757d');
+            }
+            if (bookingStatusData.cancelledCount > 0) {
+                statusLabels.push('Đã hủy');
+                statusValues.push(bookingStatusData.cancelledCount);
+                statusColors.push('#dc3545');
+            }
+
+            new Chart(document.getElementById('bookingStatusChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{
+                        data: statusValues,
+                        backgroundColor: statusColors,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function exportBookingData() {
+            const start = document.getElementById('start').value;
+            const end = document.getElementById('end').value;
+            
+            let url = '/stats/api/bookings?format=csv';
+            if (start) url += '&start=' + start;
+            if (end) url += '&end=' + end;
+            
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+</html>

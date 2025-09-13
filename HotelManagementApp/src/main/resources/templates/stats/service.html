@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Thống kê Dịch vụ - Quản lý khách sạn</title>
+    <th:block th:replace="base :: head"></th:block>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <div th:replace="base :: layout(~{::content})">
+        <div th:fragment="content">
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-concierge-bell"></i> Thống kê Dịch vụ</h2>
+                    <div>
+                        <a th:href="@{/stats}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại Dashboard
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Date Filter -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form method="get" class="row g-3 align-items-end">
+                                    <div class="col-md-4">
+                                        <label for="start" class="form-label">Từ ngày</label>
+                                        <input type="date" class="form-control" id="start" name="start" th:value="${start}">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="end" class="form-label">Đến ngày</label>
+                                        <input type="date" class="form-control" id="end" name="end" th:value="${end}">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-filter"></i> Lọc
+                                        </button>
+                                        <a th:href="@{/stats/service}" class="btn btn-outline-secondary ms-2">
+                                            <i class="fas fa-refresh"></i> Reset
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body text-center">
+                                <h2 th:text="${totalServiceBookings ?: 0}">0</h2>
+                                <p class="mb-0">Lượt đặt dịch vụ</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <h2 th:text="${#numbers.formatDecimal(totalServiceRevenue ?: 0, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</h2>
+                                <p class="mb-0">Doanh thu dịch vụ</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body text-center">
+                                <h2 th:text="${#lists.size(services) ?: 0}">0</h2>
+                                <p class="mb-0">Tổng dịch vụ</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body text-center">
+                                <h2 th:text="${totalServiceBookings > 0 ? #numbers.formatDecimal(totalServiceRevenue / totalServiceBookings, 0, 'COMMA', 0, 'POINT') + 'đ' : '0đ'}">0đ</h2>
+                                <p class="mb-0">Trung bình/lượt</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Service Revenue Chart -->
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Doanh thu theo dịch vụ</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="serviceRevenueChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Service List -->
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-list"></i> Danh sách dịch vụ</h5>
+                            </div>
+                            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                                <div th:each="service : ${services}" class="mb-3 p-2 border rounded">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1" th:text="${service.name}">Breakfast Buffet</h6>
+                                            <p class="mb-1 text-muted small" th:text="${service.description}">Mô tả dịch vụ</p>
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-success me-2" th:text="${#numbers.formatDecimal(service.price ?: 0, 0, 'COMMA', 0, 'POINT')} + 'đ'">50,000đ</span>
+                                                <small class="text-muted" th:text="'/' + ${service.unit ?: 'Đơn vị'}">/Suất</small>
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge" th:classappend="${service.active} ? 'bg-success' : 'bg-danger'"
+                                                  th:text="${service.active} ? 'Hoạt động' : 'Tạm dừng'">Hoạt động</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div th:if="${#lists.isEmpty(services)}" class="text-center text-muted py-4">
+                                    <i class="fas fa-concierge-bell fa-3x mb-3"></i>
+                                    <br>Chưa có dịch vụ nào
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Service Bookings -->
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-clock"></i> Đặt dịch vụ gần đây</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Booking</th>
+                                                <th>Khách hàng</th>
+                                                <th>Dịch vụ</th>
+                                                <th>Số lượng</th>
+                                                <th>Tổng tiền</th>
+                                                <th>Ngày đặt</th>
+                                                <th>Thao tác</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="sb : ${recentServiceBookings}">
+                                                <td>
+                                                    <a th:href="@{/service-bookings/{id}(id=${sb.id})}" 
+                                                       th:text="${sb.id}" class="text-decoration-none fw-bold">1</a>
+                                                </td>
+                                                <td>
+                                                    <a th:href="@{/bookings/{id}(id=${sb.booking.id})}" 
+                                                       th:text="${sb.booking.code}" class="text-decoration-none text-info">BK001</a>
+                                                </td>
+                                                <td th:text="${sb.booking.user.fullName}">Nguyễn Văn A</td>
+                                                <td>
+                                                    <div>
+                                                        <strong th:text="${sb.service.name}">Breakfast Buffet</strong>
+                                                        <br>
+                                                        <small class="text-muted" th:text="${sb.service.unit ?: 'Đơn vị'}">Suất</small>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-secondary" th:text="${sb.quantity ?: 1}">1</span>
+                                                </td>
+                                                <td>
+                                                    <span class="fw-bold text-success" 
+                                                          th:text="${#numbers.formatDecimal(sb.totalPrice ?: 0, 0, 'COMMA', 0, 'POINT')} + 'đ'">50,000đ</span>
+                                                </td>
+                                                <td th:text="${#temporals.format(sb.createdAt, 'dd/MM/yyyy')}">01/01/2024</td>
+                                                <td>
+                                                    <div class="btn-group" role="group">
+                                                        <a th:href="@{/service-bookings/{id}(id=${sb.id})}" 
+                                                           class="btn btn-sm btn-outline-primary" title="Chi tiết">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <a th:href="@{/service-bookings/edit/{id}(id=${sb.id})}" 
+                                                           class="btn btn-sm btn-outline-warning" title="Sửa">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr th:if="${#lists.isEmpty(recentServiceBookings)}">
+                                                <td colspan="8" class="text-center text-muted">Không có đặt dịch vụ nào</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div sec:authorize="hasAnyRole('ADMIN', 'MANAGER')" class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-tools"></i> Thao tác nhanh</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <a th:href="@{/services}" class="btn btn-outline-primary w-100">
+                                            <i class="fas fa-list"></i> Quản lý dịch vụ
+                                        </a>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <a th:href="@{/services/add}" class="btn btn-outline-success w-100">
+                                            <i class="fas fa-plus"></i> Thêm dịch vụ mới
+                                        </a>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <a th:href="@{/service-bookings}" class="btn btn-outline-info w-100">
+                                            <i class="fas fa-concierge-bell"></i> Quản lý đặt dịch vụ
+                                        </a>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button onclick="exportServiceData()" class="btn btn-outline-warning w-100">
+                                            <i class="fas fa-download"></i> Xuất báo cáo
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        // Service Revenue Chart
+        const services = /*[[${services}]]*/ [];
+        const recentServiceBookings = /*[[${recentServiceBookings}]]*/ [];
+        
+        if (services && services.length > 0 && recentServiceBookings && recentServiceBookings.length > 0) {
+            // Calculate revenue by service
+            const serviceRevenue = {};
+            services.forEach(service => {
+                serviceRevenue[service.name] = 0;
+            });
+            
+            recentServiceBookings.forEach(sb => {
+                if (serviceRevenue.hasOwnProperty(sb.service.name)) {
+                    serviceRevenue[sb.service.name] += sb.totalPrice || 0;
+                }
+            });
+
+            const serviceLabels = Object.keys(serviceRevenue);
+            const serviceValues = Object.values(serviceRevenue);
+            const serviceColors = [
+                '#007bff', '#28a745', '#ffc107', '#dc3545', '#6f42c1', 
+                '#fd7e14', '#20c997', '#6610f2', '#e83e8c', '#17a2b8'
+            ];
+
+            new Chart(document.getElementById('serviceRevenueChart'), {
+                type: 'bar',
+                data: {
+                    labels: serviceLabels,
+                    datasets: [{
+                        label: 'Doanh thu (VND)',
+                        data: serviceValues,
+                        backgroundColor: serviceColors.slice(0, serviceLabels.length),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return new Intl.NumberFormat('vi-VN').format(value) + 'đ';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Doanh thu: ' + new Intl.NumberFormat('vi-VN').format(context.parsed.y) + 'đ';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function exportServiceData() {
+            const start = document.getElementById('start').value;
+            const end = document.getElementById('end').value;
+            
+            let url = '/stats/api/services?format=csv';
+            if (start) url += '&start=' + start;
+            if (end) url += '&end=' + end;
+            
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+</html>

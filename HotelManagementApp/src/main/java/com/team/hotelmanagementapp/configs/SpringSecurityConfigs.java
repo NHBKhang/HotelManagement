@@ -44,17 +44,17 @@ public class SpringSecurityConfigs {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws
             Exception {
         http.csrf(c -> c.disable()).authorizeHttpRequests(requests -> requests
-                .requestMatchers("/", "/stats").authenticated()
+                .requestMatchers("/", "/stats").hasAnyRole("ADMIN", "MANAGER", "ACCOUNTANT")
                 .requestMatchers("/users", "/users/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers("/services", "/services/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers("/service-bookings", "/service-bookings/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers("/bookings", "/bookings/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers("/rooms", "/rooms/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers("/room-types", "/room-types/**").hasAnyRole("ADMIN", "MANAGER")
-                .requestMatchers("/stats", "/stats/**").hasAnyRole("ADMIN", "MANAGER")
-                .requestMatchers("/settings", "/settings/**").hasAnyRole("ADMIN", "MANAGER")
-                .requestMatchers("/payments", "/payments/**").hasAnyRole("ADMIN", "MANAGER")
-                .requestMatchers("/invoices", "/invoices/**").hasAnyRole("ADMIN", "MANAGER")
+                .requestMatchers("/stats", "/stats/**").hasAnyRole("ADMIN", "MANAGER", "ACCOUNTANT")
+                .requestMatchers("/settings", "/settings/**").authenticated()
+                .requestMatchers("/payments", "/payments/**").hasAnyRole("ADMIN", "MANAGER", "ACCOUNTANT")
+                .requestMatchers("/invoices", "/invoices/**").hasAnyRole("ADMIN", "MANAGER", "ACCOUNTANT")
                 .requestMatchers("/resources/**", "/css/**", "/js/**", "/img/**").permitAll()
                 .requestMatchers("/api/**").permitAll())
                 
