@@ -65,8 +65,7 @@ const RoomPage = () => {
 
     const roomType = room.roomType || {};
     const today = new Date().toISOString().split("T")[0];
-    const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
-    const minCheckout = tomorrow.toISOString().split("T")[0];
+    const minCheckout = new Date(new Date(today).getTime() + 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
     const onBook = (e) => {
         e.preventDefault();

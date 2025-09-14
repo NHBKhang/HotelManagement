@@ -24,6 +24,9 @@ const PaymentResultPopup = () => {
                 } catch (err) {
                     console.error("Lỗi kiểm tra thanh toán:", err);
                 }
+            } else if (query.includes("tsf_")) {
+                setTransactionId(params.get("tsf_TransactionNo"));
+                setVisible(true);
             }
         };
         checkVnpayReturn();

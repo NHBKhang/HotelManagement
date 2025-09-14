@@ -42,7 +42,7 @@ public class ServiceBookingRepositoryImpl implements ServiceBookingRepository {
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<ServiceBooking> q = b.createQuery(ServiceBooking.class);
         Root<ServiceBooking> root = q.from(ServiceBooking.class);
-        
+
         // Join with related entities for filtering and display
         Join<ServiceBooking, Booking> bookingJoin = root.join("booking", JoinType.INNER);
         Join<ServiceBooking, Service> serviceJoin = root.join("service", JoinType.INNER);
@@ -101,7 +101,7 @@ public class ServiceBookingRepositoryImpl implements ServiceBookingRepository {
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<ServiceBooking> q = b.createQuery(ServiceBooking.class);
         Root<ServiceBooking> root = q.from(ServiceBooking.class);
-        
+
         Join<ServiceBooking, Booking> bookingJoin = root.join("booking", JoinType.INNER);
         Join<ServiceBooking, Service> serviceJoin = root.join("service", JoinType.INNER);
 
@@ -186,6 +186,7 @@ public class ServiceBookingRepositoryImpl implements ServiceBookingRepository {
                 sb.setService(service);
                 sb.setQuantity(quantity);
                 sb.setTotalPrice(service.getPrice() * quantity);
+                sb.setCode(this.generateCode());
                 s.persist(sb);
                 results.add(sb);
             } else {
@@ -200,10 +201,11 @@ public class ServiceBookingRepositoryImpl implements ServiceBookingRepository {
     public ServiceBooking createOrUpdate(ServiceBooking serviceBooking) {
         Session s = this.factory.getObject().getCurrentSession();
 
+        if (serviceBooking.getCode() == null) {
+            serviceBooking.setCode(this.generateCode());
+        }
+        
         if (serviceBooking.getId() == null) {
-            if (serviceBooking.getCode() == null) {
-                serviceBooking.setCode(this.generateCode());
-            }
             s.persist(serviceBooking);
         } else {
             serviceBooking = s.merge(serviceBooking);

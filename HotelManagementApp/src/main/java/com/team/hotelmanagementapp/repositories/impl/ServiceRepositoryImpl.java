@@ -77,10 +77,11 @@ public class ServiceRepositoryImpl implements ServiceRepository {
     public Service createOrUpdate(Service service) {
         Session s = factory.getObject().getCurrentSession();
 
+        if (service.getCode() == null) {
+            service.setCode(this.generateCode());
+        }
+        
         if (service.getId() == null) {
-            if (service.getCode() == null) {
-                service.setCode(this.generateCode());
-            }
             s.persist(service);
         } else {
             service = s.merge(service);

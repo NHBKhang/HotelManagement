@@ -1,5 +1,7 @@
 package com.team.hotelmanagementapp.services.impl;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.team.hotelmanagementapp.pojo.Booking;
 import com.team.hotelmanagementapp.pojo.Invoice;
 import com.team.hotelmanagementapp.pojo.Payment;
@@ -14,8 +16,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class PaymentServiceImpl implements PaymentService {
@@ -26,6 +30,8 @@ public class PaymentServiceImpl implements PaymentService {
     private BookingService bookingService;
     @Autowired
     private InvoiceService invoiceService;
+    @Autowired
+    private Cloudinary cloudinary;
 
     @Override
     public List<Payment> findAll() {
@@ -87,14 +93,14 @@ public class PaymentServiceImpl implements PaymentService {
 
             if (method == Payment.Method.VNPAY) {
                 Double amount = Double.parseDouble(bodyData.get("amount").toString()) / 100;
-                
+
                 if ("room".equals(bodyData.get("itemType").toString())) {
                     int bookingId = Integer.parseInt(bodyData.get("bookingId").toString());
                     Booking booking = this.bookingService.createByIdAndUsername(bookingId, username, method);
 
                     Invoice invoice = new Invoice(
-                            booking, "INV-" + System.currentTimeMillis(), 
-                            booking.getUser().getEmail(), 
+                            booking, "INV-" + System.currentTimeMillis(),
+                            booking.getUser().getEmail(),
                             amount, Invoice.Status.PAID, LocalDateTime.now());
 
                     payment.setInvoice(invoiceService.createOrUpdate(invoice));
@@ -106,16 +112,58 @@ public class PaymentServiceImpl implements PaymentService {
                 payment.setMethod(method);
                 payment.setBankCode(bodyData.get("bankCode").toString());
                 payment.setTransactionNo(
-                        method.toString() + bodyData.get("transactionNo").toString());
+                        method.toString() + "-" + bodyData.get("transactionNo").toString());
                 payment.setDescription("Đã chuyển khoản vào ngày "
                         + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 
                 payment = this.createOrUpdate(payment);
+            } else if (method == Payment.Method.TRANSFER) {
+                MultipartFile file = (MultipartFile) bodyData.get("file");
+                if (file != null) {
+                    String contentType = file.getContentType();
+                    String resourceType = "auto";
 
-                return payment;
-            } else {
-                return null;
+                    String publicId = "receipt_" + UUID.randomUUID();
+                    if ("application/pdf".equalsIgnoreCase(contentType)) {
+                        publicId += ".pdf";
+                        resourceType = "raw";
+                    }
+
+                    Map res = cloudinary.uploader().upload(file.getBytes(),
+                            ObjectUtils.asMap(
+                                    "resource_type", resourceType,
+                                    "public_id", publicId
+                            ));
+                    payment.setReceiptImage(res.get("secure_url").toString());
+                }
+                
+                Double amount = Double.valueOf(bodyData.get("amount").toString());
+
+                if ("room".equals(bodyData.get("itemType").toString())) {
+                    int bookingId = Integer.parseInt(bodyData.get("bookingId").toString());
+                    Booking booking = this.bookingService.createByIdAndUsername(bookingId, username, method);
+
+                    Invoice invoice = new Invoice(
+                            booking, "INV-" + System.currentTimeMillis(),
+                            booking.getUser().getEmail(),
+                            amount, Invoice.Status.UNPAID, LocalDateTime.now());
+
+                    payment.setInvoice(invoiceService.createOrUpdate(invoice));
+                }
+
+                payment.setAmount(amount);
+                payment.setStatus(Payment.Status.PENDING);
+                payment.setCode(this.paymentRepository.generateCode());
+                payment.setTransactionNo(
+                        method.toString() + "-" + System.currentTimeMillis());
+                payment.setMethod(method);
+                payment.setDescription("Đã chuyển khoản vào ngày "
+                        + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+
+                payment = this.createOrUpdate(payment);
             }
+
+            return payment;
         } catch (Exception e) {
             e.printStackTrace();
             return null;

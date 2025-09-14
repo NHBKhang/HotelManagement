@@ -21,6 +21,7 @@ export const endpoints = {
     'feedbacks': "feedbacks",
     'vnpay-payment': 'payments/vnpay',
     'vnpay-return': 'payments/vnpay-return',
+    'transfer-payment': 'payments/transfer',
     'services': 'services',
 }
 
