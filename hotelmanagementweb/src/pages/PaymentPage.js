@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { endpoints, useAuthAPI } from "../configs/API";
 import { useUserContext } from "../configs/UserContext";
+import { useNotification } from "../utils/toast";
 import PaymentMethodOption from "../components/ui/PaymentMethodOption";
 
 const banks = [
@@ -32,13 +33,13 @@ const paymentOptions = [
                         <select
                             value={body.vnpay.bankCode}
                             onChange={(e) => updateBody("vnpay", "bankCode", e.target.value)}
-                            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-indigo-200 dark:text-black"
-                        >
+                            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-indigo-200 dark:text-black" >
                             {banks.map((bank) => (
-                                <option key={bank.code} value={bank.code}>
+                                <option
+                                    key={bank.code}
+                                    value={bank.code}>
                                     {bank.name}
-                                </option>
-                            ))}
+                                </option>))}
                         </select>
                     </div>
                     <div className="flex flex-col space-y-1">
@@ -46,13 +47,13 @@ const paymentOptions = [
                         <select
                             value={body.vnpay.locale}
                             onChange={(e) => updateBody("vnpay", "locale", e.target.value)}
-                            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-indigo-200 dark:text-black"
-                        >
+                            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-indigo-200 dark:text-black" >
                             {locales.map((l) => (
-                                <option key={l.code} value={l.code}>
+                                <option
+                                    key={l.code}
+                                    value={l.code}>
                                     {l.name}
-                                </option>
-                            ))}
+                                </option>))}
                         </select>
                     </div>
                 </div>
@@ -62,12 +63,9 @@ const paymentOptions = [
                         value={body.vnpay.notes}
                         onChange={(e) => updateBody("vnpay", "notes", e.target.value)}
                         className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-indigo-200 dark:text-black"
-                        rows={3}
-                    />
+                        rows={3} />
                 </div>
-                <p className="text-sm text-gray-500">
-                    Bạn sẽ được chuyển đến cổng thanh toán VNPAY để hoàn tất giao dịch.
-                </p>
+                <p className="text-sm text-gray-500"> Bạn sẽ được chuyển đến cổng thanh toán VNPAY để hoàn tất giao dịch. </p>
             </div>
         )
     },
@@ -76,14 +74,46 @@ const paymentOptions = [
         label: "Thẻ tín dụng / ghi nợ",
         icon: "https://img.icons8.com/color/48/000000/bank-card-back-side.png",
         disabled: true,
-        render: () => (<></>)
+        render: () => <></>
     },
     {
-        value: "bank-transfer",
+        value: "transfer",
         label: "Chuyển khoản ngân hàng",
         icon: "https://img.icons8.com/color/48/000000/bank-building.png",
-        disabled: true,
-        render: () => <></>
+        render: ({ body, updateBody }) => (
+            <div className="space-y-4">
+                <div className="bg-gray-50 dark:bg-slate-800 p-4 rounded-lg border border-gray-200 dark:border-slate-700 space-y-2">
+                    <p><strong>Ngân hàng thụ hưởng:</strong> BIDV</p>
+                    <p><strong>Số tài khoản:</strong> 123456789</p>
+                    <p><strong>Chủ tài khoản:</strong> Công ty ABC</p>
+                    <p>
+                        <strong>Nội dung chuyển khoản:</strong>{" "}
+                        <span className="italic text-indigo-600">
+                            Thanh toan goi tap - [Mã gói] - [Họ tên]
+                        </span>
+                    </p>
+                </div>
+
+                <div className="flex flex-col space-y-2">
+                    <label className="text-sm font-medium">Upload biên lai thanh toán:</label>
+                    <input
+                        type="file"
+                        accept="image/*,application/pdf"
+                        className="file:mr-4 file:py-2 file:px-4
+                                   file:rounded-full file:border-0
+                                   file:text-sm file:font-semibold
+                                   file:bg-indigo-50 file:text-indigo-700
+                                   hover:file:bg-indigo-100
+                                   dark:file:bg-slate-700 dark:file:text-indigo-200"
+                        onChange={(e) => updateBody("transfer", "file", e.target.files[0])}
+                    />
+                </div>
+
+                <p className="text-sm text-gray-500">
+                    Vui lòng chuyển khoản đúng thông tin và upload biên lai để chúng tôi xác nhận thanh toán nhanh chóng.
+                </p>
+            </div>
+        )
     },
     {
         value: "cash",
@@ -104,6 +134,7 @@ const PaymentPage = () => {
 
     const location = useLocation();
     const authAPI = useAuthAPI();
+    const sendNotification = useNotification();
 
     const bookingData = location.state?.bookingData || {};
     const room = bookingData.room || {};
@@ -142,7 +173,6 @@ const PaymentPage = () => {
             });
 
             let res = null;
-            console.info(bookingRes.data)
             if (paymentMethod === 'vnpay') {
                 res = await authAPI.post(endpoints['vnpay-payment'], {
                     itemId: room.id,
@@ -155,10 +185,39 @@ const PaymentPage = () => {
                     locale: body.vnpay.locale,
                     notes: body.vnpay.notes
                 });
+            } else if (paymentMethod === 'transfer') {
+                if (body.transfer.file == null) {
+                    sendNotification({ message: "Vui lòng chọn file biên lai!" }, 'info');
+                    return;
+                }
+
+                let formData = new FormData();
+                formData.append('file', body.transfer.file);
+                formData.append('amount', bookingData.total);
+                formData.append('itemId', room.id);
+                formData.append('itemType', 'room');
+                formData.append('bookingId', bookingRes.data.id);
+
+                res = await authAPI.post(endpoints['transfer-payment'],
+                    formData, {
+                    headers: {
+                        "Content-Type": "multipart/form-data"
+                    }
+                });
             }
 
-            if (res.data && res.data.payUrl) {
-                window.location.href = res.data.payUrl;
+            let data = res.data;
+            if (data) {
+                if (data.payUrl) {
+                    window.location.href = data.payUrl;
+                } else if (data.code === 1) {
+                    window.location.href = `${window.location.origin}/my-bookings/${(bookingRes.data.id)}?tsf_TransactionNo=${data.payment.transactionNo}`;
+
+                } else {
+                    sendNotification({ message: "Phản hồi không hợp lệ!" }, 'error');
+                }
+            } else {
+                sendNotification({ message: "Không thể lấy được link thanh toán" }, 'error');
             }
         } catch (err) {
             console.error(err);

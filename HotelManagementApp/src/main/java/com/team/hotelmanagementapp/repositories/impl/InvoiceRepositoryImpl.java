@@ -1,7 +1,9 @@
 package com.team.hotelmanagementapp.repositories.impl;
 
+import com.team.hotelmanagementapp.pojo.Booking;
 import com.team.hotelmanagementapp.pojo.Invoice;
 import com.team.hotelmanagementapp.pojo.Payment;
+import com.team.hotelmanagementapp.repositories.BookingRepository;
 import com.team.hotelmanagementapp.repositories.InvoiceRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -25,6 +27,8 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
 
     @Autowired
     private LocalSessionFactoryBean factory;
+    @Autowired
+    private BookingRepository bookingRepository;
 
     @Override
     public List<Invoice> findAll() {
@@ -124,6 +128,20 @@ public class InvoiceRepositoryImpl implements InvoiceRepository {
             s.persist(invoice);
         } else {
             invoice = s.merge(invoice);
+        }
+
+        Booking booking = invoice.getBooking();
+        if (booking != null
+                && (booking.getStatus() != Booking.Status.CHECKED_IN
+                || booking.getStatus() != Booking.Status.CHECKED_OUT
+                || booking.getStatus() != Booking.Status.CANCELLED)) {
+            if (invoice.getStatus() == Invoice.Status.PAID) {
+                booking.setStatus(Booking.Status.CONFIRMED);
+            } else {
+                booking.setStatus(Booking.Status.PENDING);
+            }
+
+            bookingRepository.createOrUpdate(booking);
         }
 
         return invoice;

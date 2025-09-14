@@ -100,7 +100,9 @@ public class ApiPaymentController {
 
     @PostMapping(path = "/transfer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> doTransferPayment(
-            @RequestParam("package") int packageId,
+            @RequestParam("itemId") int itemId,
+            @RequestParam("itemType") String itemType,
+            @RequestParam("bookingId") int bookingId,
             @RequestParam("amount") double amount,
             @RequestParam("file") MultipartFile file,
             HttpServletRequest request) {
@@ -123,7 +125,9 @@ public class ApiPaymentController {
             }
 
             Map<String, Object> bodyData = new HashMap<>();
-            bodyData.put("package", packageId);
+            bodyData.put("itemId", itemId);
+            bodyData.put("itemType", itemType);
+            bodyData.put("bookingId", bookingId);
             bodyData.put("amount", amount);
             bodyData.put("file", file);
 
@@ -132,7 +136,7 @@ public class ApiPaymentController {
             if (payment != null) {
                 res.put("code", 1);
                 res.put("message", "Thanh toán thành công");
-                res.put("paymentCode", payment.getCode());
+                res.put("payment", payment);
             } else {
                 res.put("code", 0);
                 res.put("message", "Thanh toán thất bại");

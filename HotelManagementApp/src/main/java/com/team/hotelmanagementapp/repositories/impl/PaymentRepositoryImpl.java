@@ -119,7 +119,7 @@ public class PaymentRepositoryImpl implements PaymentRepository {
             } else {
                 invoice.setStatus(Invoice.Status.UNPAID);
             }
-            s.merge(invoice);
+            invoiceRepository.createOrUpdate(invoice);
         }
 
         return payment;
