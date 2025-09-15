@@ -140,9 +140,6 @@
                                     <a th:href="@{/invoices/edit/{id}(id=${invoice.id})}" class="btn btn-outline-warning btn-sm">
                                         <i class="fas fa-edit"></i> Chỉnh sửa
                                     </a>
-<!--                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="exportInvoice()">-->
-<!--                                        <i class="fas fa-download"></i> Xuất hóa đơn-->
-<!--                                    </button>-->
                                     <a th:href="@{/invoices/{id}/export-pdf(id=${invoice.id})}" class="btn btn-outline-primary btn-sm">
                                         <i class="fas fa-download"></i> Xuất hóa đơn
                                     </a>
@@ -176,19 +173,6 @@
     <script>
         function printInvoiceDetails() {
             window.print();
-        }
-        
-        function exportInvoice() {
-            const invoiceId = /*[[${invoice.id}]]*/ 0;
-            const url = `/invoices/${invoiceId}/export-pdf`;
-            
-            // Create a temporary link and trigger download
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `invoice_${/*[[${invoice.invoiceNumber}]]*/ 'INV'}.pdf`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
         }
     </script>
 </body>
