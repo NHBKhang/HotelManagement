@@ -1,5 +1,5 @@
 <div id="sidebar" class="text-white p-3" th:fragment="sidebar"
-     style="width: 250px; min-height: 100vh; transition: all 0.3s;"
+     style="width: 250px; min-height: 100vh; position: fixed; top: 0; left: 0; background-color: #212529; transition: all 0.3s; z-index: 1030;"
      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
     <!-- Logo + Toggle -->
@@ -64,14 +64,14 @@
             </div>
         </li>
 
-        <!-- Hóa đơn & Thanh toán - ADMIN, MANAGER, ACCOUNTANT -->
+        <!-- Hóa đơn & Giao dịch - ADMIN, MANAGER, ACCOUNTANT -->
         <li sec:authorize="hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')">
             <a class="nav-link text-white dropdown-toggle" data-bs-toggle="collapse" href="#billingMenu">
-                <i class="fas fa-file-invoice-dollar me-2"></i> <span>Hóa đơn & Thanh toán</span>
+                <i class="fas fa-file-invoice-dollar me-2"></i> <span>Hóa đơn & Giao dịch</span>
             </a>
             <div class="collapse ps-3" id="billingMenu">
                 <a th:href="@{/invoices}" class="nav-link text-white">Hóa đơn</a>
-                <a th:href="@{/payments}" class="nav-link text-white">Thanh toán</a>
+                <a th:href="@{/payments}" class="nav-link text-white">Giao dịch</a>
             </div>
         </li>
 

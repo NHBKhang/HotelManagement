@@ -112,6 +112,16 @@ public class ApiBookingController {
         }
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> retrieve(@PathVariable("id") int id,
+            HttpServletRequest request) {
+        try {
+            return new ResponseEntity<>(this.bookingService.getById(id), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Lỗi tạo đơn đặt phòng: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @GetMapping("/my-bookings")
     public ResponseEntity<?> getMyBookings(HttpServletRequest request,
             @RequestParam Map<String, String> params) {

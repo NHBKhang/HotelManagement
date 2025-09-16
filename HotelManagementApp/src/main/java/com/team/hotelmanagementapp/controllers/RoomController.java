@@ -113,7 +113,7 @@ public class RoomController {
             }
             return "redirect:/rooms/edit/" + r.getId();
         } catch (org.hibernate.exception.ConstraintViolationException e) {
-            redirectAttributes.addFlashAttribute("error", "Tên người dùng đã tồn tại!");
+            redirectAttributes.addFlashAttribute("error", "Tên phòng đã tồn tại!");
             return "redirect:/rooms/add";
         } catch (Exception e) {
             e.printStackTrace();

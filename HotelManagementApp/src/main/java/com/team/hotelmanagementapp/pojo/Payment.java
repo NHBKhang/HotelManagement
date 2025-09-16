@@ -42,7 +42,7 @@ public class Payment implements Serializable {
     }
 
     public enum Method {
-        VNPAY, MOMO, PAYPAL, TRANSFER
+        VNPAY, MOMO, PAYPAL, TRANSFER, CASH
     }
 
     private static final long serialVersionUID = 1L;

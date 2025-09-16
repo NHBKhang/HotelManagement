@@ -11,6 +11,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -40,7 +41,7 @@ public class ServiceBooking implements Serializable {
     @JoinColumn(name = "service_id", nullable = false)
     private Service service;
 
-    @Column(nullable = false, name = "total_price")
+    @Transient
     private Double totalPrice;
 
     @Column(nullable = false)
@@ -53,11 +54,10 @@ public class ServiceBooking implements Serializable {
     public ServiceBooking() {
     }
 
-    public ServiceBooking(Integer id, Booking booking, Service service, Double totalPrice, Integer quantity) {
+    public ServiceBooking(Integer id, Booking booking, Service service, Integer quantity) {
         this.id = id;
         this.booking = booking;
         this.service = service;
-        this.totalPrice = totalPrice;
         this.quantity = quantity;
     }
 
@@ -85,14 +85,6 @@ public class ServiceBooking implements Serializable {
         this.service = service;
     }
 
-    public Double getTotalPrice() {
-        return totalPrice;
-    }
-
-    public void setTotalPrice(Double totalPrice) {
-        this.totalPrice = totalPrice;
-    }
-
     public Integer getQuantity() {
         return quantity;
     }
@@ -114,7 +106,7 @@ public class ServiceBooking implements Serializable {
         int hash = 3;
         hash = 53 * hash + Objects.hashCode(this.booking);
         hash = 53 * hash + Objects.hashCode(this.service);
-        hash = 53 * hash + Objects.hashCode(this.totalPrice);
+        hash = 53 * hash + Objects.hashCode(this.getTotalPrice());
         hash = 53 * hash + Objects.hashCode(this.quantity);
         return hash;
     }
@@ -145,7 +137,7 @@ public class ServiceBooking implements Serializable {
 
     @Override
     public String toString() {
-        return "ServiceBooking{" + "booking=" + booking + ", service=" + service + ", totalPrice=" + totalPrice + '}';
+        return "ServiceBooking{" + "booking=" + booking + ", service=" + service + ", totalPrice=" + getTotalPrice() + '}';
     }
 
     public String getCode() {
@@ -155,5 +147,14 @@ public class ServiceBooking implements Serializable {
     public void setCode(String code) {
         this.code = code;
     }
-    
+
+    public Double getTotalPrice() {
+        return this.service != null && this.service.getPrice() != null 
+                ? this.service.getPrice() * this.quantity : 0;
+    }
+
+    public void setTotalPrice(Double totalPrice) {
+        this.totalPrice = totalPrice;
+    }
+
 }

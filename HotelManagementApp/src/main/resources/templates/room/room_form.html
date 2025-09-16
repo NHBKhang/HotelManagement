@@ -165,7 +165,7 @@
     <script th:inline="javascript">
         renderDynamicDropdown({
         containerId: 'room-type-dropdown',
-                apiUrl: [[@{/api/room - types}]],
+                apiUrl: /*[[@{/api/room-types}]]*/,
                 buildOptionText: item => item.name,
                 value: {
                 id: [[${room.roomType.id}]],
@@ -174,8 +174,8 @@
                 required: true
         });
         function removeImage() {
-        document.getElementById("imagePreview").src = "/HotelManagementApp/img/default_room.jpg";
-        document.getElementById("imageInput").value = "";
+            document.getElementById("imagePreview").src = "/HotelManagementApp/img/default_room.jpg";
+            document.getElementById("imageInput").value = "";
         }
     </script>
 </body>

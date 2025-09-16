@@ -42,6 +42,15 @@
     background-color: whitesmoke;
 }
 
+#content {
+    margin-left: 250px;
+    transition: margin-left 0.3s;
+}
+
+#sidebar.collapsed ~ #content {
+    margin-left: 0;
+}
+
 form.styled-form .form-label {
     font-weight: 600;
     color: #495057;
@@ -67,13 +76,15 @@ form.styled-form .form-select:focus {
 
 form.styled-form input[required],
 form.styled-form select[required],
-form.styled-form button.form-select.required {
+form.styled-form button.form-select.required,
+form.styled-form button.form-control.required  {
     border-bottom: 2px solid #e74c3c;
 }
 
 form.styled-form input:not([type="file"]),
 form.styled-form select,
-form.styled-form button.form-select {
+form.styled-form button.form-select,
+form.styled-form button.form-control {
     border-top: none !important;
     border-left: none !important;
     border-right: none !important;

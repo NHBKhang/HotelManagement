@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const toggleBtn = document.getElementById("toggleBtn");
     const sidebar = document.getElementById("sidebar");
     const dropdownLinks = document.querySelectorAll("#sidebar .dropdown-toggle");
+    const content = document.getElementById('content');
 
     toggleBtn.addEventListener("click", function () {
         sidebar.classList.toggle("collapsed");
@@ -66,7 +67,7 @@ function previewImage(event, elementId = 'imagePreview') {
 
     if (file) {
         reader.readAsDataURL(file);
-    }
+}
 }
 
 function removeAvatar() {
@@ -89,15 +90,28 @@ setTimeout(function () {
 }, time);
 
 function showMessage(type, message) {
+    type = type || "danger";
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
     const messageContainer = document.querySelector("#messageContainer");
     const alertDiv = document.createElement("div");
     alertDiv.classList.add("alert", `alert-${type}`, "alert-dismissible", "fade", "show");
     alertDiv.setAttribute("role", "alert");
     alertDiv.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'}"></i>
-                <span>${message}</span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
+        <i class="fas fa-${
+            type === 'success'
+            ? 'check-circle'
+            : type === 'danger'
+            ? 'exclamation-circle'
+            : 'info-circle'
+            }"></i>
+        <span>${message}</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
     messageContainer.appendChild(alertDiv);
 
     setTimeout(() => {
@@ -178,6 +192,11 @@ function deleteAll(url, entityName = "mục", redirectUrl = null) {
 }
 }
 
+function getParam(name) {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(name);
+}
+
 function renderDynamicDropdown( {
 containerId,
         apiUrl,
@@ -186,9 +205,12 @@ containerId,
         pageSize = 10,
         placeholder = '',
         value = null,
+        defaultId = null,
         allowNull = false,
-        required = false
-        }) {
+        required = false,
+        readonly = false,
+        onSelect = null
+}) {
     let page = 1;
     let isLoading = false;
     let allLoaded = false;
@@ -204,167 +226,197 @@ containerId,
 
     // Button hiển thị giá trị
     const tempBtn = document.createElement('button');
-    tempBtn.classList.add('form-select');
     tempBtn.type = 'button';
     tempBtn.style.height = '37.6px';
     tempBtn.style.textAlign = 'left';
     if (required) {
         tempBtn.classList.add('required');
     }
+    if (readonly) {
+        tempBtn.classList.add('bg-light');
+        tempBtn.setAttribute('disabled', 'disabled');
+        tempBtn.classList.add('form-control');
+    } else {
+        tempBtn.classList.add('form-select');
+    }
+
+    function setValue(v) {
+        if (!v) {
+            tempBtn.innerText = placeholder || (allowNull ? "-- Không chọn --" : "Chọn...");
+            tempInput.value = "";
+            return;
+        }
+        try {
+            tempBtn.innerText = buildOptionText(v);
+        } catch (e) {
+            console.warn("buildOptionText error, dùng fallback:", e);
+            tempBtn.innerText = v.label || placeholder || "Chọn...";
+        }
+        tempInput.value = v.id;
+        if (typeof onSelect === "function")
+            onSelect(v);
+    }
 
     // Nếu có giá trị ban đầu thì hiển thị
     if (value && value.id) {
-        try {
-            tempBtn.innerText = buildOptionText(value);
-        } catch (e) {
-            console.warn("buildOptionText error, dùng fallback:", e);
-            tempBtn.innerText = value.label || placeholder || "Chọn...";
-        }
-        tempInput.value = value.id;
+        setValue(value);
+    } else if (defaultId) {
+        fetch(`${apiUrl}/${defaultId}`)
+                .then(res => {
+                    if (!res.ok)
+                        throw new Error(`Không tìm thấy ID = ${defaultId}`);
+                    return res.json();
+                })
+                .then(data => setValue(data))
+                .catch(err => {
+                    console.warn("Fetch default value lỗi:", err);
+                    setValue(null);
+                });
     } else {
-        tempBtn.innerText = placeholder || (allowNull ? "-- Không chọn --" : "Chọn...");
-        tempInput.value = "";
+        setValue(null);
     }
-
-    // Search input
-    const searchContainer = document.createElement('div');
-    searchContainer.style.padding = '10px';
-    searchContainer.style.position = 'sticky';
-    searchContainer.style.top = '0';
-    searchContainer.style.background = 'white';
-    const searchInput = document.createElement('input');
-    searchInput.type = 'text';
-    searchInput.classList.add('form-control');
-
-    // Dropdown container
-    const dropdown = document.createElement('div');
-    dropdown.classList.add('dropdown-menu');
-    dropdown.style.maxHeight = '300px';
-    dropdown.style.overflowX = 'hidden';
-    dropdown.style.overflowY = 'auto';
-    dropdown.style.paddingTop = '0';
 
     container.prepend(tempBtn);
-    container.appendChild(dropdown);
-    dropdown.appendChild(searchContainer);
-    searchContainer.appendChild(searchInput);
+    if (!readonly) {
+        // Search input
+        const searchContainer = document.createElement('div');
+        searchContainer.style.padding = '10px';
+        searchContainer.style.position = 'sticky';
+        searchContainer.style.top = '0';
+        searchContainer.style.background = 'white';
 
-    if (allowNull) {
-        const nullOption = document.createElement('div');
-        nullOption.classList.add('dropdown-item', 'text-muted');
-        nullOption.textContent = "-- Không chọn --";
-        nullOption.style.cursor = "pointer";
-        nullOption.onclick = () => {
-            tempInput.value = "";
-            tempBtn.innerText = placeholder || "-- Không chọn --";
-            dropdown.style.display = 'none';
-        };
-        dropdown.appendChild(nullOption);
-    }
+        const searchInput = document.createElement('input');
+        searchInput.type = 'text';
+        searchInput.classList.add('form-control');
 
-    function loadData(reset = false, forceReset = false) {
-        if ((isLoading || allLoaded) && !forceReset)
-            return;
+        // Dropdown container
+        const dropdown = document.createElement('div');
+        dropdown.classList.add('dropdown-menu');
+        dropdown.style.maxHeight = '300px';
+        dropdown.style.overflowX = 'hidden';
+        dropdown.style.overflowY = 'auto';
+        dropdown.style.paddingTop = '0';
 
-        if (reset) {
-            page = 1;
-            allLoaded = false;
-            dropdown.innerHTML = '';
-            dropdown.appendChild(searchContainer);
+        container.appendChild(dropdown);
+        dropdown.appendChild(searchContainer);
+        searchContainer.appendChild(searchInput);
 
-            if (allowNull) { // thêm lại option null nếu reset
-                const nullOption = document.createElement('div');
-                nullOption.classList.add('dropdown-item', 'text-muted');
-                nullOption.textContent = "-- Không chọn --";
-                nullOption.style.cursor = "pointer";
-                nullOption.onclick = () => {
-                    tempInput.value = "";
-                    tempBtn.innerText = placeholder || "-- Không chọn --";
-                    dropdown.style.display = 'none';
-                };
-                dropdown.appendChild(nullOption);
+        if (allowNull) {
+            const nullOption = document.createElement('div');
+            nullOption.classList.add('dropdown-item', 'text-muted');
+            nullOption.textContent = "-- Không chọn --";
+            nullOption.style.cursor = "pointer";
+            nullOption.onclick = () => {
+                tempInput.value = "";
+                tempBtn.innerText = placeholder || "-- Không chọn --";
+                dropdown.style.display = 'none';
+            };
+            dropdown.appendChild(nullOption);
+        }
+
+        function loadData(reset = false, forceReset = false) {
+            if ((isLoading || allLoaded) && !forceReset)
+                return;
+
+            if (reset) {
+                page = 1;
+                allLoaded = false;
+                dropdown.innerHTML = '';
+                dropdown.appendChild(searchContainer);
+
+                if (allowNull) { // thêm lại option null nếu reset
+                    const nullOption = document.createElement('div');
+                    nullOption.classList.add('dropdown-item', 'text-muted');
+                    nullOption.textContent = "-- Không chọn --";
+                    nullOption.style.cursor = "pointer";
+                    nullOption.onclick = () => {
+                        tempInput.value = "";
+                        tempBtn.innerText = placeholder || "-- Không chọn --";
+                        dropdown.style.display = 'none';
+                    };
+                    dropdown.appendChild(nullOption);
+                }
             }
-        }
 
-        isLoading = true;
+            isLoading = true;
 
-        // Spinner hiển thị khi loading
-        const spinner = document.createElement('div');
-        spinner.classList.add('dropdown-item', 'text-center', 'text-muted');
-        spinner.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Đang tải...`;
-        dropdown.appendChild(spinner);
+            // Spinner hiển thị khi loading
+            const spinner = document.createElement('div');
+            spinner.classList.add('dropdown-item', 'text-center', 'text-muted');
+            spinner.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Đang tải...`;
+            dropdown.appendChild(spinner);
 
-        const queryString = new URLSearchParams({
-            page: page,
-            size: pageSize,
-            kw: searchInput.value,
-            ...params
-        }).toString();
+            const queryString = new URLSearchParams({
+                page: page,
+                size: pageSize,
+                kw: searchInput.value,
+                ...params
+            }).toString();
 
-        fetch(`${apiUrl}?${queryString}`)
-                .then(res => res.json())
-                .then(data => {
-                    spinner.remove();
-            
-                    if (!data.results || data.results.length === 0) {
-                        if (reset) {
-                            dropdown.replaceChildren(searchContainer);
-                            dropdown.insertAdjacentHTML('beforeend', "<div class='dropdown-item text-muted'>Không tìm thấy</div>");
+            fetch(`${apiUrl}?${queryString}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        spinner.remove();
+
+                        if (!data.results || data.results.length === 0) {
+                            if (reset) {
+                                dropdown.replaceChildren(searchContainer);
+                                dropdown.insertAdjacentHTML('beforeend', "<div class='dropdown-item text-muted'>Không tìm thấy</div>");
+                            }
+                            allLoaded = true;
+                            return;
                         }
-                        allLoaded = true;
-                        return;
-                    }
 
-                    data.results.forEach(item => {
-                        const div = document.createElement('div');
-                        div.classList.add('dropdown-item');
-                        div.style.cursor = 'pointer';
-                        div.textContent = buildOptionText(item);
-                        div.dataset.id = item.id;
-                        div.onclick = () => {
-                            tempInput.value = item.id;
-                            tempBtn.innerText = buildOptionText(item);
-                            dropdown.style.display = 'none';
-                        };
-                        dropdown.appendChild(div);
+                        data.results.forEach(item => {
+                            const div = document.createElement('div');
+                            div.classList.add('dropdown-item');
+                            div.style.cursor = 'pointer';
+                            div.textContent = buildOptionText(item);
+                            div.dataset.id = item.id;
+                            div.onclick = () => {
+                                setValue(item);
+                                dropdown.style.display = 'none';
+                            };
+                            dropdown.appendChild(div);
+                        });
+
+                        if (!data || !data.hasNext) {
+                            allLoaded = true;
+                        } else {
+                            page++;
+                        }
+                    })
+                    .finally(() => {
+                        isLoading = false;
+                        searchInput.focus();
                     });
-
-                    if (!data || !data.hasNext) {
-                        allLoaded = true;
-                    } else {
-                        page++;
-                    }
-                })
-                .finally(() => {
-                    isLoading = false;
-                    searchInput.focus();
-                });
-    }
-
-    tempBtn.addEventListener('click', function () {
-        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-        if (dropdown.style.display === 'block') {
-            loadData(true);
-            dropdown.style.width = `${tempBtn.offsetWidth}px`;
-            searchInput.style.width = `calc(${tempBtn.offsetWidth}px - 30px)`;
-            searchInput.focus();
         }
-    });
 
-    document.addEventListener('click', function (e) {
-        if (!container.contains(e.target)) {
-            dropdown.style.display = 'none';
-        }
-    });
+        tempBtn.addEventListener('click', function () {
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            if (dropdown.style.display === 'block') {
+                loadData(true);
+                dropdown.style.width = `${tempBtn.offsetWidth}px`;
+                searchInput.style.width = `calc(${tempBtn.offsetWidth}px - 30px)`;
+                searchInput.focus();
+            }
+        });
 
-    searchInput.addEventListener('input', function () {
-        loadData(true, true);
-    });
+        document.addEventListener('click', function (e) {
+            if (!container.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
 
-    dropdown.addEventListener('scroll', function () {
-        if (this.scrollTop + this.clientHeight >= this.scrollHeight - 5) {
-            loadData();
-        }
-    });
+        searchInput.addEventListener('input', function () {
+            loadData(true, true);
+        });
+
+        dropdown.addEventListener('scroll', function () {
+            if (this.scrollTop + this.clientHeight >= this.scrollHeight - 5) {
+                loadData();
+            }
+        });
+}
 }
 

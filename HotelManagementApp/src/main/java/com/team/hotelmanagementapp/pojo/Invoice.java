@@ -1,5 +1,6 @@
 package com.team.hotelmanagementapp.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -23,6 +24,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "invoice")
+@JsonIgnoreProperties(value = {"payments"}, allowSetters = true)
 @NamedQueries({
     @NamedQuery(name = "Invoice.findAll", query = "SELECT u FROM Invoice u"),
     @NamedQuery(name = "Invoice.findById", query = "SELECT u FROM Invoice u WHERE u.id = :id")})

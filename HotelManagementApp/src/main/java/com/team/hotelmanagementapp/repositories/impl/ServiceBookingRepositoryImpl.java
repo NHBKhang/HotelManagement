@@ -185,7 +185,6 @@ public class ServiceBookingRepositoryImpl implements ServiceBookingRepository {
                 sb.setBooking(b);
                 sb.setService(service);
                 sb.setQuantity(quantity);
-                sb.setTotalPrice(service.getPrice() * quantity);
                 sb.setCode(this.generateCode());
                 s.persist(sb);
                 results.add(sb);
