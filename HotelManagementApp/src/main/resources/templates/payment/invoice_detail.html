@@ -183,9 +183,9 @@
                                     <a th:href="@{/invoices/edit/{id}(id=${invoice.id})}" class="btn btn-outline-warning btn-sm">
                                         <i class="fas fa-edit"></i> Chỉnh sửa
                                     </a>
-                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="exportInvoice()">
+                                    <a th:href="@{/invoices/{id}/export-pdf(id=${invoice.id})}" class="btn btn-outline-primary btn-sm">
                                         <i class="fas fa-download"></i> Xuất hóa đơn
-                                    </button>
+                                    </a>
                                     <button type="button" class="btn btn-outline-success btn-sm" onclick="printInvoiceDetails()">
                                         <i class="fas fa-print"></i> In thông tin
                                     </button>
