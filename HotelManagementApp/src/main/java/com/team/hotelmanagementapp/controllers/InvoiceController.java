@@ -147,6 +147,10 @@ public class InvoiceController {
         redirectAttributes.addFlashAttribute("success",
                 String.format("Đã cập nhật trạng thái cho %d giao dịch.", updated));
 
+        String referer = request.getHeader("Referer");
+        return "redirect:" + (referer != null ? referer : "/invoices");
+    }
+
     @GetMapping("/{id}/export-pdf")
     public ResponseEntity<byte[]> exportInvoicePdf(@PathVariable(value = "id") int id) {
         try {
@@ -383,9 +387,5 @@ public class InvoiceController {
         }
         
         return out.toByteArray();
-    }
-
-        String referer = request.getHeader("Referer");
-        return "redirect:" + (referer != null ? referer : "/invoices");
     }
 }
