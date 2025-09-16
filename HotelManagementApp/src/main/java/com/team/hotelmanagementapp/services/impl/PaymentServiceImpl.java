@@ -66,6 +66,16 @@ public class PaymentServiceImpl implements PaymentService {
         if (payment.getStatus() == null || payment.getStatus().getLabel().isEmpty()) {
             payment.setStatus(Payment.Status.PENDING);
         }
+        if (payment.getTransactionNo() == null) {
+            payment.setTransactionNo(payment.getMethod().toString() + System.currentTimeMillis());
+        }
+        if (payment.getCode() == null) {
+            payment.setCode(this.paymentRepository.generateCode());
+        }
+        if (payment.getDescription() == null) {
+            payment.setDescription("Đã trả tiền vào ngày "
+                    + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        }
 
         return this.paymentRepository.createOrUpdate(payment);
     }
@@ -112,7 +122,7 @@ public class PaymentServiceImpl implements PaymentService {
                 payment.setMethod(method);
                 payment.setBankCode(bodyData.get("bankCode").toString());
                 payment.setTransactionNo(
-                        method.toString() + "-" + bodyData.get("transactionNo").toString());
+                        method.toString() + bodyData.get("transactionNo").toString());
                 payment.setDescription("Đã chuyển khoản vào ngày "
                         + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 
@@ -136,7 +146,7 @@ public class PaymentServiceImpl implements PaymentService {
                             ));
                     payment.setReceiptImage(res.get("secure_url").toString());
                 }
-                
+
                 Double amount = Double.valueOf(bodyData.get("amount").toString());
 
                 if ("room".equals(bodyData.get("itemType").toString())) {
@@ -155,7 +165,7 @@ public class PaymentServiceImpl implements PaymentService {
                 payment.setStatus(Payment.Status.PENDING);
                 payment.setCode(this.paymentRepository.generateCode());
                 payment.setTransactionNo(
-                        method.toString() + "-" + System.currentTimeMillis());
+                        method.toString() + System.currentTimeMillis());
                 payment.setMethod(method);
                 payment.setDescription("Đã chuyển khoản vào ngày "
                         + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
@@ -182,5 +192,10 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public long count(Map<String, String> params) {
         return this.paymentRepository.count(params);
+    }
+
+    @Override
+    public int updateStatuses(List<Integer> ids, Payment.Status status) {
+        return this.paymentRepository.updateStatuses(ids, status);
     }
 }

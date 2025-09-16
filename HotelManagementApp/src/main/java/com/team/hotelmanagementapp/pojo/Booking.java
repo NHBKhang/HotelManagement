@@ -13,6 +13,7 @@ import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -23,7 +24,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "booking")
-@JsonIgnoreProperties(value = {"feedbacks", "services"}, allowSetters = true)
+@JsonIgnoreProperties(value = {"feedbacks", "services", "invoices"}, allowSetters = true)
 @NamedQueries({
     @NamedQuery(name = "Booking.findAll", query = "SELECT u FROM Booking u"),
     @NamedQuery(name = "Booking.findById", query = "SELECT u FROM Booking u WHERE u.id = :id")})
@@ -101,6 +102,15 @@ public class Booking implements Serializable {
 
     @OneToMany(mappedBy = "booking", orphanRemoval = true)
     private List<ServiceBooking> services;
+
+    @OneToMany(mappedBy = "booking", orphanRemoval = true)
+    private List<Invoice> invoices;
+
+    @Transient
+    private Double totalAmount;
+    
+    @Transient
+    private Double balance;
 
     public Booking() {
     }
@@ -259,6 +269,30 @@ public class Booking implements Serializable {
 
     public void setServices(List<ServiceBooking> services) {
         this.services = services;
+    }
+
+    public Double getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(Double totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public List<Invoice> getInvoices() {
+        return invoices;
+    }
+
+    public void setInvoices(List<Invoice> invoices) {
+        this.invoices = invoices;
+    }
+
+    public Double getBalance() {
+        return balance;
+    }
+
+    public void setBalance(Double balance) {
+        this.balance = balance;
     }
 
 }

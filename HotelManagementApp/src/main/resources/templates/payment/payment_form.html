@@ -1,0 +1,213 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title th:text="${payment.id != null} ? 'Chỉnh sửa Giao dịch - Quản lý khách sạn' : 'Thêm Giao dịch - Quản lý khách sạn'"></title>
+    <th:block th:replace="base :: head"></th:block>
+</head>
+<body>
+    <div th:replace="base :: layout(~{::content})">
+        <div th:fragment="content">
+            <div class="container">
+                <h2 class="text-center mb-4">
+                    <span th:if="${payment.id != null}">
+                        <i class="fa-solid fa-pen-to-square me-2"></i> Chỉnh sửa Giao dịch
+                    </span>
+                    <span th:unless="${payment.id != null}">
+                        <i class="fa-solid fa-plus me-2"></i> Thêm Giao dịch
+                    </span>
+                </h2>
+
+                <form th:action="@{/payments/save}" method="post" th:object="${payment}"
+                      class="styled-form" enctype="multipart/form-data">
+                    <!-- Action buttons -->
+                    <div class="my-3">
+                        <button type="submit" class="btn btn-success me-2">
+                            <i class="fa-solid fa-save me-1"></i>
+                            <span th:text="${payment.id != null} ? 'Cập nhật' : 'Lưu'"></span>
+                        </button>
+                        <button type="button" class="btn btn-danger" th:if="${payment.id != null}"
+                                th:onclick="|confirmAndRequest('@{/payments/delete/{id}(id=${payment.id})}', '@{/payments}')|">
+                            <i class="fa-solid fa-trash me-1"></i> Xóa
+                        </button>
+                        <a th:href="@{/payments}" class="btn btn-secondary">
+                            <i class="fa-solid fa-arrow-left me-1"></i> Quay lại
+                        </a>
+                    </div>
+
+                    <div class="row">
+                        <!-- Left column: form inputs -->
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-money-check-alt"></i> Thông tin Giao dịch</h5>
+                                </div>
+                                <div class="p-4 border rounded shadow-sm bg-light">
+                                    <input type="hidden" th:if="${payment.id != null}" th:field="*{id}">
+
+                                    <div class="mb-3" th:if="${payment.id}">
+                                        <label class="form-label fw-bold">Mã thanh toán</label>
+                                        <span th:text="*{code}" class="badge bg-primary fs-6 fw-bold"></span>
+                                        <input type="hidden" th:field="*{code}">
+                                    </div>
+
+                                    <div class="mb-3" th:if="${payment.id}">
+                                        <label for="transactionNo" class="form-label">Số giao dịch</label>
+                                        <input type="text" id="transactionNo" th:field="*{transactionNo}" class="form-control">
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Hóa đơn</label>
+                                        <div id="invoice-dropdown">
+                                            <input th:field="*{invoice.id}" required/>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="amount" class="form-label">Số tiền</label>
+                                        <input type="number" id="amount" th:field="*{amount}" class="form-control" min="0" step="0.01" required>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="method" class="form-label">Phương thức</label>
+                                        <select id="method" th:field="*{method}" class="form-select" required>
+                                            <option th:each="m : ${T(com.team.hotelmanagementapp.pojo.Payment.Method).values()}"
+                                                    th:value="${m}"
+                                                    th:text="${m}"></option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="description" class="form-label">Mô tả</label>
+                                        <textarea id="description" th:field="*{description}" class="form-control"></textarea>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="status" class="form-label">Trạng thái</label>
+                                        <select id="status" th:field="*{status}" class="form-select" required>
+                                            <option th:each="s : ${T(com.team.hotelmanagementapp.pojo.Payment.Status).values()}"
+                                                    th:if="${s.name() != 'CANCELLED' and s.name() != 'FAILED'}"
+                                                    th:value="${s}"
+                                                    th:text="${s.label}">
+                                            </option>
+                                        </select>
+                                    </div>                            
+
+                                    <div class="mb-3 vertical">
+                                        <label class="form-label">Ảnh biên lai</label>
+                                        <input id="imageInput" type="file" class="form-control"
+                                               th:field="*{file}" accept="image/*"
+                                               onchange="previewImage(event)" style="display: none;">
+                                        <div class="d-flex justify-content-center align-items-center flex-column gap-2">
+                                            <img th:src="${payment.receiptImage != null 
+                                                 ? payment.receiptImage 
+                                                 : 'https://media.istockphoto.com/id/931643150/vector/picture-icon.jpg?s=612x612&w=0&k=20&c=St-gpRn58eIa8EDAHpn_yO4CZZAnGD6wKpln9l3Z3Ok='}"
+                                                 class="border shadow-sm mb-2 d-block"
+                                                 width="200" id="imagePreview">
+                                            <div class="d-flex justify-content-center gap-2">
+                                                <button type="button" class="btn btn-outline-primary btn-sm"
+                                                        onclick="document.getElementById('imageInput').click()">
+                                                    <i class="fa fa-upload"></i> Tải lên
+                                                </button>
+
+                                                <button type="button" class="btn btn-outline-danger btn-sm"
+                                                        onclick="removeImage()">
+                                                    <i class="fa fa-trash"></i> Xóa
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-receipt"></i> Tóm tắt</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2">
+                                            <strong>Khách hàng:</strong>
+                                            <span id="customerName"
+                                                  th:text="${payment.invoice != null and payment.invoice.booking != null and payment.invoice.booking.user != null 
+                                                  ? payment.invoice.booking.user.fullName 
+                                                  : ''}"></span>
+                                        </li>
+                                        <li class="mb-2">
+                                            <strong>Tổng tiền:</strong>
+                                            <span id="totalAmount"
+                                                  th:text="${invoice != null and invoice.totalAmount != null
+                                                  ? #numbers.formatDecimal(invoice.totalAmount, 0, 'COMMA', 0, 'POINT') + ' đ'
+                                                  : '0 đ'}"></span>
+                                        </li>
+                                        <li class="mb-2">
+                                            <strong>Số tiền còn lại:</strong>
+                                            <span id="balance"
+                                                  th:text="${invoice != null and invoice.balance != null
+                                                  ? #numbers.formatDecimal(invoice.balance, 0, 'COMMA', 0, 'POINT') + ' đ'
+                                                  : '0 đ'}"></span>
+                                        </li>
+                                        <li class="mb-2" th:if="${payment.status}">
+                                            <strong>Trạng thái:</strong>
+                                            <span th:class="${payment.status.badgeClass}"
+                                                  th:text="${payment.status.label}"></span>
+                                        </li>
+                                        <li class="mb-2" th:if="${payment.createdAt}">
+                                            <strong>Ngày tạo:</strong>
+                                            <span th:text="${#temporals.format(payment.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                                        </li>
+                                    </ul>
+                                    <div class="alert alert-info mt-3">
+                                        <i class="fa-solid fa-lightbulb me-1"></i> Kiểm tra thông tin kỹ trước khi lưu.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        const invoiceIdFromParams = getParam("invoiceId");
+        renderDynamicDropdown({
+        containerId: 'invoice-dropdown',
+                apiUrl: /*[[@{/api/invoices}]]*/,
+                buildOptionText: item => `${item.invoiceNumber} - ${item.booking?.user?.fullName ?? 'N/A'}`,
+                value: /*[[${payment.invoice}]]*/,
+                required: true,
+                readonly: true,
+                defaultId: invoiceIdFromParams,
+                onSelect: selected => {
+                console.info(selected);
+                if (selected) {
+                const customerName = document.getElementById('customerName');
+                if (customerName)
+                        customerName.innerText = selected.booking.user.fullName;
+                const totalAmount = document.getElementById('totalAmount');
+                if (totalAmount)
+                        totalAmount.innerText = selected.totalAmount.toLocaleString() + 'đ';
+                const balance = document.getElementById('balance');
+                if (balance)
+                        balance.innerText = selected.balance.toLocaleString() + 'đ';
+                }
+                }
+        });
+        function previewImage(event) {
+        const reader = new FileReader();
+        reader.onload = function () {
+        document.getElementById("imagePreview").src = reader.result;
+        };
+        reader.readAsDataURL(event.target.files[0]);
+        }
+
+        function removeImage() {
+        document.getElementById("imagePreview").src = "https://media.istockphoto.com/id/931643150/vector/picture-icon.jpg?s=612x612&w=0&k=20&c=St-gpRn58eIa8EDAHpn_yO4CZZAnGD6wKpln9l3Z3Ok=";
+        document.getElementById("imageInput").value = "";
+        }
+    </script>
+</body>
+</html>

@@ -132,9 +132,9 @@ public class DataInitializer {
             Service s9 = serviceRepository.createOrUpdate(new Service(null, "Chỗ đậu xe", "Đậu xe an toàn 1 ngày", 30000.0, true, "ngày", true));
             serviceRepository.createOrUpdate(new Service(null, "Dịch vụ đưa đón", "Đưa đón bằng xe riêng", 400000.0, true, "lượt", false));
 
-            serviceBookingRepository.createOrUpdate(new ServiceBooking(null, bookingRepository.getById(1), s9, s1.getPrice() * 2, 2));
-            serviceBookingRepository.createOrUpdate(new ServiceBooking(null, bookingRepository.getById(1), s1, s1.getPrice(), 1));
-            serviceBookingRepository.createOrUpdate(new ServiceBooking(null, bookingRepository.getById(2), s2, s1.getPrice(), 1));
+            serviceBookingRepository.createOrUpdate(new ServiceBooking(null, bookingRepository.getById(1), s9, 2));
+            serviceBookingRepository.createOrUpdate(new ServiceBooking(null, bookingRepository.getById(1), s1, 1));
+            serviceBookingRepository.createOrUpdate(new ServiceBooking(null, bookingRepository.getById(2), s2, 1));
         }
 
         // Create feedback data
@@ -320,7 +320,7 @@ public class DataInitializer {
                 pastInvoice.setStatus(Invoice.Status.PAID);
 
                 double amount = booking3.getRoom().getRoomType().getPricePerNight();
-                pastInvoice.setTotalAmount(amount);
+                pastInvoice.setTotalAmount(amount * 2);
 
                 pastInvoice = invoiceRepository.createOrUpdate(pastInvoice);
 

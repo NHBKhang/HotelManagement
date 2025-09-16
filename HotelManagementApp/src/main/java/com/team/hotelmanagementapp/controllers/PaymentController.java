@@ -3,13 +3,16 @@ package com.team.hotelmanagementapp.controllers;
 import com.team.hotelmanagementapp.pojo.Payment;
 import com.team.hotelmanagementapp.services.PaymentService;
 import com.team.hotelmanagementapp.utils.Pagination;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -57,6 +60,46 @@ public class PaymentController {
             e.printStackTrace();
         }
         return "payment/payment_detail";
+    }
+    
+    @GetMapping("/add")
+    public String showAddPaymentForm(Model model) {
+        Payment payment = new Payment();
+        model.addAttribute("payment", payment);
+        return "payment/payment_form";
+    }
+
+    @PostMapping("/save")
+    public String savePayment(@Valid @ModelAttribute("payment") Payment payment, BindingResult result,
+            Model model, RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
+            model.addAttribute("payment", payment);
+            redirectAttributes.addFlashAttribute("error", "Lỗi hệ thống!");
+            if (payment.getId() == null) {
+                return "redirect:/payments/add";
+            } else {
+                return "redirect:/payments/" + payment.getId();
+            }
+        }
+
+        try {
+            Payment p;
+            if (payment.getId() == null) {
+                p = paymentService.createOrUpdate(payment);
+                redirectAttributes.addFlashAttribute("success", "Thêm mới thành công!");
+            } else {
+                p = paymentService.createOrUpdate(payment);
+                redirectAttributes.addFlashAttribute("success", "Cập nhật thành công!");
+            }
+            return "redirect:/payments/" + p.getId();
+        } catch (org.hibernate.exception.ConstraintViolationException e) {
+            redirectAttributes.addFlashAttribute("error", "=Giao dịch đã tồn tại!");
+            return "redirect:/payments/add";
+        } catch (Exception e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra, vui lòng thử lại!");
+            return "redirect:/payments/add";
+        }
     }
     
     @PostMapping("/{id}/status")

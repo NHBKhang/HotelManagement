@@ -18,4 +18,6 @@ public interface PaymentRepository {
 
     String generateCode();
 
+    int updateStatuses(List<Integer> ids, Payment.Status status);
+
 }

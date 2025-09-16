@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.team.hotelmanagementapp.pojo.Booking;
+import com.team.hotelmanagementapp.pojo.Payment;
 import com.team.hotelmanagementapp.pojo.Room;
 import com.team.hotelmanagementapp.repositories.BookingRepository;
 
@@ -20,6 +21,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import java.time.temporal.ChronoUnit;
 
 @Repository
 @Transactional
@@ -36,8 +38,33 @@ public class BookingRepositoryImpl implements BookingRepository {
 
     @Override
     public Booking getById(int id) {
-        Session s = this.factory.getObject().getCurrentSession();
-        return s.find(Booking.class, id);
+        Session ss = this.factory.getObject().getCurrentSession();
+        Booking b = ss.find(Booking.class, id);
+
+        if (b != null) {
+            double paid = 0.0;
+
+            if (b.getInvoices() != null) {
+                paid = b.getInvoices().stream()
+                        .filter(inv -> inv.getPayments() != null)
+                        .flatMap(inv -> inv.getPayments().stream()
+                        .filter(p -> p.getStatus() == Payment.Status.SUCCESS))
+                        .mapToDouble(Payment::getAmount)
+                        .sum();
+            }
+
+            double total = (ChronoUnit.DAYS.between(b.getCheckInDate(), b.getCheckOutDate())
+                    * b.getRoom().getRoomType().getPricePerNight())
+                    + b.getServices()
+                            .stream()
+                            .mapToDouble(s -> s.getQuantity() * s.getService().getPrice())
+                            .sum();
+
+            b.setTotalAmount(total);
+            b.setBalance(total - paid);
+        }
+
+        return b;
     }
 
     @Override
