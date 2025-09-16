@@ -26,4 +26,6 @@ public interface PaymentService {
 
     long count(Map<String, String> params);
 
+    int updateStatuses(List<Integer> ids, Payment.Status status);
+
 }

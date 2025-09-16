@@ -71,7 +71,10 @@ class JwtSecurityConfigs {
                 .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/login/**").permitAll()
                 .requestMatchers("/api/users/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/bookings/**").hasAnyRole("ADMIN", "MANAGER", "ACCOUNTANT", "RECEPTIONIST")
+                .requestMatchers(HttpMethod.GET, "/api/bookings").hasAnyRole("ADMIN", "MANAGER", "ACCOUNTANT", "RECEPTIONIST")
+                .requestMatchers(HttpMethod.GET, "/api/bookings/{id}").hasAnyRole("ADMIN", "MANAGER", "ACCOUNTANT", "RECEPTIONIST")
+                .requestMatchers(HttpMethod.GET, "/api/invoices").hasAnyRole("ADMIN", "MANAGER", "ACCOUNTANT", "RECEPTIONIST")
+                .requestMatchers(HttpMethod.GET, "/api/invoices/{id}").hasAnyRole("ADMIN", "MANAGER", "ACCOUNTANT", "RECEPTIONIST")
                 .requestMatchers(HttpMethod.POST, "/api/bookings/**").authenticated()
                 .requestMatchers("/api/bookings/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/**").permitAll()

@@ -85,46 +85,89 @@
                         </div>
 
                         <div class="card mb-4">
-                            <div class="card-header">
-                                <h5 class="mb-0"><i class="fas fa-credit-card"></i> Giao dịch</h5>
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i> Giao dịch</h5>
+                                <div>
+                                    <a th:href="@{/payments/add(invoiceId=${invoice.id})}" class="btn btn-warning btn-sm">
+                                        <i class="fas fa-plus"></i> Thêm mới
+                                    </a>
+                                </div>
                             </div>
+
                             <div class="card-body">
-                                <table class="table table-hover table-bordered text-center table-sm">
-                                    <thead>
-                                        <tr>
-                                            <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th>
-                                            <th>Mã GD</th>
-                                            <th>Mã Booking</th>
-                                            <th>Số tiền</th>
-                                            <th>Phương thức</th>
-                                            <th>Thời gian</th>
-                                            <th>Trạng thái</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr th:each="r: ${payments}">
-                                            <td><input type="checkbox" th:value="${r.id}"></td>
-                                            <td>
-                                                <a th:href="@{/payments/{id}(id=${r.id})}" th:text="${r.code}"
-                                                   class="text-decoration-none fw-bold text-primary"></a>
-                                            </td>
-                                            <td>
-                                                <a th:href="@{/bookings/{id}(id=${r.invoice.booking.id})}" th:text="${r.invoice.booking.code}"
-                                                   class="text-decoration-none fw-bold text-primary"></a>
-                                            </td>
-                                            <td th:text="${#numbers.formatDecimal(r.amount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
-                                            <td th:text="${r.method}"></td>
-                                            <td th:text="${#temporals.format(r.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
-                                            <td>
-                                                <span th:text="${r.status.label}" 
-                                                      th:class="${r.status.badgeClass}"></span>
-                                            </td>
-                                        </tr>
-                                        <tr th:if="${#lists.isEmpty(payments)}">
-                                            <td colspan="7">Không có giao dịch nào.</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                <form th:action="@{/invoices/payments/bulk-status}"
+                                      method="post"
+                                      id="bulkStatusForm"
+                                      onsubmit="return validateSelection();">
+
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-bordered table-sm align-middle" id="payment-table">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th scope="col">
+                                                        <input type="checkbox" id="selectAll"
+                                                               onclick="toggleSelectAll('payment-table')">
+                                                    </th>
+                                                    <th scope="col">Mã giao dịch</th>
+                                                    <th scope="col">Mã đặt phòng</th>
+                                                    <th scope="col" class="text-end">Số tiền</th>
+                                                    <th scope="col">Phương thức</th>
+                                                    <th scope="col">Ngày tạo</th>
+                                                    <th scope="col">Trạng thái</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr th:each="r : ${payments}">
+                                                    <td>
+                                                        <input type="checkbox" name="ids" th:value="${r.id}" class="select-item">
+                                                    </td>
+                                                    <td>
+                                                        <a th:href="@{/payments/{id}(id=${r.id})}"
+                                                           th:text="${r.code}"
+                                                           class="text-decoration-none fw-bold text-primary"></a>
+                                                    </td>
+                                                    <td>
+                                                        <a th:href="@{/bookings/{id}(id=${r.invoice.booking.id})}"
+                                                           th:text="${r.invoice.booking.code}"
+                                                           class="text-decoration-none fw-bold text-primary"></a>
+                                                    </td>
+                                                    <td class="text-end"
+                                                        th:text="${#numbers.formatDecimal(r.amount, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                                                    </td>
+                                                    <td th:text="${r.method}"></td>
+                                                    <td>
+                                                        <small th:text="${#temporals.format(r.createdAt, 'dd/MM/yyyy HH:mm')}"></small>
+                                                    </td>
+                                                    <td>
+                                                        <span th:text="${r.status.label}" th:class="${r.status.badgeClass}"></span>
+                                                    </td>
+                                                </tr>
+
+                                                <tr th:if="${#lists.isEmpty(payments)}">
+                                                    <td colspan="7" class="text-center text-muted py-3">
+                                                        <i class="fas fa-info-circle me-1"></i> Không có giao dịch nào.
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <div class="d-flex align-items-center">
+                                            <label class="me-2 fw-bold">Chuyển trạng thái:</label>
+                                            <select name="status" class="form-select form-select-sm w-auto">
+                                                <option th:each="status : ${T(com.team.hotelmanagementapp.pojo.Payment.Status).values()}"
+                                                        th:value="${status.name()}"
+                                                        th:text="${status.label}">
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-sync-alt me-1"></i> Cập nhật
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -174,7 +217,20 @@
         function printInvoiceDetails() {
             window.print();
         }
+
+        function validateSelection() {
+            const checkboxes = document.getElementsByClassName("select-item");
+            if (checkboxes.length > 0) {
+                const selected = Array.from(checkboxes).filter(cb => cb.checked);
+                if (selected.length === 0) {
+                    showMessage("warning", "Vui lòng chọn ít nhất một mục để cập nhật!");
+                    return false;
+                }
+            }
+            return true;
+        }
     </script>
+
 </body>
 </html>
 

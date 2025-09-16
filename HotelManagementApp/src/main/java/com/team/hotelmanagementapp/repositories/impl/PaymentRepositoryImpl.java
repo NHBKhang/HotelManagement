@@ -14,7 +14,6 @@ import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +58,14 @@ public class PaymentRepositoryImpl implements PaymentRepository {
                 Join<Booking, User> userJoin = bookingJoin.join("user");
 
                 predicates.add(b.equal(userJoin.get("id"), Integer.valueOf(userId)));
+            }
+
+            String bookingId = params.get("bookingId");
+            if (bookingId != null && !bookingId.isEmpty()) {
+                Join<Payment, Invoice> invoiceJoin = root.join("invoice");
+                Join<Invoice, Booking> bookingJoin = invoiceJoin.join("booking");
+
+                predicates.add(b.equal(bookingJoin.get("id"), Integer.valueOf(bookingId)));
             }
 
             String invoiceId = params.get("invoiceId");
@@ -151,6 +158,14 @@ public class PaymentRepositoryImpl implements PaymentRepository {
                 predicates.add(b.equal(userJoin.get("id"), Integer.valueOf(userId)));
             }
 
+            String bookingId = params.get("bookingId");
+            if (bookingId != null && !bookingId.isEmpty()) {
+                Join<Payment, Invoice> invoiceJoin = root.join("invoice");
+                Join<Invoice, Booking> bookingJoin = invoiceJoin.join("booking");
+
+                predicates.add(b.equal(bookingJoin.get("id"), Integer.valueOf(bookingId)));
+            }
+
             String invoiceId = params.get("invoiceId");
             if (invoiceId != null && !invoiceId.isEmpty()) {
                 Join<Payment, Invoice> invoiceJoin = root.join("invoice");
@@ -174,5 +189,19 @@ public class PaymentRepositoryImpl implements PaymentRepository {
 
         int nextId = (maxId != null) ? maxId + 1 : 1;
         return "GD" + String.format("%07d", nextId);
+    }
+
+    @Override
+    public int updateStatuses(List<Integer> ids, Payment.Status status) {
+        if (ids == null || ids.isEmpty()) {
+            return 0;
+        }
+        
+        Session s = factory.getObject().getCurrentSession();
+        String hql = "UPDATE Payment p SET p.status = :status WHERE p.id IN (:ids)";
+        return s.createMutationQuery(hql)
+                .setParameter("status", status)
+                .setParameterList("ids", ids)
+                .executeUpdate();
     }
 }

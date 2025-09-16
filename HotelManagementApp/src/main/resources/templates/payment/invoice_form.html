@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title th:text="${invoice.id != null} ? 'Chỉnh sửa Hóa đơn - Quản lý khách sạn' : 'Thêm Hóa đơn - Quản lý khách sạn'"></title>
+    <th:block th:replace="base :: head"></th:block>
+</head>
+<body>
+    <div th:replace="base :: layout(~{::content})">
+        <div th:fragment="content">
+            <div class="container">
+                <h2 class="text-center mb-4">
+                    <span th:if="${invoice.id != null}">
+                        <i class="fa-solid fa-pen-to-square me-2"></i> Chỉnh sửa Hóa đơn
+                    </span>
+                    <span th:unless="${invoice.id != null}">
+                        <i class="fa-solid fa-plus me-2"></i> Thêm Hóa đơn
+                    </span>
+                </h2>
+
+                <form th:action="@{/invoices/save}" method="post" th:object="${invoice}" class="styled-form">
+                    <!-- Action buttons -->
+                    <div class="my-3">
+                        <button type="submit" class="btn btn-success me-2">
+                            <i class="fa-solid fa-save me-1"></i>
+                            <span th:text="${invoice.id != null} ? 'Cập nhật' : 'Lưu'"></span>
+                        </button>
+                        <button type="button" class="btn btn-danger" th:if="${invoice.id != null}"
+                                th:onclick="|confirmAndRequest('@{/invoices/delete/{id}(id=${invoice.id})}', '@{/invoices}')|">
+                            <i class="fa-solid fa-trash me-1"></i> Xóa
+                        </button>
+                        <a th:href="@{/invoices}" class="btn btn-secondary">
+                            <i class="fa-solid fa-arrow-left me-1"></i> Quay lại
+                        </a>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-file-invoice"></i> Thông tin Hóa đơn</h5>
+                                </div>
+                                <div class="p-4 border rounded shadow-sm bg-light">
+                                    <input type="hidden" th:if="${invoice.id != null}" th:field="*{id}">
+
+                                    <div class="mb-3">
+                                        <label for="booking" class="form-label">Booking</label>
+                                        <div id="booking-dropdown">
+                                            <input th:field="*{booking.id}" required/>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="invoiceNumber" class="form-label">Mã hóa đơn</label>
+                                        <input type="text" id="invoiceNumber" th:field="*{invoiceNumber}" class="form-control" required readonly>
+                                        <p class="text-danger" th:if="${#fields.hasErrors('invoiceNumber')}" th:errors="*{invoiceNumber}"></p>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="sentToEmail" class="form-label">Email nhận</label>
+                                        <input type="email" id="sentToEmail" th:field="*{sentToEmail}" class="form-control" placeholder="customer@example.com">
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="totalAmount" class="form-label">Tổng tiền</label>
+                                        <input type="number" id="totalAmount" th:field="*{totalAmount}" class="form-control"
+                                               min="0" step="0.01" required>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="status" class="form-label">Trạng thái</label>
+                                        <select id="status" th:field="*{status}" class="form-select">
+                                            <option th:each="s : ${T(com.team.hotelmanagementapp.pojo.Invoice.Status).values()}"
+                                                    th:value="${s}" th:text="${s.label}"></option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-receipt"></i> Tóm tắt</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2">
+                                            <strong>Khách hàng:</strong>
+                                            <span id="customerName"
+                                                  th:text="${invoice != null and invoice.booking != null and invoice.booking.user != null 
+                                                  ? invoice.booking.user.fullName 
+                                                  : ''}"></span>
+                                        </li>
+                                        <li class="mb-2">
+                                            <strong>Tổng tiền:</strong>
+                                            <span id="amount"
+                                                  th:text="${invoice != null and invoice.booking != null and invoice.booking.totalAmount != null
+                                                  ? #numbers.formatDecimal(invoice.booking.totalAmount, 0, 'COMMA', 0, 'POINT') + ' đ'
+                                                  : '0 đ'}"></span>
+                                        </li>
+                                        <li class="mb-2">
+                                            <strong>Số tiền còn lại:</strong>
+                                            <span id="balance"
+                                                  th:text="${invoice != null and invoice.booking != null and invoice.booking.balance != null
+                                                  ? #numbers.formatDecimal(invoice.booking.balance, 0, 'COMMA', 0, 'POINT') + ' đ'
+                                                  : '0 đ'}"></span>
+                                        </li>
+                                    </ul>
+                                    <div class="alert alert-info mt-3">
+                                        <i class="fa-solid fa-lightbulb me-1"></i> Kiểm tra thông tin kỹ trước khi lưu.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card" th:if="${invoice.id}">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-history"></i> Lịch sử Cập nhật</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <strong>Ngày tạo:</strong><br>
+                                        <span th:text="${invoice.issueAt != null ? #temporals.format(invoice.issueAt, 'dd/MM/yyyy HH:mm') : 'N/A'}"></span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>Cập nhật cuối:</strong><br>
+                                        <span th:text="${invoice.updatedAt != null ? #temporals.format(invoice.updatedAt, 'dd/MM/yyyy HH:mm') : 'N/A'}"></span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>Trạng thái hiện tại:</strong>
+                                        <span th:class="${invoice.status != null ? invoice.status.badgeClass : 'badge bg-secondary'}"
+                                              th:text="${invoice.status != null ? invoice.status.label : 'Chưa xác định'}"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card mt-3" th:if="${invoice.payments != null}">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-money-check"></i> Danh sách Thanh toán</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group">
+                                        <li class="list-group-item" th:each="p : ${invoice.payments}">
+                                            <span class="fw-bold" th:text="${p.code}"></span> - 
+                                            <span th:text="${#numbers.formatDecimal(p.amount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span> 
+                                            <span th:class="${p.status.badgeClass}" th:text="${p.status.label}"></span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        const bookingIdFromParams = getParam("bookingId");
+
+        renderDynamicDropdown({
+            containerId: 'booking-dropdown',
+            apiUrl: /*[[@{/api/bookings}]]*/,
+            buildOptionText: item => {
+                const date = `${new Date(item.checkInDate).toLocaleDateString('vi-VN')} - ${new Date(item.checkOutDate).toLocaleDateString('vi-VN')}`;
+                return `${item.code} - ${item.user.fullName} (${date})`;
+            },
+            value: /*[[${invoice.booking != null ? invoice.booking.id : null}]]*/ null,
+            required: true,
+            defaultId: bookingIdFromParams,
+            onSelect: selected => {
+                console.info(selected);
+                if (selected) {
+                    const customerName = document.getElementById('customerName');
+                    if (customerName)
+                        customerName.innerText = selected.user.fullName;
+                    const amount = document.getElementById('amount');
+                    if (amount)
+                        amount.innerText = selected.totalAmount.toLocaleString() + 'đ';
+                    const balance = document.getElementById('balance');
+                    if (balance)
+                        balance.innerText = selected.balance.toLocaleString() + 'đ';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+

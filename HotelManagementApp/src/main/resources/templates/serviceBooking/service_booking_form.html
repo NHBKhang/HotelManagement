@@ -233,6 +233,8 @@
         });
     </script>
     <script th:inline="javascript">
+        const bookingIdFromParams = getParam("bookingId");
+        
         renderDynamicDropdown({
         containerId: 'booking-dropdown',
                 apiUrl: [[@{/api/bookings}]],
@@ -240,14 +242,15 @@
                 const date = `${new Date(item.checkInDate).toLocaleDateString('vi-VN')} - ${new Date(item.checkOutDate).toLocaleDateString('vi-VN')}`;
                 return `${item.code} - ${item.user.fullName} (${date})`;
                 },
-                value: /*[[${serviceBooking.booking}]]*/ null,
+                value: /*[[${serviceBooking.booking}]]*/,
+                defaultId: bookingIdFromParams,
                 required: true,
         });
         renderDynamicDropdown({
         containerId: 'service-dropdown',
                 apiUrl: [[@{/api/services}]],
                 buildOptionText: item => `${item.name} - ${item.price}đ/${item.unit}`,
-                value: /*[[${serviceBooking.service}]]*/ null,
+                value: /*[[${serviceBooking.service}]]*/,
                 required: true,
         });
     </script>
