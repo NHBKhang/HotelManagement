@@ -62,7 +62,13 @@ const BookingDetailPage = () => {
             });
             const file = new Blob([res.data], { type: "application/pdf" });
             const fileURL = window.URL.createObjectURL(file);
-            window.open(fileURL);
+            // download fileURL
+            const link = document.createElement("a");
+            link.href = fileURL;
+            link.download = `invoice-${booking.id}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         } catch (err) {
             console.error(err);
             sendNotification({ message: "Xem hóa đơn thất bại!" }, "error");

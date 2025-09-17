@@ -323,7 +323,7 @@ public class ApiBookingController {
     }
 
     @PutMapping("/my-bookings/{id}/cancel")
-    public ResponseEntity<Map<String, Object>> cancelBooking(@PathVariable int id) {
+    public ResponseEntity<Map<String, Object>> cancelBooking(@PathVariable("id") int id) {
         try {
             bookingService.cancelBooking(id);
             Map<String, Object> response = new HashMap<>();
