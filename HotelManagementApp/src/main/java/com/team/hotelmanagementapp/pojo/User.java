@@ -108,6 +108,9 @@ public class User implements Serializable {
 
     @Basic(optional = false)
     private String password;
+    
+    @Basic
+    private String address;
 
     @Basic(optional = false)
     private Role role;
@@ -150,6 +153,17 @@ public class User implements Serializable {
         this.phone = phone;
         this.status = Status.ACTIVE;
     }
+
+    public User(Integer id, String firstName, String lastName, String email, String phone, String address) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phone = phone;
+        this.address = address;
+    }
+    
+    
 
     public Integer getId() {
         return id;
@@ -289,6 +303,14 @@ public class User implements Serializable {
 
     public String getFullName() {
         return this.firstName + " " + this.lastName;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
 }

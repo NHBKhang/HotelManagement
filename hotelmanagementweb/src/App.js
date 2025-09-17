@@ -13,6 +13,7 @@ import PaymentPage from "./pages/PaymentPage";
 import MyBookingPage from "./pages/MyBookingPage";
 import { ToastContainer } from "react-toastify";
 import BookingDetailPage from "./pages/BookingDetailPage";
+import ProfilePage from "./pages/ProfilePage";
 
 function App() {
   return (
@@ -37,6 +38,11 @@ function App() {
               <Route path="my-bookings/:id" element={
                 <ProtectedRoute>
                   <BookingDetailPage />
+                </ProtectedRoute>}
+              />
+              <Route path="profile" element={
+                <ProtectedRoute>
+                  <ProfilePage />
                 </ProtectedRoute>}
               />
             </Route>
