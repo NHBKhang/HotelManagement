@@ -82,7 +82,7 @@ public class Invoice implements Serializable {
     @Column(name = "updated_at")
     @UpdateTimestamp
     private LocalDateTime updatedAt;
-    
+
     @Transient
     private Double balance;
 
@@ -215,6 +215,9 @@ public class Invoice implements Serializable {
     }
 
     public Double getBalance() {
+        if (balance == null) {
+            return 0.0;
+        }
         return balance;
     }
 

@@ -1,6 +1,10 @@
 package com.team.hotelmanagementapp.services;
 
+import com.itextpdf.text.DocumentException;
 import com.team.hotelmanagementapp.pojo.Invoice;
+import com.team.hotelmanagementapp.pojo.Payment;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -19,5 +23,6 @@ public interface InvoiceService {
     Invoice getById(int id);
 
     long count(Map<String, String> params);
-    
+
+    byte[] generateInvoicePdf(Invoice invoice, List<Payment> payments) throws DocumentException, IOException;
 }
