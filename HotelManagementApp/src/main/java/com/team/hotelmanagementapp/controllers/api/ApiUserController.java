@@ -61,7 +61,7 @@ public class ApiUserController {
         try {
             RequestValidation val = RequestValidation.getUserFromRequest(request, userService, jwtService);
 
-            if(val.getUser() == null) {
+            if (val.getUser() == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(val.getMessage());
             }
 
@@ -70,6 +70,36 @@ public class ApiUserController {
 
             return ResponseEntity.ok(response);
         } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Lỗi máy chủ: " + ex.getMessage());
+        }
+    }
+
+    @PatchMapping(path = "/current-user", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> patchCurrentUser(
+            @RequestBody User user,
+            HttpServletRequest request) {
+        try {
+            RequestValidation val = RequestValidation.getUserFromRequest(request, userService, jwtService);
+
+            if (val.getUser() == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Người dùng chưa đăng nhập.");
+            }
+
+            User updatedUser = userService.getById(val.getUser().getId());
+            updatedUser.setAddress(user.getAddress());
+            updatedUser.setFirstName(user.getFirstName());
+            updatedUser.setLastName(user.getLastName());
+            updatedUser.setEmail(user.getEmail());
+            updatedUser.setPhone(user.getPhone());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Cập nhật thành công");
+            response.put("user", userService.createOrUpdate(updatedUser));
+
+            return ResponseEntity.ok(response);
+        } catch (Exception ex) {
+            ex.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Lỗi máy chủ: " + ex.getMessage());
         }
@@ -95,10 +125,5 @@ public class ApiUserController {
             errorResponse.put("error", "Có lỗi xảy ra khi tạo mới người dùng!");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
-    }
-
-    @PatchMapping(path = "/users", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> update(@ModelAttribute("user") User user) {
-        return new ResponseEntity<>(this.userService.createOrUpdate(user), HttpStatus.OK);
     }
 }

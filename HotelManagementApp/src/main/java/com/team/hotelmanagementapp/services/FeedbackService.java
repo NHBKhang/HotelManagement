@@ -8,6 +8,8 @@ public interface FeedbackService {
 
     List<Feedback> findAll();
 
+    List<Feedback> find(Map<String, String> params);
+
     Feedback getById(int id);
 
     List<Feedback> findByUser(int userId, Map<String, String> params);

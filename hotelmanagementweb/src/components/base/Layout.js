@@ -24,10 +24,10 @@ const Layout = () => {
                     </div>
 
                     <nav className="hidden md:flex gap-6">
-                        <a href="#about" className="hover:text-indigo-600">Giới thiệu</a>
+                        <a href="/about" className="hover:text-indigo-600">Giới thiệu</a>
                         <Link to="/search" className="hover:text-indigo-600">Tìm phòng</Link>
                         <Link to="/services" className="hover:text-indigo-600">Dịch vụ</Link>
-                        <a href="#contact" className="hover:text-indigo-600">Liên hệ</a>
+                        <a href="/contact" className="hover:text-indigo-600">Liên hệ</a>
                     </nav>
 
                     <div className="flex items-center gap-3">
@@ -50,6 +50,13 @@ const Layout = () => {
 
                                     {open && (
                                         <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border dark:border-gray-700">
+                                            <Link
+                                                to="/profile"
+                                                className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                onClick={() => setOpen(false)}
+                                            >
+                                                Hồ sơ của tôi
+                                            </Link>
                                             <Link
                                                 to="/my-bookings"
                                                 className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -85,7 +92,7 @@ const Layout = () => {
             </main>
 
             <footer className="border-t border-slate-200 bg-white/80 dark:bg-slate-900/80 dark:border-slate-800">
-                <div className="w-full px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500 dark:text-slate-400">
+                <div className="w-full px-6 pt-6 pb-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500 dark:text-slate-400">
                     <span>© {new Date().getFullYear()} Smart Hotel. All rights reserved.</span>
                     <div className="flex gap-4">
                         <a href="/privacy" className="hover:underline">

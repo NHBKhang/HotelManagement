@@ -65,38 +65,39 @@ public class DataInitializer {
     @PostConstruct
     public void init() {
         // Create users
-        User admin = null, customer = null;
+        User admin = null, customer = null, customer1 = null;
         if (userService.getByUsername("admin") == null) {
-            admin = new User("admin", "admin", "admin@gmail.com", User.Role.ADMIN, "Nguyễn", "Admin", "0123456789");
-            customer = new User("customer", "customer", "customer@gmail.com", User.Role.CUSTOMER, "Trần Thị", "Na", "0967456615");
+            admin = new User("admin", "admin", "admin@gmail.com", User.Role.ADMIN, "Nguyễn", "Admin", "0123456789", User.Gender.MALE);
+            customer = new User("customer", "customer", "customer@gmail.com", User.Role.CUSTOMER, "Trần Thị", "Na", "0967456615", User.Gender.FEMALE);
 
             userService.createOrUpdate(admin);
             userService.createOrUpdate(customer);
 
-            userService.createOrUpdate(new User("accountant", "accountant", "accountant@gmail.com", User.Role.ACCOUNTANT, "Lê Thị", "Thơm", "0122336455"));
-            userService.createOrUpdate(new User("receiptionist", "receiptionist", "receiptionist@gmail.com", User.Role.RECEPTIONIST, "Phan Đình", "Dũng", "01763242544"));
-            userService.createOrUpdate(new User("housekeeper", "housekeeper", "housekeeper@gmail.com", User.Role.HOUSEKEEPING, "Johny", "Đặng", "0755434442777"));
+            userService.createOrUpdate(new User("accountant", "accountant", "accountant@gmail.com", User.Role.ACCOUNTANT, "Lê Thị", "Thơm", "0122336455", User.Gender.FEMALE));
+            userService.createOrUpdate(new User("receiptionist", "receiptionist", "receiptionist@gmail.com", User.Role.RECEPTIONIST, "Phan Đình", "Dũng", "01763242544", User.Gender.MALE));
+            userService.createOrUpdate(new User("housekeeper", "housekeeper", "housekeeper@gmail.com", User.Role.HOUSEKEEPING, "Johny", "Đặng", "0755434442777", User.Gender.MALE));
             userService.createOrUpdate(
-                    new User("customer1", "customer1", "customer1@gmail.com", User.Role.CUSTOMER, "Trần", "Anh", "0911111111")
+                    new User("customer1", "customer1", "customer1@gmail.com", User.Role.CUSTOMER, "Trần", "Anh", "0911111111", User.Gender.MALE)
             );
             userService.createOrUpdate(
-                    new User("customer2", "customer2", "customer2@gmail.com", User.Role.CUSTOMER, "Lê", "Bình", "0922222222")
+                    new User("customer2", "customer2", "customer2@gmail.com", User.Role.CUSTOMER, "Lê", "Bình", "0922222222", User.Gender.MALE)
             );
             userService.createOrUpdate(
-                    new User("customer3", "customer3", "customer3@gmail.com", User.Role.CUSTOMER, "Phạm", "Cường", "0933333333")
+                    new User("customer3", "customer3", "customer3@gmail.com", User.Role.CUSTOMER, "Phạm", "Cường", "0933333333", User.Gender.MALE)
             );
             userService.createOrUpdate(
-                    new User("customer4", "customer4", "customer4@gmail.com", User.Role.CUSTOMER, "Ngô", "Dương", "0944444444")
+                    new User("customer4", "customer4", "customer4@gmail.com", User.Role.CUSTOMER, "Ngô", "Dương", "0944444444", User.Gender.MALE)
             );
             userService.createOrUpdate(
-                    new User("customer5", "customer5", "customer5@gmail.com", User.Role.CUSTOMER, "Hoàng", "Hưng", "0955555555")
+                    new User("customer5", "customer5", "customer5@gmail.com", User.Role.CUSTOMER, "Hoàng", "Hưng", "0955555555", User.Gender.MALE)
             );
             userService.createOrUpdate(
-                    new User("customer6", "customer6", "customer6@gmail.com", User.Role.CUSTOMER, "Dương", "Minh", "0966666666")
+                    new User("customer6", "customer6", "customer6@gmail.com", User.Role.CUSTOMER, "Dương", "Minh", "0966666666", User.Gender.MALE)
             );
         } else {
             admin = userService.getByUsername("admin");
             customer = userService.getByUsername("customer");
+            customer1 = userService.getByUsername("customer2");
         }
 
         // Create room types
@@ -213,18 +214,18 @@ public class DataInitializer {
 
                 // Create second past booking with feedback
                 Room anotherRoom = roomRepository.findAll().get(1);
-                Booking secondBooking = new Booking(null, customer, anotherRoom,
+                Booking secondBooking = new Booking(null, customer1, anotherRoom,
                         LocalDate.now().minusDays(20), LocalDate.now().minusDays(18),
                         Booking.Status.CHECKED_OUT, null, 2);
                 secondBooking = bookingRepository.createOrUpdate(secondBooking);
 
-                feedbackRepository.createOrUpdate(new Feedback(null, secondBooking, customer,
+                feedbackRepository.createOrUpdate(new Feedback(null, secondBooking, customer1,
                         4.0, serviceComments[1], LocalDateTime.now().minusDays(16)));
 
-                feedbackRepository.createOrUpdate(new Feedback(null, secondBooking, customer,
+                feedbackRepository.createOrUpdate(new Feedback(null, secondBooking, customer1,
                         3.0, constructiveComments[0], LocalDateTime.now().minusDays(15)));
 
-                feedbackRepository.createOrUpdate(new Feedback(null, secondBooking, customer,
+                feedbackRepository.createOrUpdate(new Feedback(null, secondBooking, customer1,
                         4.5, positiveComments[4], LocalDateTime.now().minusDays(14)));
 
                 // Create third booking with mixed reviews

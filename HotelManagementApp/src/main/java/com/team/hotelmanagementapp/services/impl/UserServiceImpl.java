@@ -75,7 +75,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User createOrUpdate(User user) {
-        user.setPassword(this.passwordEncoder.encode(user.getPassword()));
+        if (user.getPassword() != null) {
+            user.setPassword(this.passwordEncoder.encode(user.getPassword()));
+        }
 
         if (user.getFile() != null && !user.getFile().isEmpty()) {
             try {
@@ -87,12 +89,17 @@ public class UserServiceImpl implements UserService {
                 throw new RuntimeException("Error uploading file to Cloudinary", ex);
             }
         }
-        if (user.getRole() == null || user.getRole().toString().isEmpty()) {
+        
+        if (user.getRole() == null) {
             user.setRole(User.Role.CUSTOMER);
         }
 
-        if (user.getStatus() == null || user.getStatus().toString().isEmpty()) {
+        if (user.getStatus() == null) {
             user.setStatus(User.Status.ACTIVE);
+        }
+        
+        if (user.getGender() == null) {
+            user.setGender(User.Gender.OTHER);
         }
 
         return this.userRepo.createOrUpdate(user);

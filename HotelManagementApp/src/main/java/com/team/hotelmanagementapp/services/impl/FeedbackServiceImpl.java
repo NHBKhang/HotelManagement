@@ -23,6 +23,11 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
 
     @Override
+    public List<Feedback> find(Map<String, String> params) {
+        return this.feedbackRepository.find(params);
+    }
+
+    @Override
     public Feedback getById(int id) {
         return this.feedbackRepository.getById(id);
     }

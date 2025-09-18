@@ -13,6 +13,10 @@ import PaymentPage from "./pages/PaymentPage";
 import MyBookingPage from "./pages/MyBookingPage";
 import { ToastContainer } from "react-toastify";
 import BookingDetailPage from "./pages/BookingDetailPage";
+import ProfilePage from "./pages/ProfilePage";
+import AboutPage from "./pages/AboutPage";
+import ContactPage from "./pages/ContactPage";
+import ServicesPage from "./pages/ServicesPage";
 
 function App() {
   return (
@@ -23,6 +27,9 @@ function App() {
             <Route path="/" element={<Layout />}>
               <Route index element={<HomePage />} />
               <Route path="search" element={<SearchPage />} />
+              <Route path="about" element={<AboutPage />} />
+              <Route path="contact" element={<ContactPage />} />
+              <Route path="services" element={<ServicesPage />} />
               <Route path="rooms/:id" element={<RoomPage />} />
               <Route path="payment" element={
                 <ProtectedRoute>
@@ -37,6 +44,11 @@ function App() {
               <Route path="my-bookings/:id" element={
                 <ProtectedRoute>
                   <BookingDetailPage />
+                </ProtectedRoute>}
+              />
+              <Route path="profile" element={
+                <ProtectedRoute>
+                  <ProfilePage />
                 </ProtectedRoute>}
               />
             </Route>

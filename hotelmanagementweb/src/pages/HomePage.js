@@ -1,11 +1,60 @@
 import { Hotel, CreditCard, CalendarCheck } from "lucide-react"
 import { useNavigate, Link } from "react-router-dom";
 import { useUserContext } from "../configs/UserContext";
+import { useEffect, useState } from "react";
+import API, { endpoints } from "../configs/API";
+import {
+    Star,
+    StarHalf
+} from "lucide-react";
 
 const HomePage = () => {
     const navigate = useNavigate();
     const { state } = useUserContext();
     const user = state?.currentUser;
+
+    const [topRooms, setTopRooms] = useState([]);
+    const [feedbacks, setFeedbacks] = useState([]);
+
+    useEffect(() => {
+        const loadTopRooms = async () => {
+            try {
+                let res = await API.get(`${endpoints.rooms}?page=1&pageSize=3&topRooms=true`);
+                setTopRooms(res.data.results);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+        const loadFeedbacks = async () => {
+            try {
+                let res = await API.get(`${endpoints.feedbacks}?page=1&pageSize=3`);
+                setFeedbacks(res.data.results);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        loadTopRooms();
+        loadFeedbacks();
+    }, []);
+
+    const renderStars = (rating) => {
+        const stars = [];
+        for (let i = 1; i <= 5; i++) {
+            if (rating >= i) {
+                stars.push(
+                    <Star key={i} size={12} className="text-yellow-400" fill="currentColor" />
+                );
+            } else if (rating >= i - 0.5) {
+                stars.push(
+                    <StarHalf key={i} size={15} className="text-yellow-400" fill="currentColor" />
+                );
+            } else {
+                stars.push(<Star key={i} size={15} className="text-gray-300" />);
+            }
+        }
+        return stars;
+    };
 
     return (
         <>
@@ -84,7 +133,6 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* Featured Rooms */}
             <section className="bg-slate-50 dark:bg-slate-900 py-16 px-6">
                 <div className="max-w-6xl mx-auto text-center mb-10">
                     <h2 className="text-2xl md:text-3xl font-bold dark:text-white">Phòng nổi bật</h2>
@@ -93,14 +141,14 @@ const HomePage = () => {
                     </p>
                 </div>
                 <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                    {[1, 2, 3].map((room) => (
-                        <div key={room} className="rounded-xl overflow-hidden shadow bg-white dark:bg-slate-800">
+                    {topRooms.map((room) => (
+                        <div key={room.id} className="rounded-xl overflow-hidden shadow bg-white dark:bg-slate-800">
                             <div className="h-40 bg-gray-200 dark:bg-gray-700"></div>
                             <div className="p-4">
-                                <h3 className="font-semibold text-lg">Phòng Deluxe {room}</h3>
-                                <p className="text-slate-600 dark:text-slate-400 text-sm mb-2">Giá từ 1,200,000 VND/đêm</p>
+                                <h3 className="font-semibold text-lg">Phòng {room.roomType.name} {room.roomNumber}</h3>
+                                <p className="text-slate-600 dark:text-slate-400 text-sm mb-2">Giá từ {room.roomType.pricePerNight} VND/đêm</p>
                                 <Link
-                                    to={`/rooms/${room}`}
+                                    to={`/rooms/${room.id}`}
                                     className="text-indigo-600 hover:underline dark:text-indigo-400"
                                 >
                                     Xem chi tiết →
@@ -111,20 +159,18 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* Feedbacks Section */}
             <section className="max-w-6xl mx-auto px-6 py-16">
                 <h2 className="text-2xl md:text-3xl font-bold text-center dark:text-white mb-10">
                     Khách hàng nói gì?
                 </h2>
                 <div className="grid md:grid-cols-3 gap-8">
-                    {[
-                        { name: "Anh Minh", text: "Dịch vụ tuyệt vời, nhân viên thân thiện và chuyên nghiệp." },
-                        { name: "Chị Hằng", text: "Phòng sạch sẽ, tiện nghi đầy đủ. Tôi sẽ quay lại lần sau!" },
-                        { name: "Bạn Nam", text: "Ứng dụng dễ dùng, đặt phòng nhanh chóng." }
-                    ].map((fb, i) => (
+                    {feedbacks.map((fb, i) => (
                         <div key={i} className="p-6 rounded-xl shadow bg-white dark:bg-slate-900">
-                            <p className="text-slate-600 dark:text-slate-300 italic mb-4">“{fb.text}”</p>
-                            <p className="font-semibold dark:text-white">- {fb.name}</p>
+                            <p className="text-slate-600 dark:text-slate-300 italic mb-2">“{fb.comment}”</p>
+                            <p className="flex items-center gap-1 text-sm text-gray-400 ms-1 mb-4">{renderStars(fb.rating)}</p>
+                            <p className="font-semibold dark:text-white">- {
+                                fb.user.gender.name === "Male" ? "Anh" : "Chị"
+                            } {fb.user.lastName}</p>
                         </div>
                     ))}
                 </div>

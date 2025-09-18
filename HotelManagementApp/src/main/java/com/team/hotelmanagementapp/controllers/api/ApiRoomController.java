@@ -28,7 +28,7 @@ public class ApiRoomController {
             return ResponseEntity.ok().body(new Pagination<>(
                     roomService.find(params, true), roomService.countRooms(params, true), params));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Có lỗi xảy ra khi tải danh sách người dùng!");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Có lỗi xảy ra khi tải danh sách phòng!");
         }
     }
 
@@ -38,7 +38,7 @@ public class ApiRoomController {
             Room r = roomService.getById(id);
 
             if (r == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy gói tập với ID: " + id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy phòng với ID: " + id);
             }
 
             return ResponseEntity.ok(r);
