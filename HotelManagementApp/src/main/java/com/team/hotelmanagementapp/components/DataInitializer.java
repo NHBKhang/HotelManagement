@@ -79,7 +79,7 @@ public class DataInitializer {
             userService.createOrUpdate(
                     new User("customer1", "customer1", "customer1@gmail.com", User.Role.CUSTOMER, "Trần", "Anh", "0911111111", User.Gender.MALE)
             );
-            userService.createOrUpdate(
+            customer1 = userService.createOrUpdate(
                     new User("customer2", "customer2", "customer2@gmail.com", User.Role.CUSTOMER, "Lê", "Bình", "0922222222", User.Gender.MALE)
             );
             userService.createOrUpdate(
