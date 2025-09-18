@@ -299,7 +299,7 @@ const PaymentPage = () => {
                         <button
                             type="submit"
                             className="px-6 bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition flex items-center justify-center gap-2"
-                            onClick={handleSubmit}
+                            // onClick={handleSubmit}
                             disabled={loading}
                         >
                             {loading && (
