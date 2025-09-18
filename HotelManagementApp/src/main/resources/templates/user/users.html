@@ -44,6 +44,7 @@
                                 <th>Email</th>
                                 <th>SĐT</th>
                                 <th>Vai trò</th>
+                                <th>Giới tính</th>
                                 <th>Thao tác</th>
                             </tr>
                         </thead>
@@ -57,6 +58,7 @@
                                 <td th:text="${r.email}"></td>
                                 <td th:text="${r.phone}"></td>
                                 <td th:text="${r.role.viName}"></td> 
+                                <td th:text="${r.gender.viName}"></td> 
                                 <td>
                                     <div class="btn-group" role="group">
                                         <a th:href="@{/users/{id}(id=${r.id})}"

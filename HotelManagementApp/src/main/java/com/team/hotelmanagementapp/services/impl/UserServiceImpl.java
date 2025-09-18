@@ -89,12 +89,17 @@ public class UserServiceImpl implements UserService {
                 throw new RuntimeException("Error uploading file to Cloudinary", ex);
             }
         }
+        
         if (user.getRole() == null) {
             user.setRole(User.Role.CUSTOMER);
         }
 
         if (user.getStatus() == null) {
             user.setStatus(User.Status.ACTIVE);
+        }
+        
+        if (user.getGender() == null) {
+            user.setGender(User.Gender.OTHER);
         }
 
         return this.userRepo.createOrUpdate(user);

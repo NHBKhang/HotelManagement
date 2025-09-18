@@ -62,7 +62,7 @@ public class RoomRepositoryImpl implements RoomRepository {
                 } catch (IllegalArgumentException ignored) {
                 }
             }
-            
+
             String roomTypeId = params.get("roomTypeId");
             if (roomTypeId != null && !roomTypeId.isEmpty()) {
                 predicates.add(b.equal(root.get("roomType").get("id"), Integer.valueOf(roomTypeId)));
@@ -100,6 +100,19 @@ public class RoomRepositoryImpl implements RoomRepository {
                 sub.where(b.and(bookingStatus, overlap));
 
                 predicates.add(b.not(root.get("id").in(sub)));
+            }
+            String topRooms = params.get("topRooms");
+            if (topRooms != null && Boolean.parseBoolean(topRooms) == true) {
+                Subquery<Long> bookingCountSubquery = q.subquery(Long.class);
+                Root<Booking> bookingRoot = bookingCountSubquery.from(Booking.class);
+
+                bookingCountSubquery.select(b.count(bookingRoot));
+                bookingCountSubquery.where(
+                        b.equal(bookingRoot.get("room"), root),
+                        bookingRoot.get("status").in(Booking.Status.CONFIRMED, Booking.Status.CHECKED_IN, Booking.Status.CHECKED_OUT)
+                );
+
+                q.orderBy(b.desc(bookingCountSubquery.getSelection()));
             }
         }
 

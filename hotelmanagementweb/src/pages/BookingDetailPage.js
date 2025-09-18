@@ -235,7 +235,6 @@ const BookingDetailPage = () => {
                 </p>
             </div>
 
-            {/* Feedbacks */}
             <div className="bg-white dark:bg-gray-800 shadow-lg rounded-2xl p-6 space-y-4">
                 <h2 className="flex items-center gap-2 text-lg font-semibold dark:text-gray-200">
                     <MessageSquare size={18} /> Đánh giá

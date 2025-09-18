@@ -80,6 +80,28 @@ public class User implements Serializable {
         }
     }
 
+    public enum Gender {
+        MALE("Male", "Nam"),
+        FEMALE("Female", "Nữ"),
+        OTHER("Other", "Khác");
+        
+        private final String name;
+        private final String viName;
+
+        Gender(String name, String viName) {
+            this.name = name;
+            this.viName = viName;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getViName() {
+            return viName;
+        }
+    }
+
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -108,7 +130,7 @@ public class User implements Serializable {
 
     @Basic(optional = false)
     private String password;
-    
+
     @Basic
     private String address;
 
@@ -119,6 +141,8 @@ public class User implements Serializable {
     private Status status;
 
     private String avatar;
+    
+    private Gender gender;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -143,7 +167,7 @@ public class User implements Serializable {
     }
 
     public User(String username, String password, String email, Role role,
-            String firstName, String lastName, String phone) {
+            String firstName, String lastName, String phone, Gender gender) {
         this.username = username;
         this.password = password;
         this.role = role;
@@ -152,6 +176,7 @@ public class User implements Serializable {
         this.email = email;
         this.phone = phone;
         this.status = Status.ACTIVE;
+        this.gender = gender;
     }
 
     public User(Integer id, String firstName, String lastName, String email, String phone, String address) {
@@ -162,8 +187,6 @@ public class User implements Serializable {
         this.phone = phone;
         this.address = address;
     }
-    
-    
 
     public Integer getId() {
         return id;
@@ -311,6 +334,14 @@ public class User implements Serializable {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public Gender getGender() {
+        return gender;
+    }
+
+    public void setGender(Gender gender) {
+        this.gender = gender;
     }
 
 }

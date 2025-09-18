@@ -77,14 +77,17 @@
 
         <!-- Báo cáo - ADMIN, MANAGER, ACCOUNTANT -->
         <li sec:authorize="hasAnyRole('ADMIN', 'MANAGER', 'ACCOUNTANT')">
-            <a class="nav-link text-white dropdown-toggle" data-bs-toggle="collapse" href="#reportMenu">
+            <a th:href="@{/stats}" class="nav-link text-white">
+                <i class="fas fa-chart-line me-2"></i> <span>Báo cáo</span>
+            </a>
+<!--            <a class="nav-link text-white dropdown-toggle" data-bs-toggle="collapse" href="#reportMenu">
                 <i class="fas fa-chart-line me-2"></i> <span>Báo cáo</span>
             </a>
             <div class="collapse ps-3" id="reportMenu">
                 <a th:href="@{/stats}" class="nav-link text-white">Thống kê</a>
                 <a th:href="@{/feedback}" class="nav-link text-white">Phản hồi KH</a>
                 <a th:href="@{/notifications}" class="nav-link text-white">Thông báo</a>
-            </div>
+            </div>-->
         </li>
 
         <!-- Cài đặt - Available for all authenticated users -->

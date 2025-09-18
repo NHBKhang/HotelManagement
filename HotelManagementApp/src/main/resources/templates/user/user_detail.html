@@ -38,6 +38,7 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <p><strong>Họ tên:</strong> <span th:text="*{firstName + ' ' + lastName}">Nguyễn Văn A</span></p>
+                                        <p><strong>Giới tính:</strong> <span th:text="*{role.viName}">khác</span></p>
                                         <p><strong>Email:</strong> <span th:text="*{email}">user@example.com</span></p>
                                         <p><strong>Số điện thoại:</strong> <span th:text="*{phone ?: 'Chưa cung cấp'}">0123456789</span></p>
                                     </div>

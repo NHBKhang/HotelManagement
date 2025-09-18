@@ -1,6 +1,7 @@
 package com.team.hotelmanagementapp.controllers.api;
 
-import java.util.List;
+import com.team.hotelmanagementapp.services.FeedbackService;
+import com.team.hotelmanagementapp.utils.Pagination;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,29 +11,23 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.team.hotelmanagementapp.pojo.Service;
-import com.team.hotelmanagementapp.services.ServiceService;
-import com.team.hotelmanagementapp.utils.Pagination;
 
 @RestController
-@RequestMapping("/api/services")
+@RequestMapping("/api/feedbacks")
 @CrossOrigin
-public class ApiServiceController {
+public class ApiFeedbackController {
 
     @Autowired
-    private ServiceService serviceService;
+    private FeedbackService feedbackService;
 
     @GetMapping
     public ResponseEntity<?> list(@RequestParam Map<String, String> params) {
         try {
-            params.put("active", "true");
-            
-            List<Service> services = serviceService.find(params);
-            long totalServices = serviceService.countServices(params);
-            return ResponseEntity.ok(new Pagination<>(services, totalServices, params));
+            return ResponseEntity.ok().body(new Pagination<>(
+                    feedbackService.find(params), feedbackService.countFeedback(params), params));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Có lỗi xảy ra khi tải danh sách dịch vụ!");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Có lỗi xảy ra khi tải danh sách!");
         }
     }
+    
 }
