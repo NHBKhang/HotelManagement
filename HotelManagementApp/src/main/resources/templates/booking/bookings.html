@@ -109,13 +109,13 @@
                                 <td>
                                     <a th:href="@{/bookings/{id}(id=${r.id})}"
                                        class="text-decoration-none fw-bold text-primary"
-                                       th:text="${r.code}">BK001</a>
+                                       th:text="${r.code}"></a>
                                 </td>
                                 <td>
                                     <div>
                                         <strong th:text="${r.user.fullName}">Nguyễn Văn A</strong>
                                         <br>
-                                        <small class="text-muted" th:text="${r.user.email}">email@example.com</small>
+                                        <small class="text-muted" th:if="*{r.user}" th:text="${r.user.email}">email@example.com</small>
                                     </div>
                                 </td>
                                 <td>

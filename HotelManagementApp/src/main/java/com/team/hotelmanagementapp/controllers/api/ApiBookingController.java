@@ -13,16 +13,8 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.team.hotelmanagementapp.components.JwtService;
-import com.team.hotelmanagementapp.pojo.Booking;
-import com.team.hotelmanagementapp.pojo.Feedback;
-import com.team.hotelmanagementapp.pojo.Invoice;
-import com.team.hotelmanagementapp.pojo.ServiceBooking;
-import com.team.hotelmanagementapp.services.BookingService;
-import com.team.hotelmanagementapp.services.FeedbackService;
-import com.team.hotelmanagementapp.services.InvoiceService;
-import com.team.hotelmanagementapp.services.RoomService;
-import com.team.hotelmanagementapp.services.ServiceBookingService;
-import com.team.hotelmanagementapp.services.UserService;
+import com.team.hotelmanagementapp.pojo.*;
+import com.team.hotelmanagementapp.services.*;
 import com.team.hotelmanagementapp.utils.Pagination;
 import com.team.hotelmanagementapp.utils.RequestValidation;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,7 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -69,9 +63,12 @@ public class ApiBookingController {
 
     @Autowired
     private InvoiceService invoiceService;
-    
+
     @Autowired
     private ServiceBookingService serviceBookingService;
+
+    @Autowired
+    private PaymentService paymentService;
 
     @GetMapping
     public ResponseEntity<?> list(@RequestParam Map<String, String> params) {
@@ -232,98 +229,44 @@ public class ApiBookingController {
     }
 
     @GetMapping("/my-bookings/{id}/export-invoice")
-    public void exportInvoice(@PathVariable("id") Integer id,
+    public ResponseEntity<byte[]> exportInvoice(@PathVariable("id") Integer id,
             HttpServletResponse response,
             HttpServletRequest request) throws IOException {
         try {
             RequestValidation val = RequestValidation.getUserFromRequest(request, userService, jwtService);
 
             if (val.getUser() == null) {
-                response.sendError(HttpStatus.UNAUTHORIZED.value(), val.getMessage());
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED.value()).build();
             }
 
             Booking booking = bookingService.getById(id);
             if (!booking.getUser().getId().equals(val.getUser().getId())) {
-                response.sendError(HttpStatus.FORBIDDEN.value(), "Bạn không có quyền xem hóa đơn này");
-                return;
+                return ResponseEntity.status(HttpStatus.FORBIDDEN.value()).build();
             }
 
             List<Invoice> invoices = invoiceService.findByBookingId(id, null);
             if (invoices.isEmpty()) {
-                response.sendError(HttpStatus.NOT_FOUND.value(), "Không tìm thấy hóa đơn");
-                return;
+                return ResponseEntity.status(HttpStatus.NOT_FOUND.value()).build();
             }
+            List<Payment> payments = paymentService.findByInvoice(invoices.get(0).getId(), null);
 
-            response.setContentType("application/pdf");
-            response.setHeader("Content-Disposition", "attachment; filename=invoice-" + id + ".pdf");
+            byte[] pdfBytes = invoiceService.generateInvoicePdf(invoices.get(0), payments);
 
-            InputStream fontStream = getClass().getResourceAsStream("/static/fonts/arial.ttf");
-            if (fontStream == null) {
-                throw new RuntimeException("Không tìm thấy font Arial!");
-            }
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment", "invoice_" + invoices.get(0).getInvoiceNumber() + ".pdf");
+            headers.setContentLength(pdfBytes.length);
 
-            byte[] fontBytes = fontStream.readAllBytes();
-            BaseFont bf = BaseFont.createFont(
-                    "arial.ttf",
-                    BaseFont.IDENTITY_H,
-                    BaseFont.EMBEDDED,
-                    true,
-                    fontBytes,
-                    null
-            );
-            Font font = new Font(bf, 12, Font.NORMAL);
-
-            Document document = new Document(PageSize.A4);
-            PdfWriter.getInstance(document, response.getOutputStream());
-
-            document.open();
-            document.add(new Paragraph("HÓA ĐƠN THANH TOÁN", new Font(bf, 16, Font.BOLD)));
-            document.add(new Paragraph("Khách hàng: " + booking.getUser().getFullName(), font));
-            document.add(new Paragraph("Phòng: " + booking.getRoom().getRoomNumber(), font));
-            document.add(new Paragraph("Ngày nhận: " + booking.getCheckInDate(), font));
-            document.add(new Paragraph("Ngày trả: " + booking.getCheckOutDate(), font));
-            document.add(new Paragraph("------------------------------------------------------------", font));
-
-            PdfPTable table = new PdfPTable(4);
-            table.setWidthPercentage(100);
-            table.setWidths(new float[]{2, 3, 3, 3});
-
-            Stream.of("Mã HĐ", "Ngày lập", "Trạng thái", "Số tiền (VND)")
-                    .forEach(headerTitle -> {
-                        PdfPCell header = new PdfPCell();
-                        header.setBackgroundColor(BaseColor.LIGHT_GRAY);
-                        header.setPhrase(new Phrase(headerTitle, font));
-                        header.setHorizontalAlignment(Element.ALIGN_CENTER);
-                        table.addCell(header);
-                    });
-
-            double total = 0;
-
-            for (Invoice invoice : invoices) {
-                table.addCell(new Phrase(invoice.getInvoiceNumber(), font));
-                table.addCell(new Phrase(invoice.getIssueAt() != null ? invoice.getIssueAt().toString() : "-", font));
-                table.addCell(new Phrase(invoice.getStatus().getLabel(), font));
-
-                double amount = booking.getRoom().getRoomType().getPricePerNight(); // hoặc lấy từ Payment nếu có
-                total += amount;
-                table.addCell(new Phrase(String.format("%,.0f", amount), font));
-            }
-
-            document.add(table);
-
-            document.add(new Paragraph("------------------------------------------------------------", font));
-            document.add(new Paragraph("TỔNG CỘNG: " + String.format("%,.0f", total) + " VND", new Font(bf, 14, Font.BOLD)));
-
-            document.close();
+            return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
 
         } catch (DocumentException | IOException e) {
             e.printStackTrace();
-            response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Có lỗi xảy ra khi xuất hóa đơn của bạn");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR.value()).build();
         }
     }
 
     @PutMapping("/my-bookings/{id}/cancel")
-    public ResponseEntity<Map<String, Object>> cancelBooking(@PathVariable int id) {
+    public ResponseEntity<Map<String, Object>> cancelBooking(@PathVariable("id") int id) {
         try {
             bookingService.cancelBooking(id);
             Map<String, Object> response = new HashMap<>();
